@@ -99,7 +99,7 @@ public final class LauncherProfiles {
 		}
 
 		// Write out the new profiles
-		try	(JsonWriter writer = new JsonWriter(Files.newBufferedWriter(launcherProfilesPath))) {
+		try (JsonWriter writer = new JsonWriter(Files.newBufferedWriter(launcherProfilesPath))) {
 			write(writer, launcherProfiles);
 		}
 	}
