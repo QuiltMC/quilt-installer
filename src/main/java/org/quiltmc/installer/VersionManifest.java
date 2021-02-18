@@ -222,7 +222,7 @@ public final class VersionManifest {
 
 	public static final class Version {
 		/**
-		 * `id` refers to the human readable form of the version.
+		 * Refers to the human readable form of the version.
 		 *
 		 * <p>Examples: "21w05b, 1.16.5, 20w14infinite"
 		 */

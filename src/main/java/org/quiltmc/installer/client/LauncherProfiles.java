@@ -44,7 +44,7 @@ public final class LauncherProfiles {
 	 * @param gameVersion the game version
 	 * @throws IOException if there were any issues reading or writing
 	 */
-	public static void createNewProfile(Path gameDir, String name, String gameVersion) throws IOException {
+	public static void updateProfiles(Path gameDir, String name, String gameVersion) throws IOException {
 		final Path launcherProfilesPath = gameDir.resolve("launcher_profiles.json");
 
 		if (Files.notExists(launcherProfilesPath)) {
@@ -188,5 +188,8 @@ public final class LauncherProfiles {
 
 		// Failed, fallback to a non-vanilla icon
 		return "TNT";
+	}
+
+	private LauncherProfiles() {
 	}
 }

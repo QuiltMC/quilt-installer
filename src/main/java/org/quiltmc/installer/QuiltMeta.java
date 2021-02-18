@@ -35,9 +35,9 @@ import org.quiltmc.lib.gson.JsonReader;
 import org.quiltmc.lib.gson.JsonToken;
 
 public final class QuiltMeta {
-	public static final Endpoint<List<Version>> LOADER_VERSIONS_ENDPOINT = createVersion("/v2/versions/loader");
+	public static final Endpoint<List<String>> LOADER_VERSIONS_ENDPOINT = createVersion("/v3/versions/loader");
 	// TODO: Link to the actual meta
-	public static final String DEFAULT_META_URL = "https://meta.fabricmc.net";
+	public static final String DEFAULT_META_URL = "https://meta.quiltmc.org";
 	private final String baseMetaUrl;
 	private final Map<Endpoint<?>, Object> endpoints;
 
@@ -74,13 +74,13 @@ public final class QuiltMeta {
 		});
 	}
 
-	private static Endpoint<List<Version>> createVersion(String endpointPath) {
+	private static Endpoint<List<String>> createVersion(String endpointPath) {
 		return new Endpoint<>(endpointPath, reader -> {
 			if (reader.peek() != JsonToken.BEGIN_ARRAY) {
 				throw new ParseException("Result of endpoint must be an object", reader);
 			}
 
-			List<Version> versions = new ArrayList<>();
+			List<String> versions = new ArrayList<>();
 			reader.beginArray();
 
 			while (reader.hasNext()) {
@@ -89,7 +89,6 @@ public final class QuiltMeta {
 				}
 
 				String version = null;
-				Boolean stable = null;
 				reader.beginObject();
 
 				while (reader.hasNext()) {
@@ -103,13 +102,6 @@ public final class QuiltMeta {
 
 						version = reader.nextString();
 						break;
-					case "stable":
-						if (reader.peek() != JsonToken.BOOLEAN) {
-							throw new ParseException("\"stable\" in entry must be a boolean", reader);
-						}
-
-						stable = reader.nextBoolean();
-						break;
 					default:
 						reader.skipValue();
 					}
@@ -119,11 +111,7 @@ public final class QuiltMeta {
 					throw new ParseException("\"version\" field is required in a version entry", reader);
 				}
 
-				if (stable == null) {
-					throw new ParseException("\"stable\" field is required in a version entry", reader);
-				}
-
-				versions.add(new Version(version, stable));
+				versions.add(version);
 
 				reader.endObject();
 			}
@@ -164,29 +152,6 @@ public final class QuiltMeta {
 		@Override
 		public String toString() {
 			return "Endpoint{endpointPath=\"" + this.endpointPath + "\"}";
-		}
-	}
-
-	public static final class Version {
-		private final String version;
-		private final boolean stable;
-
-		private Version(String version, boolean stable) {
-			this.version = version;
-			this.stable = stable;
-		}
-
-		public String version() {
-			return this.version;
-		}
-
-		public boolean stable() {
-			return this.stable;
-		}
-
-		@Override
-		public String toString() {
-			return "Version{version=\"" + this.version + "\", stable=" + this.stable + '}';
 		}
 	}
 }

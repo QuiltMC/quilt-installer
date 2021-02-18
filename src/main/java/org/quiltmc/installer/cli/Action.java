@@ -126,8 +126,8 @@ abstract class Action {
 		}
 
 		private void displayLoaderVersions(QuiltMeta meta) {
-			List<QuiltMeta.Version> endpoint = meta.getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
-			println(Localization.createFrom("cli.latest.loader", endpoint.get(0).version()));
+			List<String> endpoint = meta.getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
+			println(Localization.createFrom("cli.latest.loader", endpoint.get(0)));
 		}
 
 		private Void handleMinecraftVersionExceptions(Throwable exc) {
