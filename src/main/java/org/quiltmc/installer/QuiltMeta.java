@@ -25,6 +25,7 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,6 +37,66 @@ import org.quiltmc.lib.gson.JsonToken;
 
 public final class QuiltMeta {
 	public static final Endpoint<List<String>> LOADER_VERSIONS_ENDPOINT = createVersion("/v3/versions/loader");
+	/**
+	 * An endpoint for intermediary versions.
+	 *
+	 * <p>The returned map has the version as the key and the maven artifact as the value
+	 */
+	public static final Endpoint<Map<String, String>> INTERMEDIARY_VERSIONS_ENDPOINT = new Endpoint<>("/v3/versions/intermediary", reader -> {
+		Map<String, String> ret = new LinkedHashMap<>();
+
+		if (reader.peek() != JsonToken.BEGIN_ARRAY) {
+			throw new ParseException("Intermediary versions must be in an array", reader);
+		}
+
+		reader.beginArray();
+
+		while (reader.hasNext()) {
+			if (reader.peek() != JsonToken.BEGIN_OBJECT) {
+				throw new ParseException("Intermediary version entry must be an object", reader);
+			}
+
+			reader.beginObject();
+
+			String version = null;
+			String maven = null;
+
+			while (reader.hasNext()) {
+				switch (reader.nextName()) {
+				case "version":
+					if (reader.peek() != JsonToken.STRING) {
+						throw new ParseException("Version must be a string", reader);
+					}
+
+					version = reader.nextString();
+					break;
+				case "maven":
+					if (reader.peek() != JsonToken.STRING) {
+						throw new ParseException("maven must be a string", reader);
+					}
+
+					maven = reader.nextString();
+					break;
+				}
+			}
+
+			if (version == null) {
+				throw new ParseException("Intermediary version entry does not have a version field", reader);
+			}
+
+			if (maven == null) {
+				throw new ParseException("Intermediary version entry does not have a maven field", reader);
+			}
+
+			ret.put(version, maven);
+
+			reader.endObject();
+		}
+
+		reader.endArray();
+
+		return ret;
+	});
 	// TODO: Link to the actual meta
 	public static final String DEFAULT_META_URL = "https://meta.quiltmc.org";
 	private final String baseMetaUrl;

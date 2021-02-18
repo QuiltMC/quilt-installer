@@ -19,15 +19,20 @@ package org.quiltmc.installer.cli;
 import java.io.UncheckedIOException;
 import java.net.UnknownHostException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.Localization;
 import org.quiltmc.installer.ParseException;
 import org.quiltmc.installer.QuiltMeta;
 import org.quiltmc.installer.VersionManifest;
+import org.quiltmc.installer.client.LaunchJson;
 
 /**
  * Represents a command line action.
@@ -175,7 +180,82 @@ abstract class Action {
 
 		@Override
 		void run() {
-			// TODO
+			/*
+			 * Installing the client involves a few steps:
+			 * 1. Get the launcher directory from the OS
+			 * 2. Lookup if the minecraftVersion specified exists and then if it has intermediary
+			 * 3. Lookup if the specified loaderVersion exists, looking up the latest if null
+			 * 4. Get the launch metadata for the specified version of loader
+			 * 5. Game version and profile name into the launch json
+			 * 6. Write it
+			 * 7. (Optional) create profile if needed
+			 */
+
+			// TODO: Get launcher dir
+
+			CompletableFuture<String> minecraftVersion = VersionManifest.create().thenApply(manifest -> {
+				if (manifest.getVersion(this.minecraftVersion) != null) {
+					return this.minecraftVersion;
+				}
+
+				throw new IllegalArgumentException(String.format("Minecraft version %s does not exist", this.minecraftVersion));
+			});
+
+			Set<QuiltMeta.Endpoint<?>> endpoints = new HashSet<>();
+			endpoints.add(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
+			endpoints.add(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
+
+			CompletableFuture<QuiltMeta> metaFuture = QuiltMeta.create(QuiltMeta.DEFAULT_META_URL, endpoints);
+
+			// Returns the maven url of the intermediary for the specified minecraft version
+			CompletableFuture<String> intermediary = minecraftVersion.thenCompose(mcVersion -> metaFuture.thenApply(meta -> {
+				Map<String, String> intermediaryVersions = meta.getEndpoint(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
+
+				if (intermediaryVersions.get(this.minecraftVersion) == null) {
+					throw new IllegalArgumentException(String.format("Minecraft version %s exists but has no intermediary", this.minecraftVersion));
+				}
+
+				return intermediaryVersions.get(this.minecraftVersion);
+			}));
+
+			CompletableFuture<String> loaderVersion = metaFuture.thenApply(meta -> {
+				List<String> versions = meta.getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
+
+				if (this.loaderVersion != null) {
+					if (!versions.contains(this.loaderVersion)) {
+						throw new IllegalStateException(String.format("Specified loader version %s was not found", this.loaderVersion));
+					}
+
+					return versions.get(versions.indexOf(this.loaderVersion));
+				}
+
+				if (versions.size() == 0) {
+					throw new IllegalStateException("No loader versions were found");
+				}
+
+				// Choose latest version
+				return versions.get(0);
+			});
+
+			CompletableFuture<LaunchJson> launchJsonFuture = loaderVersion.thenCompose(LaunchJson::create);
+
+			// Weave the chains together
+			CompletableFuture.allOf(minecraftVersion, intermediary, launchJsonFuture).thenAccept(_v -> {
+				try {
+					String gameVersion = minecraftVersion.get();
+					String intermediaryMaven = intermediary.get();
+					LaunchJson launchJson = launchJsonFuture.get();
+
+					println(gameVersion);
+					println(intermediaryMaven);
+					println(launchJson.toString());
+				} catch (InterruptedException | ExecutionException e) {
+					// Should not happen since we allOf'd it
+				}
+			}).exceptionally(e -> {
+				e.printStackTrace();
+				return null;
+			}).join();
 		}
 	}
 
