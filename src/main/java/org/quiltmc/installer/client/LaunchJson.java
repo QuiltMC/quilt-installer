@@ -19,7 +19,6 @@ package org.quiltmc.installer.client;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -34,18 +33,26 @@ import org.quiltmc.lib.gson.JsonReader;
 import org.quiltmc.lib.gson.JsonToken;
 
 public final class LaunchJson {
-	public static final String MAVEN_LINK = "https://maven.fabricmc.net/";
-	public static final String LOADER_ARTIFACT_GROUP = "net/fabricmc";
+	public static final String ARTIFACT_GROUP = "net/fabricmc";
 	public static final String LOADER_ARTIFACT_NAME = "fabric-loader";
 	// TODO: Switch to quilt once we publish loader
-//	public static final String MAVEN_LINK = "https://maven.quiltmc.org/repository/release";
+	public static final String MAVEN_LINK = "https://maven.quiltmc.org/repository/release";
+	public static final String MAPPINGS_ARTIFACT_NAME = "intermediary";
 //	public static final String LOADER_ARTIFACT_GROUP = "org/quiltmc";
 //	public static final String LOADER_ARTIFACT_NAME = "quilt-loader";
+	@Nullable
+	private final String mainClass;
+	@Nullable
+	private final String mainServerClass;
+	private final List<String> arguments;
+	private final List<Library> libraries;
+	private String id;
+	private String inheritedFrom;
 
 	private static String createInstallerMetaUrl(String loaderVersion) {
 		Objects.requireNonNull(loaderVersion, "Loader version cannot be null");
 
-		return String.format("%s/%s/%s/%s/%3$s-%4$s.json", MAVEN_LINK, LOADER_ARTIFACT_GROUP, LOADER_ARTIFACT_NAME, loaderVersion);
+		return String.format("%s/%s/%s/%s/%3$s-%4$s.json", MAVEN_LINK, ARTIFACT_GROUP, LOADER_ARTIFACT_NAME, loaderVersion);
 	}
 
 	public static CompletableFuture<LaunchJson> create(String loaderVersion) {
@@ -66,13 +73,6 @@ public final class LaunchJson {
 			}
 		});
 	}
-
-	@Nullable
-	private final String mainClass;
-	@Nullable
-	private final String mainServerClass;
-	private final List<String> arguments;
-	private final List<Library> libraries;
 
 	/**
 	 * Reads a fabric-launch.json and converts it to Minecraft format.
@@ -294,9 +294,34 @@ public final class LaunchJson {
 		this.libraries = libraries;
 	}
 
-	public static final class Library {
-		public Library(String name, @Nullable String url) {
+	public void setId(String id) {
+		this.id = id;
+	}
 
+	public void setInheritedFrom(String inheritedFrom) {
+		this.inheritedFrom = inheritedFrom;
+	}
+
+	public void addLibrary(String version, String url) {
+		this.libraries.add(new Library(version, url));
+	}
+
+	public static final class Library {
+		private final String name;
+		private final String url;
+
+		public Library(String name, @Nullable String url) {
+			this.name = name;
+			this.url = url;
+		}
+
+		public String name() {
+			return this.name;
+		}
+
+		@Nullable
+		public String url() {
+			return this.url;
 		}
 	}
 }

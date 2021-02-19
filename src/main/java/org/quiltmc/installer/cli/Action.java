@@ -218,7 +218,7 @@ abstract class Action {
 				return intermediaryVersions.get(this.minecraftVersion);
 			}));
 
-			CompletableFuture<String> loaderVersion = metaFuture.thenApply(meta -> {
+			CompletableFuture<String> loaderVersionFuture = metaFuture.thenApply(meta -> {
 				List<String> versions = meta.getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
 
 				if (this.loaderVersion != null) {
@@ -237,18 +237,42 @@ abstract class Action {
 				return versions.get(0);
 			});
 
-			CompletableFuture<LaunchJson> launchJsonFuture = loaderVersion.thenCompose(LaunchJson::create);
+			CompletableFuture<LaunchJson> launchJsonFuture = loaderVersionFuture.thenCompose(LaunchJson::create);
 
 			// Weave the chains together
-			CompletableFuture.allOf(minecraftVersion, intermediary, launchJsonFuture).thenAccept(_v -> {
+			CompletableFuture.allOf(minecraftVersion, intermediary, loaderVersionFuture, launchJsonFuture).thenAccept(_v -> {
 				try {
 					String gameVersion = minecraftVersion.get();
 					String intermediaryMaven = intermediary.get();
+					String loaderVersion = loaderVersionFuture.get();
 					LaunchJson launchJson = launchJsonFuture.get();
 
 					println(gameVersion);
 					println(intermediaryMaven);
 					println(launchJson.toString());
+
+					String profileName = String.format("%s-%s-%s",
+							LaunchJson.LOADER_ARTIFACT_NAME,
+							loaderVersion,
+							gameVersion
+					);
+
+					launchJson.setId(profileName);
+					launchJson.setInheritedFrom(gameVersion);
+
+					// Loader
+					launchJson.addLibrary(
+							LaunchJson.ARTIFACT_GROUP.replaceAll("/", ".") + ":" + LaunchJson.LOADER_ARTIFACT_NAME + ":" + loaderVersion,
+							LaunchJson.MAVEN_LINK
+					);
+
+					// Mappings
+					launchJson.addLibrary(
+							LaunchJson.ARTIFACT_GROUP.replaceAll("/", ".") + ":" + LaunchJson.MAPPINGS_ARTIFACT_NAME + ":" + gameVersion,
+							LaunchJson.MAVEN_LINK
+					);
+
+					//
 				} catch (InterruptedException | ExecutionException e) {
 					// Should not happen since we allOf'd it
 				}
