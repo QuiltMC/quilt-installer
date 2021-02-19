@@ -16,8 +16,14 @@
 
 package org.quiltmc.installer.cli;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.net.UnknownHostException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -27,12 +33,15 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 
+import org.graalvm.compiler.lir.StandardOp;
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.Localization;
+import org.quiltmc.installer.OsPaths;
 import org.quiltmc.installer.ParseException;
 import org.quiltmc.installer.QuiltMeta;
 import org.quiltmc.installer.VersionManifest;
 import org.quiltmc.installer.client.LaunchJson;
+import org.quiltmc.lib.gson.JsonWriter;
 
 /**
  * Represents a command line action.
@@ -191,7 +200,7 @@ abstract class Action {
 			 * 7. (Optional) create profile if needed
 			 */
 
-			// TODO: Get launcher dir
+			Path installationDir = OsPaths.getDefaultInstallationDir();
 
 			CompletableFuture<String> minecraftVersion = VersionManifest.create().thenApply(manifest -> {
 				if (manifest.getVersion(this.minecraftVersion) != null) {
@@ -272,9 +281,44 @@ abstract class Action {
 							LaunchJson.MAVEN_LINK
 					);
 
-					//
+					// Directories
+					Path versionsDir = installationDir.resolve("versions");
+					Path profileDir = versionsDir.resolve(profileName);
+					Path profileJson = profileDir.resolve(profileName + ".json");
+
+					try {
+						Files.createDirectories(profileDir);
+					} catch (IOException e) {
+						throw new UncheckedIOException(e); // Handle via exceptionally
+					}
+
+					/*
+					 * Abuse some of the vanilla launcher's undefined behavior:
+					 *
+					 * Assumption is the profile name is the same as the maven artifact.
+					 * The profile name we set is a combination of two artifacts (loader + mappings).
+					 * As long as the jar file exists of the same name the launcher won't complain.
+					 */
+
+					// Make our pretender jar
+					try {
+						Files.createFile(profileDir.resolve(profileName + ".jar"));
+					} catch (FileAlreadyExistsException ignore) {
+						// Pretender jar already exists
+					} catch (IOException e) {
+						throw new UncheckedIOException(e); // Handle via exceptionally
+					}
+
+					// Create our launch json
+					try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(Files.newOutputStream(profileJson, StandardOpenOption.CREATE_NEW)))) {
+						launchJson.write(writer);
+					} catch (IOException e) {
+						throw new UncheckedIOException(e); // Handle via exceptionally
+					}
 				} catch (InterruptedException | ExecutionException e) {
-					// Should not happen since we allOf'd it
+					// Should not happen since we allOf'd it.
+					// Anyways if it does happen let exceptionally deal with it
+					throw new RuntimeException(e);
 				}
 			}).exceptionally(e -> {
 				e.printStackTrace();

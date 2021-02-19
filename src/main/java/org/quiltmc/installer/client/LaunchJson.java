@@ -31,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.ParseException;
 import org.quiltmc.lib.gson.JsonReader;
 import org.quiltmc.lib.gson.JsonToken;
+import org.quiltmc.lib.gson.JsonWriter;
 
 public final class LaunchJson {
 	public static final String ARTIFACT_GROUP = "net/fabricmc";
@@ -304,6 +305,10 @@ public final class LaunchJson {
 
 	public void addLibrary(String version, String url) {
 		this.libraries.add(new Library(version, url));
+	}
+
+	public void write(JsonWriter writer) {
+		throw new UnsupportedOperationException("Implement me!");
 	}
 
 	public static final class Library {

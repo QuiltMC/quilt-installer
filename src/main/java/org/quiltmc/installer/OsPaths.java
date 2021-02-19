@@ -35,7 +35,7 @@ public final class OsPaths {
 	 *
 	 * @return the path to the default launcher install directory
 	 */
-	public static Path getDefaultInstallerDir() {
+	public static Path getDefaultInstallationDir() {
 		String userHome = System.getProperty("user.home", ".");
 		String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
 
