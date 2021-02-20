@@ -14,18 +14,12 @@ repositories {
 	mavenCentral()
 
 	maven("https://maven.quiltmc.org/repository/release/") {
-		name = "QuiltMC"
+		name = "QuiltMC Releases"
 	}
 }
 
 dependencies {
-	val junitVersion = "5.3.1"
-
-	testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-
 	implementation("org.quiltmc:gson-stream:1.0")
-
 	compileOnly("org.jetbrains:annotations:20.1.0")
 }
 
@@ -34,7 +28,7 @@ spotless {
 		// Use comma separator for openjdk like license headers
 		licenseHeaderFile(project.file("codeformat/HEADER")).yearSeparator(", ")
 
-		// Special licensing cases - exclude from regular process
+		// Special licensing cases - exclude from regular spotlessJava tasks
 		targetExclude(
 				"/src/main/java/org/quiltmc/installer/cli/InputParser.java",
 				"/src/main/java/org/quiltmc/installer/cli/Node.java",
@@ -63,6 +57,6 @@ tasks.compileJava {
 	options.release.set(8)
 }
 
-tasks.test {
-	useJUnitPlatform()
+application {
+	mainClass.set("org.quiltmc.installer.Main")
 }
