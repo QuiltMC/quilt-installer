@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package org.quiltmc.installer.cli;
+package org.quiltmc.installer.action;
+
+import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
 
 /**
  * An action which creates the server launch jar and downloads the dedicated server.
  */
-final class InstallServer extends Action {
+public final class InstallServer extends Action<InstallServer.MessageType> {
 	private final String minecraftVersion;
 	@Nullable
 	private final String loaderVersion;
@@ -35,7 +37,10 @@ final class InstallServer extends Action {
 	}
 
 	@Override
-	void run() {
+	public void run(Consumer<MessageType> statusTracker) {
 		// TODO
+	}
+
+	public enum MessageType {
 	}
 }

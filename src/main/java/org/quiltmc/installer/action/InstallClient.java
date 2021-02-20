@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.quiltmc.installer.cli;
+package org.quiltmc.installer.action;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.OsPaths;
@@ -37,12 +38,11 @@ import org.quiltmc.installer.QuiltMeta;
 import org.quiltmc.installer.VersionManifest;
 import org.quiltmc.installer.client.LaunchJson;
 import org.quiltmc.installer.client.LauncherProfiles;
-import org.quiltmc.lib.gson.JsonWriter;
 
 /**
  * An action which installs a new client instance.
  */
-final class InstallClient extends Action {
+public final class InstallClient extends Action<InstallClient.MessageType> {
 	private final String minecraftVersion;
 	@Nullable
 	private final String loaderVersion;
@@ -55,7 +55,7 @@ final class InstallClient extends Action {
 	}
 
 	@Override
-	void run() {
+	public void run(Consumer<MessageType> statusTracker) {
 		if (this.loaderVersion != null) {
 			println(String.format("Installing Minecraft client of version %s with loader version %s", this.minecraftVersion, this.loaderVersion));
 		} else {
@@ -191,5 +191,8 @@ final class InstallClient extends Action {
 			System.exit(1);
 			return null;
 		}).join();
+	}
+
+	public enum MessageType {
 	}
 }

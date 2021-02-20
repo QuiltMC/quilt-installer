@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.quiltmc.installer.cli;
+package org.quiltmc.installer.action;
 
 import java.io.UncheckedIOException;
 import java.net.UnknownHostException;
@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.function.Consumer;
 
 import org.quiltmc.installer.Localization;
 import org.quiltmc.installer.ParseException;
@@ -31,7 +32,7 @@ import org.quiltmc.installer.VersionManifest;
 /**
  * An action which lists all installable versions of Minecraft.
  */
-final class ListVersions extends Action {
+public final class ListVersions extends Action<Void> {
 	/**
 	 * Whether to display snapshot Minecraft versions.
 	 */
@@ -42,7 +43,7 @@ final class ListVersions extends Action {
 	}
 
 	@Override
-	void run() {
+	public void run(Consumer<Void> statusTracker) {
 		CompletableFuture<Void> versionManifest = VersionManifest.create()
 				.thenAccept(this::displayMinecraftVerions)
 				.exceptionally(this::handleMinecraftVersionExceptions);

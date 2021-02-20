@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.quiltmc.installer.cli;
+package org.quiltmc.installer.action;
 
 import java.awt.GraphicsEnvironment;
 import java.io.BufferedReader;
@@ -23,20 +23,24 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.Localization;
+import org.quiltmc.installer.cli.CliInstaller;
 
 /**
- * Represents a command line action.
+ * Represents an installer action to be performed.
+ *
+ * <M> the status message type indicating the progress of an action
  */
-abstract class Action {
+public abstract class Action<M> {
 	/**
 	 * An action which displays the help menu along with example usages.
 	 */
-	static final Action DISPLAY_HELP = new Action() {
+	public static final Action<Void> DISPLAY_HELP = new Action<Void>() {
 		@Override
-		void run() {
+		public void run(Consumer<Void> statusTracker) {
 			this.printHelp();
 			System.exit(1);
 		}
@@ -80,15 +84,15 @@ abstract class Action {
 		}
 	};
 
-	static Action listVersions(boolean snapshots) {
+	public static Action<Void> listVersions(boolean snapshots) {
 		return new ListVersions(snapshots);
 	}
 
-	static Action installClient(String minecraftVersion, @Nullable String loaderVersion, boolean generateProfile) {
+	public static Action<InstallClient.MessageType> installClient(String minecraftVersion, @Nullable String loaderVersion, boolean generateProfile) {
 		return new InstallClient(minecraftVersion, loaderVersion, generateProfile);
 	}
 
-	static Action installServer(String minecraftVersion, @Nullable String loaderVersion, @Nullable String serverDir) {
+	public static Action<InstallServer.MessageType> installServer(String minecraftVersion, @Nullable String loaderVersion, @Nullable String serverDir) {
 		return new InstallServer(minecraftVersion, loaderVersion, serverDir);
 	}
 
@@ -102,7 +106,8 @@ abstract class Action {
 
 	/**
 	 * Runs the action.
+	 *
+	 * @param statusTracker the consumer to send updates about the progress of this action
 	 */
-	abstract void run();
-
+	public abstract void run(Consumer<M> statusTracker);
 }

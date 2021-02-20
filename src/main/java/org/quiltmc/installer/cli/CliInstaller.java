@@ -20,13 +20,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jetbrains.annotations.Nullable;
+import org.quiltmc.installer.action.Action;
 
 /**
  * The main entrypoint when installing from the command line.
  */
 public final class CliInstaller {
 	// The value in this variable will be set by blossom at compile time.
-	static final String INSTALLER_VERSION = "__INSTALLER_VERSION";
+	public static final String INSTALLER_VERSION = "__INSTALLER_VERSION";
 	static final String USAGE = "help | listVersions [--snapshots] | install (client [--no-profile] | server [--server-dir=<dir>]) <minecraft-version> [loader-version]";
 
 	public static void run(String[] args) {
@@ -44,8 +45,15 @@ public final class CliInstaller {
 			builder.append(args[i]);
 		}
 
-		Action action = parse(builder.toString(), node);
-		action.run();
+		Action<?> action = parse(builder.toString(), node);
+
+		action.run(msg -> {
+			if (action != Action.DISPLAY_HELP) {
+				// TODO: Implement CLI tracker
+			}
+
+			// Help shouldn't need a progress bar
+		});
 	}
 
 	/**
@@ -55,7 +63,7 @@ public final class CliInstaller {
 	 * @param node the input parser tree
 	 * @return the action, defaulting to {@link Action#DISPLAY_HELP} if the arguments were improperly parsed.
 	 */
-	private static Action parse(String input, Node node) {
+	private static Action<?> parse(String input, Node node) {
 		Map<String, String> args = new LinkedHashMap<>();
 		InputParser inputParser = new InputParser();
 
