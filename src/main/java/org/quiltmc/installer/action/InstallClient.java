@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
@@ -56,7 +55,7 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 	}
 
 	@Override
-	public void run(Executor displayExecutor, Consumer<MessageType> statusTracker) {
+	public void run(Consumer<MessageType> statusTracker) {
 		if (this.loaderVersion != null) {
 			println(String.format("Installing Minecraft client of version %s with loader version %s", this.minecraftVersion, this.loaderVersion));
 		} else {

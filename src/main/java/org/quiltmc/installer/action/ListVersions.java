@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 import org.quiltmc.installer.Localization;
@@ -44,7 +43,7 @@ public final class ListVersions extends Action<Void> {
 	}
 
 	@Override
-	public void run(Executor displayExecutor, Consumer<Void> statusTracker) {
+	public void run(Consumer<Void> statusTracker) {
 		CompletableFuture<Void> versionManifest = VersionManifest.create()
 				.thenAccept(this::displayMinecraftVerions)
 				.exceptionally(this::handleMinecraftVersionExceptions);
