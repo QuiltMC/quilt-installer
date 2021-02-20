@@ -49,6 +49,7 @@ public final class CliInstaller {
 
 		action.run(msg -> {
 			if (action != Action.DISPLAY_HELP) {
+				// TODO: Do we want to add some sort of hanging carriage percentage tracker?
 				// TODO: Implement CLI tracker
 			}
 
