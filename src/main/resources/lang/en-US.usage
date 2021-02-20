@@ -1,0 +1,24 @@
+Usage: {0}
+         ({1})
+   or  {0} help
+         (prints this help message)
+   or  {0} listVersions [VERSION-OPTIONS]
+         (lists available Minecraft versions)
+   or  {0} install client <minecraft-version> [<loader-version>] [INSTALL-OPTIONS]
+         (creates a new instance of the specified minecraft version for the Minecraft Launcher)
+   or  {0} install server <minecraft-version> [<loader-version>] [INSTALL-OPTIONS]
+         (creates a Minecraft server installation of the specified minecraft version)
+
+The minecraft version argument specifies to the Minecraft version to install.
+The loader version argument specifies the version of quilt-loader to install.
+
+where version options options include:
+
+   --snapshots
+                  Additionally list latest snapshot Minecraft version
+
+where install options include:
+
+   --install-dir=<installation directory>
+                  Client: Specifies the install directory of the Vanilla Minecraft launcher
+                  Server: Specifies the directory to create the server installation at.
