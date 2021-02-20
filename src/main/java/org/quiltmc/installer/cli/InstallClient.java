@@ -19,6 +19,7 @@ package org.quiltmc.installer.cli;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
+import java.io.Writer;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -53,6 +54,12 @@ final class InstallClient extends Action {
 
 	@Override
 	void run() {
+		if (this.loaderVersion != null) {
+			println(String.format("Installing Minecraft client of version %s with loader version %s", this.minecraftVersion, this.loaderVersion));
+		} else {
+			println(String.format("Installing Minecraft client of version %s", this.minecraftVersion));
+		}
+
 		/*
 		 * Installing the client involves a few steps:
 		 * 1. Get the launcher directory from the OS
@@ -80,15 +87,13 @@ final class InstallClient extends Action {
 
 		CompletableFuture<QuiltMeta> metaFuture = QuiltMeta.create(QuiltMeta.DEFAULT_META_URL, endpoints);
 
-		// Returns the maven url of the intermediary for the specified minecraft version
-		CompletableFuture<String> intermediary = minecraftVersion.thenCompose(mcVersion -> metaFuture.thenApply(meta -> {
+		// Verify we actually have intermediary for the specified version
+		CompletableFuture<Void> intermediary = minecraftVersion.thenCompose(mcVersion -> metaFuture.thenAccept(meta -> {
 			Map<String, String> intermediaryVersions = meta.getEndpoint(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
 
 			if (intermediaryVersions.get(this.minecraftVersion) == null) {
 				throw new IllegalArgumentException(String.format("Minecraft version %s exists but has no intermediary", this.minecraftVersion));
 			}
-
-			return intermediaryVersions.get(this.minecraftVersion);
 		}));
 
 		CompletableFuture<String> loaderVersionFuture = metaFuture.thenApply(meta -> {
@@ -110,39 +115,21 @@ final class InstallClient extends Action {
 			return versions.get(0);
 		});
 
-		CompletableFuture<LaunchJson> launchJsonFuture = loaderVersionFuture.thenCompose(LaunchJson::create);
-
-		// Weave the chains together
-		CompletableFuture.allOf(minecraftVersion, intermediary, loaderVersionFuture, launchJsonFuture).thenAccept(_v -> {
+		// Wait for loader, intermediary and mc validation to complete.
+		CompletableFuture.allOf(minecraftVersion, intermediary, loaderVersionFuture).thenCompose(_v -> {
 			try {
-				String gameVersion = minecraftVersion.get();
-				String intermediaryMaven = intermediary.get();
-				String loaderVersion = loaderVersionFuture.get();
-				LaunchJson launchJson = launchJsonFuture.get();
+				return LaunchJson.get(minecraftVersion.get(), loaderVersionFuture.get());
+			} catch (InterruptedException | ExecutionException e) {
+				throw new RuntimeException(e); // Pass to exceptionally
+			}
+		}).thenAccept(launchJson -> {
+			println("Creating profile launch json");
 
-				println(gameVersion);
-				println(intermediaryMaven);
-				println(launchJson.toString());
-
+			try {
 				String profileName = String.format("%s-%s-%s",
 						LaunchJson.LOADER_ARTIFACT_NAME,
-						loaderVersion,
-						gameVersion
-				);
-
-				launchJson.setId(profileName);
-				launchJson.setInheritedFrom(gameVersion);
-
-				// Loader
-				launchJson.addLibrary(
-						LaunchJson.ARTIFACT_GROUP.replaceAll("/", ".") + ":" + LaunchJson.LOADER_ARTIFACT_NAME + ":" + loaderVersion,
-						LaunchJson.MAVEN_LINK
-				);
-
-				// Mappings
-				launchJson.addLibrary(
-						LaunchJson.ARTIFACT_GROUP.replaceAll("/", ".") + ":" + LaunchJson.MAPPINGS_ARTIFACT_NAME + ":" + gameVersion,
-						LaunchJson.MAVEN_LINK
+						loaderVersionFuture.get(),
+						minecraftVersion.get()
 				);
 
 				// Directories
@@ -173,9 +160,9 @@ final class InstallClient extends Action {
 					throw new UncheckedIOException(e); // Handle via exceptionally
 				}
 
-				// Create our launch json
-				try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(Files.newOutputStream(profileJson, StandardOpenOption.CREATE_NEW)))) {
-					launchJson.write(writer);
+				// Write the launch json
+				try (Writer writer = new OutputStreamWriter(Files.newOutputStream(profileJson, StandardOpenOption.CREATE_NEW))) {
+					writer.append(launchJson);
 				} catch (IOException e) {
 					throw new UncheckedIOException(e); // Handle via exceptionally
 				}
@@ -183,7 +170,8 @@ final class InstallClient extends Action {
 				// Create the profile
 				// TODO: Check if creating the profile is enabled
 				try {
-					LauncherProfiles.updateProfiles(installationDir, profileName, gameVersion);
+					println("Creating new profile");
+					LauncherProfiles.updateProfiles(installationDir, profileName, minecraftVersion.get());
 				} catch (IOException e) {
 					throw new UncheckedIOException(e); // Handle via exceptionally
 				}
@@ -196,5 +184,7 @@ final class InstallClient extends Action {
 			e.printStackTrace();
 			return null;
 		}).join();
+
+		println("Completed installation");
 	}
 }

@@ -36,6 +36,7 @@ import org.quiltmc.lib.gson.JsonToken;
  */
 // TODO: Abstract to another library for sharing logic with meta?
 public final class VersionManifest {
+	// TODO: Use v2 manifest instead
 	private static final String LAUNCHER_META_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
 	private final Version latestRelease;
 	private final Version latestSnapshot;

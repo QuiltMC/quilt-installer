@@ -100,6 +100,7 @@ public final class LauncherProfiles {
 
 		// Write out the new profiles
 		try (JsonWriter writer = new JsonWriter(Files.newBufferedWriter(launcherProfilesPath))) {
+			writer.setIndent("  "); // Prettify it
 			write(writer, launcherProfiles);
 		}
 	}
