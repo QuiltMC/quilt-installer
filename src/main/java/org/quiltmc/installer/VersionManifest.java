@@ -36,8 +36,7 @@ import org.quiltmc.lib.gson.JsonToken;
  */
 // TODO: Abstract to another library for sharing logic with meta?
 public final class VersionManifest {
-	// TODO: Use v2 manifest instead
-	private static final String LAUNCHER_META_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
+	private static final String LAUNCHER_META_URL = "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
 	private final Version latestRelease;
 	private final Version latestSnapshot;
 	private final Map<String, Version> versions;
@@ -183,6 +182,7 @@ public final class VersionManifest {
 
 					releaseTime = reader.nextString();
 					break;
+				// v2 adds sha1 and complianceLevel, we do not need those
 				default:
 					reader.skipValue();
 				}
