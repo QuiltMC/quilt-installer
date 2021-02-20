@@ -74,6 +74,8 @@ abstract class Action {
 					Localization.get("cli.usage.description.headless") :
 					Localization.get("cli.usage.description"));
 
+			println(Localization.get("title") + " v" + CliInstaller.INSTALLER_VERSION);
+			println("");
 			println(new MessageFormat(usage.toString()).format(new String[] { platformExecutableName, noArgsUsage }));
 		}
 	};
@@ -82,8 +84,8 @@ abstract class Action {
 		return new ListVersions(snapshots);
 	}
 
-	static Action installClient(String minecraftVersion, @Nullable String loaderVersion) {
-		return new InstallClient(minecraftVersion, loaderVersion);
+	static Action installClient(String minecraftVersion, @Nullable String loaderVersion, boolean generateProfile) {
+		return new InstallClient(minecraftVersion, loaderVersion, generateProfile);
 	}
 
 	static Action installServer(String minecraftVersion, @Nullable String loaderVersion, @Nullable String serverDir) {
@@ -103,25 +105,4 @@ abstract class Action {
 	 */
 	abstract void run();
 
-	/**
-	 * An action which creates the server launch jar and downloads the dedicated server.
-	 */
-	private static final class InstallServer extends Action {
-		private final String minecraftVersion;
-		@Nullable
-		private final String loaderVersion;
-		@Nullable
-		private final String serverDir;
-
-		InstallServer(String minecraftVersion, @Nullable String loaderVersion, @Nullable String serverDir) {
-			this.minecraftVersion = minecraftVersion;
-			this.loaderVersion = loaderVersion;
-			this.serverDir = serverDir;
-		}
-
-		@Override
-		void run() {
-			// TODO
-		}
-	}
 }

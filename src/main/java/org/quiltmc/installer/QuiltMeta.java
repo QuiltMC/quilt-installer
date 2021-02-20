@@ -155,15 +155,13 @@ public final class QuiltMeta {
 				while (reader.hasNext()) {
 					String key = reader.nextName();
 
-					switch (key) {
-					case "version":
+					if ("version".equals(key)) {
 						if (reader.peek() != JsonToken.STRING) {
 							throw new ParseException("\"version\" in entry must be a string", reader);
 						}
 
 						version = reader.nextString();
-						break;
-					default:
+					} else {
 						reader.skipValue();
 					}
 				}

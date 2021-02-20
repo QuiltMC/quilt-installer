@@ -46,10 +46,12 @@ final class InstallClient extends Action {
 	private final String minecraftVersion;
 	@Nullable
 	private final String loaderVersion;
+	private final boolean generateProfile;
 
-	InstallClient(String minecraftVersion, @Nullable String loaderVersion) {
+	InstallClient(String minecraftVersion, @Nullable String loaderVersion, boolean generateProfile) {
 		this.minecraftVersion = minecraftVersion;
 		this.loaderVersion = loaderVersion;
+		this.generateProfile = generateProfile;
 	}
 
 	@Override
@@ -167,24 +169,27 @@ final class InstallClient extends Action {
 					throw new UncheckedIOException(e); // Handle via exceptionally
 				}
 
-				// Create the profile
-				// TODO: Check if creating the profile is enabled
-				try {
-					println("Creating new profile");
-					LauncherProfiles.updateProfiles(installationDir, profileName, minecraftVersion.get());
-				} catch (IOException e) {
-					throw new UncheckedIOException(e); // Handle via exceptionally
+				// Create the profile - this is typically set by default
+				if (this.generateProfile) {
+					try {
+						println("Creating new profile");
+						LauncherProfiles.updateProfiles(installationDir, profileName, minecraftVersion.get());
+					} catch (IOException e) {
+						throw new UncheckedIOException(e); // Handle via exceptionally
+					}
 				}
+
+				println("Completed installation");
 			} catch (InterruptedException | ExecutionException e) {
 				// Should not happen since we allOf'd it.
 				// Anyways if it does happen let exceptionally deal with it
 				throw new RuntimeException(e);
 			}
 		}).exceptionally(e -> {
+			eprintln("Failed to install client");
 			e.printStackTrace();
+			System.exit(1);
 			return null;
 		}).join();
-
-		println("Completed installation");
 	}
 }

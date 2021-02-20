@@ -27,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
 public final class CliInstaller {
 	// The value in this variable will be set by blossom at compile time.
 	static final String INSTALLER_VERSION = "__INSTALLER_VERSION";
-	static final String USAGE = "help | listVersions [--snapshots] | install (client | server [--server-dir=<dir>]) <minecraft-version> [loader-version]";
+	static final String USAGE = "help | listVersions [--snapshots] | install (client [--no-profile] | server [--server-dir=<dir>]) <minecraft-version> [loader-version]";
 
 	public static void run(String[] args) {
 		UsageParser usageParser = new UsageParser();
@@ -79,7 +79,7 @@ public final class CliInstaller {
 
 			switch (args.get("unnamed_1")) {
 			case "client":
-				return Action.installClient(minecraftVersion, loaderVersion);
+				return Action.installClient(minecraftVersion, loaderVersion, !args.containsKey("no-profile"));
 			case "server":
 				// Specifies the directory to install the server at
 				@Nullable

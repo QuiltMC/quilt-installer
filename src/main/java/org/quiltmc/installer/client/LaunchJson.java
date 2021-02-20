@@ -25,21 +25,14 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 
+import org.quiltmc.installer.QuiltMeta;
+
 public final class LaunchJson {
-	// TODO: Switch theses
-	public static final String MAVEN_LINK = "https://maven.fabricmc.net";
-	public static final String ARTIFACT_GROUP = "net/fabricmc";
+	// TODO: Switch to quilt
 	public static final String LOADER_ARTIFACT_NAME = "fabric-loader";
-	// TODO: Switch to quilt once we publish loader
-	//public static final String MAVEN_LINK = "https://maven.quiltmc.org/repository/release";
-	public static final String MAPPINGS_ARTIFACT_NAME = "intermediary";
-//	public static final String LOADER_ARTIFACT_GROUP = "org/quiltmc";
-//	public static final String LOADER_ARTIFACT_NAME = "quilt-loader";
 
 	public static CompletableFuture<String> get(String gameVersion, String loaderVersion) {
-		// TODO: Move to v3 when this endpoint is deployed
-		// String rawUrl = QuiltMeta.DEFAULT_META_URL + String.format("/v3/versions/loader/%s/%s/profile/json", gameVersion, loaderVersion);
-		String rawUrl = "https://meta.fabricmc.net" + String.format("/v2/versions/loader/%s/%s/profile/json", gameVersion, loaderVersion);
+		String rawUrl = QuiltMeta.DEFAULT_META_URL + String.format("/v3/versions/loader/%s/%s/profile/json", gameVersion, loaderVersion);
 
 		return CompletableFuture.supplyAsync(() -> {
 			try {

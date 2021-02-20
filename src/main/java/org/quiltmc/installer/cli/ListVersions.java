@@ -90,8 +90,7 @@ final class ListVersions extends Action {
 			}
 		} else if (exc instanceof ParseException) {
 			eprintln(Localization.get("cli.lookup.failed.minecraft.malformed.1"));
-			// TODO: Fill in the proper link
-			eprintln(Localization.createFrom("cli.lookup.failed.minecraft.malformed.2", "<__TODO_LINK_HERE>"));
+			eprintln(Localization.createFrom("cli.lookup.failed.minecraft.malformed.2", "https://github.com/QuiltMC/quilt-installer"));
 			exc.printStackTrace();
 		} else {
 			// Don't know, just spit it out

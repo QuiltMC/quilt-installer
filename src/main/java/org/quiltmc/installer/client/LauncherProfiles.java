@@ -17,12 +17,15 @@
 package org.quiltmc.installer.client;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -48,7 +51,6 @@ public final class LauncherProfiles {
 		final Path launcherProfilesPath = gameDir.resolve("launcher_profiles.json");
 
 		if (Files.notExists(launcherProfilesPath)) {
-			// TODO: Fail?
 			throw new IllegalStateException("No launcher_profiles.json to read from");
 		}
 
@@ -184,8 +186,23 @@ public final class LauncherProfiles {
 	}
 
 	private static String createProfileIcon() {
-		// TODO decide on logo lmao
-		// ...
+		// TODO decide on logo lmao and create the file
+		try (InputStream stream = LauncherProfiles.class.getClassLoader().getResourceAsStream("logo.png")) {
+			if (stream != null) {
+				byte[] ret = new byte[4096];
+				int offset = 0;
+				int len;
+
+				while ((len = stream.read(ret, offset, ret.length - offset)) != -1) {
+					offset += len;
+					if (offset == ret.length) ret = Arrays.copyOf(ret, ret.length * 2);
+				}
+
+				return "data:image/png;base64," + Base64.getEncoder().encodeToString(Arrays.copyOf(ret, offset));
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		// Failed, fallback to a non-vanilla icon
 		return "TNT";
