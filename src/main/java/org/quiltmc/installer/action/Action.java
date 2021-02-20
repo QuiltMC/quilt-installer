@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.Locale;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
@@ -40,7 +41,7 @@ public abstract class Action<M> {
 	 */
 	public static final Action<Void> DISPLAY_HELP = new Action<Void>() {
 		@Override
-		public void run(Consumer<Void> statusTracker) {
+		public void run(Executor displayExecutor, Consumer<Void> statusTracker) {
 			this.printHelp();
 			System.exit(1);
 		}
@@ -107,7 +108,8 @@ public abstract class Action<M> {
 	/**
 	 * Runs the action.
 	 *
-	 * @param statusTracker the consumer to send updates about the progress of this action
+	 * @param displayExecutor the executor used to schedule asynchronous calls to update the status
+	 * @param statusTracker the consumer to send updates about the progress of this action.
 	 */
-	public abstract void run(Consumer<M> statusTracker);
+	public abstract void run(Executor displayExecutor, Consumer<M> statusTracker);
 }

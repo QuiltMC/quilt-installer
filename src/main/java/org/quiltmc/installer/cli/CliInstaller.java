@@ -18,6 +18,9 @@ package org.quiltmc.installer.cli;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.action.Action;
@@ -45,15 +48,25 @@ public final class CliInstaller {
 			builder.append(args[i]);
 		}
 
+		final ExecutorService executor = Executors.newSingleThreadExecutor(task -> {
+			Thread thread = new Thread(task, "Serial Display Thread");
+			thread.setDaemon(true);
+
+			return thread;
+		});
+
 		Action<?> action = parse(builder.toString(), node);
 
-		action.run(msg -> {
+		action.run(executor, msg -> {
 			if (action != Action.DISPLAY_HELP) {
 				// TODO: Implement CLI tracker
 			}
 
 			// Help shouldn't need a progress bar
 		});
+
+		// Shutdown the executor once done
+		executor.shutdown();
 	}
 
 	/**

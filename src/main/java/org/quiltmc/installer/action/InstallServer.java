@@ -16,6 +16,7 @@
 
 package org.quiltmc.installer.action;
 
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
@@ -37,7 +38,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 	}
 
 	@Override
-	public void run(Consumer<MessageType> statusTracker) {
+	public void run(Executor displayExecutor, Consumer<MessageType> statusTracker) {
 		// TODO
 	}
 
