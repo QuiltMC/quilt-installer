@@ -16,10 +16,8 @@
 
 package org.quiltmc.installer;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
@@ -144,6 +142,11 @@ public final class CliInstaller {
 						options.put("--no-profile", null);
 					// Common option
 					} else if (option.startsWith("--install-dir")) {
+						if (options.containsKey("--install-dir")) {
+							System.err.println("Encountered duplicate option \"--install-dir\"");
+							return Action.DISPLAY_HELP;
+						}
+
 						if (option.indexOf('=') == -1) {
 							System.err.println("Option \"--install-dir\" must specify a value");
 							return Action.DISPLAY_HELP;
@@ -223,6 +226,11 @@ public final class CliInstaller {
 						options.put("--download-server", null);
 					// Common option
 					} else if (option.startsWith("--install-dir")) {
+						if (options.containsKey("--install-dir")) {
+							System.err.println("Encountered duplicate option \"--install-dir\"");
+							return Action.DISPLAY_HELP;
+						}
+
 						if (option.indexOf('=') == -1) {
 							System.err.println("Option \"--install-dir\" must specify a value");
 							return Action.DISPLAY_HELP;
@@ -260,6 +268,12 @@ public final class CliInstaller {
 		}
 	}
 
+	/**
+	 * Takes a string and splits it at spaces while leaving quoted segements unsplit.
+	 *
+	 * @param input the input
+	 * @return the split input
+	 */
 	private static Queue<String> splitQuoted(String input) {
 		LinkedList<String> ret = new LinkedList<>();
 		boolean inQuote = false;
@@ -291,6 +305,13 @@ public final class CliInstaller {
 		return ret;
 	}
 
+	/**
+	 * Takes a quoted string and removes quotes on the end of the input.
+	 * If there is no quoting then the string is returned
+	 *
+	 * @param input the input to unquote
+	 * @return the unquoted string or null if the string is improperly quoted.
+	 */
 	private static String unqoute(String input) {
 		// Nothing to unquote
 		if (input.indexOf('"') == -1) {
@@ -306,9 +327,5 @@ public final class CliInstaller {
 		}
 
 		return input.substring(1, input.length() - 1);
-	}
-
-	public static void main(String[] args) {
-		System.out.println(splitQuoted("install server 1.16.5 --download-server --create-scripts --install-dir=\"/home/i509vcb/Documents/servertest\""));
 	}
 }
