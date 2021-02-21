@@ -36,10 +36,10 @@ public final class MinecraftInstallation {
 	 * @param loaderVersion the override for the loader version to use
 	 * @return a future containing the loader version to use
 	 */
-	public static CompletableFuture<String> getInfo(String gameVersion, @Nullable String loaderVersion) {
-		CompletableFuture<String> minecraftVersion = VersionManifest.create().thenApply(manifest -> {
+	public static CompletableFuture<InstallationInfo> getInfo(String gameVersion, @Nullable String loaderVersion) {
+		CompletableFuture<VersionManifest> versionManifest = VersionManifest.create().thenApply(manifest -> {
 			if (manifest.getVersion(gameVersion) != null) {
-				return gameVersion;
+				return manifest;
 			}
 
 			throw new IllegalArgumentException(String.format("Minecraft version %s does not exist", gameVersion));
@@ -52,7 +52,7 @@ public final class MinecraftInstallation {
 		CompletableFuture<QuiltMeta> metaFuture = QuiltMeta.create(QuiltMeta.DEFAULT_META_URL, endpoints);
 
 		// Verify we actually have intermediary for the specified version
-		CompletableFuture<Void> intermediary = minecraftVersion.thenCompose(mcVersion -> metaFuture.thenAccept(meta -> {
+		CompletableFuture<Void> intermediary = versionManifest.thenCompose(mcVersion -> metaFuture.thenAccept(meta -> {
 			Map<String, String> intermediaryVersions = meta.getEndpoint(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
 
 			if (intermediaryVersions.get(gameVersion) == null) {
@@ -79,9 +79,9 @@ public final class MinecraftInstallation {
 			return versions.get(0);
 		});
 
-		return CompletableFuture.allOf(minecraftVersion, intermediary, loaderVersionFuture).thenApply(_v -> {
+		return CompletableFuture.allOf(versionManifest, intermediary, loaderVersionFuture).thenApply(_v -> {
 			try {
-				return loaderVersionFuture.get();
+				return new InstallationInfo(loaderVersionFuture.get(), versionManifest.get());
 			} catch (InterruptedException | ExecutionException e) {
 				throw new RuntimeException(e);
 			}
@@ -89,5 +89,23 @@ public final class MinecraftInstallation {
 	}
 
 	private MinecraftInstallation() {
+	}
+
+	public static final class InstallationInfo {
+		private final String loaderVersion;
+		private final VersionManifest manifest;
+
+		InstallationInfo(String loaderVersion, VersionManifest manifest) {
+			this.loaderVersion = loaderVersion;
+			this.manifest = manifest;
+		}
+
+		public String loaderVersion() {
+			return this.loaderVersion;
+		}
+
+		public VersionManifest manifest() {
+			return this.manifest;
+		}
 	}
 }

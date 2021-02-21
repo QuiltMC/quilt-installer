@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.quiltmc.installer.client;
+package org.quiltmc.installer;
 
 import java.io.BufferedReader;
 import java.io.IOException;

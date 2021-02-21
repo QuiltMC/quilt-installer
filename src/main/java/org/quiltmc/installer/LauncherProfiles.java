@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.quiltmc.installer.client;
+package org.quiltmc.installer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +29,6 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.quiltmc.installer.Gsons;
 import org.quiltmc.lib.gson.JsonReader;
 import org.quiltmc.lib.gson.JsonWriter;
 

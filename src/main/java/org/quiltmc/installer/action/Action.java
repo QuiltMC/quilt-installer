@@ -93,8 +93,8 @@ public abstract class Action<M> {
 		return new InstallClient(minecraftVersion, loaderVersion, generateProfile);
 	}
 
-	public static Action<InstallServer.MessageType> installServer(String minecraftVersion, @Nullable String loaderVersion, String installDir) {
-		return new InstallServer(minecraftVersion, loaderVersion, installDir);
+	public static Action<InstallServer.MessageType> installServer(String minecraftVersion, @Nullable String loaderVersion, String installDir, boolean createScripts, boolean installServer) {
+		return new InstallServer(minecraftVersion, loaderVersion, installDir, createScripts, installServer);
 	}
 
 	static void println(String message) {

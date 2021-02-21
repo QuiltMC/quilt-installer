@@ -52,7 +52,8 @@ import java.util.zip.ZipOutputStream;
 
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.Gsons;
-import org.quiltmc.installer.client.LaunchJson;
+import org.quiltmc.installer.LaunchJson;
+import org.quiltmc.installer.VersionManifest;
 import org.quiltmc.lib.gson.JsonReader;
 
 /**
@@ -64,18 +65,41 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 	@Nullable
 	private final String loaderVersion;
 	private final String installDir;
+	private final boolean createScripts;
+	private final boolean installServer;
 
-	InstallServer(String minecraftVersion, @Nullable String loaderVersion, String installDir) {
+	InstallServer(String minecraftVersion, @Nullable String loaderVersion, String installDir, boolean createScripts, boolean installServer) {
 		this.minecraftVersion = minecraftVersion;
 		this.loaderVersion = loaderVersion;
 		this.installDir = installDir;
+		this.createScripts = createScripts;
+		this.installServer = installServer;
 	}
 
 	@Override
 	public void run(Consumer<MessageType> statusTracker) {
-		CompletableFuture<String> loaderVersionFuture = MinecraftInstallation.getInfo(this.minecraftVersion, this.loaderVersion);
+		Path installDir;
 
-		loaderVersionFuture.thenCompose(loaderVersion -> LaunchJson.get(this.minecraftVersion, loaderVersion, "/v3/versions/loader/%s/%s/server/json")).thenCompose(launchJson -> {
+		if (this.installDir == null) {
+			// Make a new installation in `server` subfolder
+			installDir = Paths.get(System.getProperty("user.dir")).resolve("server");
+		} else {
+			installDir = Paths.get(this.installDir);
+		}
+
+		println(String.format("Installing server launcher at: %s", installDir));
+
+		if (this.loaderVersion == null) {
+			println(String.format("Installing server launcher for %s", this.minecraftVersion));
+		} else {
+			println(String.format("Installing server launcher for %s with loader %s", this.minecraftVersion, this.loaderVersion));
+		}
+
+		CompletableFuture<MinecraftInstallation.InstallationInfo> installationInfoFuture = MinecraftInstallation.getInfo(this.minecraftVersion, this.loaderVersion);
+
+		installationInfoFuture.thenCompose(installationInfo -> LaunchJson.get(this.minecraftVersion, installationInfo.loaderVersion(), "/v3/versions/loader/%s/%s/server/json")).thenCompose(launchJson -> {
+			println("Installing libraries");
+
 			// Now we read the server's launch json
 			try (JsonReader reader = new JsonReader(new StringReader(launchJson))) {
 				Object read = Gsons.read(reader);
@@ -116,15 +140,6 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 				}
 
 				return CompletableFuture.allOf(libraryFiles.toArray(new CompletableFuture[0])).thenAccept(_v -> {
-					Path installDir;
-
-					if (this.installDir == null) {
-						// Make a new installation in `server` subfolder
-						installDir = Paths.get(System.getProperty("user.dir")).resolve("server");
-					} else {
-						installDir = Paths.get(this.installDir);
-					}
-
 					try {
 						if (Files.notExists(installDir)) {
 							Files.createDirectories(installDir);
@@ -139,6 +154,87 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 				});
 			} catch (IOException e) {
 				throw new UncheckedIOException(e); // exceptionally
+			}
+		}).thenCompose(_v -> {
+			try {
+				MinecraftInstallation.InstallationInfo installationInfo = installationInfoFuture.get();
+
+				if (this.createScripts) {
+					println("Creating launch scripts");
+					// TODO: Make scripts
+				}
+
+				// Download Minecraft server and create scripts if specified
+				if (this.installServer) {
+					println("Downloading server");
+
+					return CompletableFuture.supplyAsync(() -> {
+						// Get the info from the manifest
+						VersionManifest.Version version = installationInfo.manifest().getVersion(this.minecraftVersion);
+						// Not gonna be null cause we already validated this
+						@SuppressWarnings("ConstantConditions")
+						String rawUrl = version.url();
+
+						try {
+							URL url = new URL(rawUrl);
+							URLConnection connection = url.openConnection();
+
+							InputStreamReader stream = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
+
+							try (BufferedReader reader = new BufferedReader(stream)) {
+								StringBuilder builder = new StringBuilder();
+								String line;
+
+								while ((line = reader.readLine()) != null) {
+									builder.append(line);
+									builder.append('\n');
+								}
+
+								String content = builder.toString();
+
+								try (JsonReader json = new JsonReader(new StringReader(content))) {
+									Object read = Gsons.read(json);
+
+									if (!(read instanceof Map)) {
+										throw new IllegalStateException(String.format("launchermeta for %s is not an object!", this.minecraftVersion));
+									}
+
+									Object rawDownloads = ((Map<?, ?>) read).get("downloads");
+
+									if (!(rawDownloads instanceof Map)) {
+										throw new IllegalStateException("Downloads in launcher meta must be present and an object");
+									}
+
+									Object rawServer = ((Map<?, ?>) rawDownloads).get("server");
+
+									if (!(rawServer instanceof Map)) {
+										throw new IllegalStateException("Server downloads in launcher meta must be present and an object");
+									}
+
+									Object rawServerUrl = ((Map<?, ?>) rawServer).get("url");
+
+									if (rawServerUrl == null) {
+										throw new IllegalStateException("Server download url must be present");
+									}
+
+									println(String.format("Downloading %s server jar from %s", this.minecraftVersion, rawServerUrl.toString()));
+
+									try (InputStream serverDownloadStream = new URL(rawServerUrl.toString()).openConnection().getInputStream()) {
+										Files.copy(serverDownloadStream, installDir.resolve("server.jar"), StandardCopyOption.REPLACE_EXISTING);
+									}
+								}
+
+								return null;
+							}
+						} catch (IOException e) {
+							throw new UncheckedIOException(e); // Handled via .exceptionally(...)
+						}
+					});
+				}
+
+				return CompletableFuture.completedFuture(null);
+			} catch (InterruptedException | ExecutionException e) {
+				throw new RuntimeException(e);
 			}
 		}).exceptionally(e -> {
 			e.printStackTrace();
