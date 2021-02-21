@@ -71,7 +71,7 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 
 		CompletableFuture<String> loaderVersionFuture = MinecraftInstallation.getInfo(this.minecraftVersion, this.loaderVersion);
 
-		loaderVersionFuture.thenCompose(loaderVersion -> LaunchJson.get(this.minecraftVersion, loaderVersion)).thenAccept(launchJson -> {
+		loaderVersionFuture.thenCompose(loaderVersion -> LaunchJson.get(this.minecraftVersion, loaderVersion, "/v3/versions/loader/%s/%s/profile/json")).thenAccept(launchJson -> {
 			println("Creating profile launch json");
 
 			try {

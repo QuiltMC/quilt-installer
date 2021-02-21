@@ -31,8 +31,8 @@ public final class LaunchJson {
 	// TODO: Switch to quilt
 	public static final String LOADER_ARTIFACT_NAME = "fabric-loader";
 
-	public static CompletableFuture<String> get(String gameVersion, String loaderVersion) {
-		String rawUrl = QuiltMeta.DEFAULT_META_URL + String.format("/v3/versions/loader/%s/%s/profile/json", gameVersion, loaderVersion);
+	public static CompletableFuture<String> get(String gameVersion, String loaderVersion, String endpoint) {
+		String rawUrl = QuiltMeta.DEFAULT_META_URL + String.format(endpoint, gameVersion, loaderVersion);
 
 		return CompletableFuture.supplyAsync(() -> {
 			try {

@@ -16,6 +16,8 @@
 
 package org.quiltmc.installer.cli;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -29,7 +31,7 @@ public final class CliInstaller {
 	// The value in this variable will be set by blossom at compile time.
 	public static final String INSTALLER_VERSION = "__INSTALLER_VERSION";
 	// TODO: Add installation dir option
-	static final String USAGE = "help | listVersions [--snapshots] | install (client | server ) <minecraft-version> [loader-version] [--no-profile]";
+	static final String USAGE = "help | listVersions [--snapshots] | install (client | server ) <minecraft-version> [loader-version] [--no-profile] [--install-dir=<dir>]";
 
 	public static void run(String[] args) {
 		UsageParser usageParser = new UsageParser();
@@ -87,14 +89,14 @@ public final class CliInstaller {
 			@Nullable
 			String loaderVersion = args.get("loader-version");
 
+			@Nullable
+			String installDir = args.get("installer-dir");
+
 			switch (args.get("unnamed_1")) {
 			case "client":
-				return Action.installClient(minecraftVersion, loaderVersion, !args.containsKey("no-profile"));
+				return Action.installClient(minecraftVersion, loaderVersion, installDir, !args.containsKey("no-profile"));
 			case "server":
-				// Specifies the directory to install the server at
-				@Nullable
-				String serverDir = args.get("server-dir"); // TODO: Replace with installation dir
-				return Action.installServer(minecraftVersion, loaderVersion, serverDir);
+				return Action.installServer(minecraftVersion, loaderVersion, installDir);
 			}
 
 			break;

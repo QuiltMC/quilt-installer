@@ -23,15 +23,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.jetbrains.annotations.Nullable;
+import org.quiltmc.installer.Gsons;
 import org.quiltmc.lib.gson.JsonReader;
 import org.quiltmc.lib.gson.JsonWriter;
 
@@ -57,7 +55,7 @@ public final class LauncherProfiles {
 		Object launcherProfiles;
 
 		try (JsonReader reader = new JsonReader(new InputStreamReader(Files.newInputStream(launcherProfilesPath)))) {
-			launcherProfiles = read(reader);
+			launcherProfiles = Gsons.read(reader);
 		}
 
 		if (!(launcherProfiles instanceof Map)) {
@@ -103,85 +101,7 @@ public final class LauncherProfiles {
 		// Write out the new profiles
 		try (JsonWriter writer = new JsonWriter(Files.newBufferedWriter(launcherProfilesPath))) {
 			writer.setIndent("  "); // Prettify it
-			write(writer, launcherProfiles);
-		}
-	}
-
-	private static Object read(JsonReader reader) throws IOException {
-		switch (reader.peek()) {
-		case BEGIN_ARRAY:
-			List<Object> list = new ArrayList<>();
-
-			reader.beginArray();
-
-			while (reader.hasNext()) {
-				list.add(read(reader));
-			}
-
-			reader.endArray();
-
-			return list;
-		case BEGIN_OBJECT:
-			Map<String, Object> object = new LinkedHashMap<>();
-
-			reader.beginObject();
-
-			while (reader.hasNext()) {
-				String key = reader.nextName();
-				object.put(key, read(reader));
-			}
-
-			reader.endObject();
-
-			return object;
-		case STRING:
-			return reader.nextString();
-		case NUMBER:
-			return reader.nextDouble();
-		case BOOLEAN:
-			return reader.nextBoolean();
-		case NULL:
-			return null;
-		// Unused, probably a sign of malformed json
-		case NAME:
-		case END_DOCUMENT:
-		case END_ARRAY:
-		case END_OBJECT:
-		default:
-			throw new IllegalStateException();
-		}
-	}
-
-	private static void write(JsonWriter writer, @Nullable Object input) throws IOException {
-		// Object
-		if (input instanceof Map) {
-			writer.beginObject();
-
-			for (Map.Entry<?, ?> entry : ((Map<?, ?>) input).entrySet()) {
-				writer.name(entry.getKey().toString());
-				write(writer, entry.getValue());
-			}
-
-			writer.endObject();
-		// Array
-		} else if (input instanceof List) {
-			writer.beginArray();
-
-			for (Object element : ((List<?>) input)) {
-				write(writer, element);
-			}
-
-			writer.endArray();
-		} else if (input instanceof Number) {
-			writer.value((Number) input);
-		} else if (input instanceof String) {
-			writer.value((String) input);
-		} else if (input instanceof Boolean) {
-			writer.value((boolean) input);
-		} else if (input == null) {
-			writer.nullValue();
-		} else {
-			throw new IllegalArgumentException(String.format("Don't know how to convert %s to json", input));
+			Gsons.write(writer, launcherProfiles);
 		}
 	}
 

@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.function.Consumer;
@@ -88,12 +89,12 @@ public abstract class Action<M> {
 		return new ListVersions(snapshots);
 	}
 
-	public static Action<InstallClient.MessageType> installClient(String minecraftVersion, @Nullable String loaderVersion, boolean generateProfile) {
+	public static Action<InstallClient.MessageType> installClient(String minecraftVersion, @Nullable String loaderVersion, @Nullable String installDir, boolean generateProfile) {
 		return new InstallClient(minecraftVersion, loaderVersion, generateProfile);
 	}
 
-	public static Action<InstallServer.MessageType> installServer(String minecraftVersion, @Nullable String loaderVersion, @Nullable String serverDir) {
-		return new InstallServer(minecraftVersion, loaderVersion, serverDir);
+	public static Action<InstallServer.MessageType> installServer(String minecraftVersion, @Nullable String loaderVersion, String installDir) {
+		return new InstallServer(minecraftVersion, loaderVersion, installDir);
 	}
 
 	static void println(String message) {
