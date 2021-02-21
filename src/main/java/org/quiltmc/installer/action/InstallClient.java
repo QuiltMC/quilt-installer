@@ -78,7 +78,7 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 			try {
 				String profileName = String.format("%s-%s-%s",
 						LaunchJson.LOADER_ARTIFACT_NAME,
-						installationInfoFuture.get(),
+						installationInfoFuture.get().loaderVersion(),
 						this.minecraftVersion
 				);
 

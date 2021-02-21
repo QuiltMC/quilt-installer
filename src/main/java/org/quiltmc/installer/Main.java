@@ -18,7 +18,6 @@ package org.quiltmc.installer;
 
 import java.awt.GraphicsEnvironment;
 
-import org.quiltmc.installer.cli.CliInstaller;
 import org.quiltmc.installer.gui.swing.SwingInstaller;
 
 public final class Main {

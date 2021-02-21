@@ -27,24 +27,6 @@ spotless {
 	java {
 		// Use comma separator for openjdk like license headers
 		licenseHeaderFile(project.file("codeformat/HEADER")).yearSeparator(", ")
-
-		// Special licensing cases - exclude from regular spotlessJava tasks
-		targetExclude(
-				"/src/main/java/org/quiltmc/installer/cli/InputParser.java",
-				"/src/main/java/org/quiltmc/installer/cli/Node.java",
-				"/src/main/java/org/quiltmc/installer/cli/UsageParser.java"
-		)
-	}
-
-	format("java-parser-classes", com.diffplug.gradle.spotless.JavaExtension::class.java) {
-		// Use comma separator for openjdk like license headers
-		licenseHeaderFile(project.file("codeformat/HEADER-PARSER-CLASSES")).yearSeparator(", ")
-
-		target(
-				"/src/main/java/org/quiltmc/installer/cli/InputParser.java",
-				"/src/main/java/org/quiltmc/installer/cli/Node.java",
-				"/src/main/java/org/quiltmc/installer/cli/UsageParser.java"
-		)
 	}
 }
 
