@@ -23,10 +23,14 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.lib.gson.JsonReader;
 import org.quiltmc.lib.gson.JsonToken;
@@ -35,7 +39,7 @@ import org.quiltmc.lib.gson.JsonToken;
  * An object representation of the version manifest used by the launcher.
  */
 // TODO: Abstract to another library for sharing logic with meta?
-public final class VersionManifest {
+public final class VersionManifest implements Iterable<VersionManifest.Version> {
 	private static final String LAUNCHER_META_URL = "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
 	private final Version latestRelease;
 	private final Version latestSnapshot;
@@ -64,7 +68,8 @@ public final class VersionManifest {
 		}
 
 		// Read state
-		Map<String, Version> versions = new HashMap<>();
+		// Must be linked hashmap to preserve ordering
+		Map<String, Version> versions = new LinkedHashMap<>();
 		@Nullable
 		String latestRelease = null;
 		@Nullable
@@ -219,6 +224,11 @@ public final class VersionManifest {
 
 	public Version latestSnapshot() {
 		return this.latestSnapshot;
+	}
+
+	@Override
+	public Iterator<Version> iterator() {
+		return Collections.unmodifiableMap(this.versions).values().iterator();
 	}
 
 	public static final class Version {

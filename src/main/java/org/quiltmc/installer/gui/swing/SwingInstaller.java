@@ -16,6 +16,10 @@
 
 package org.quiltmc.installer.gui.swing;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -27,6 +31,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 
 import org.quiltmc.installer.Localization;
+import org.quiltmc.installer.QuiltMeta;
 import org.quiltmc.installer.VersionManifest;
 
 /**
@@ -34,7 +39,8 @@ import org.quiltmc.installer.VersionManifest;
  */
 public final class SwingInstaller extends JFrame {
 	public static final Executor SWING_EXECUTOR = SwingUtilities::invokeLater;
-	private final CompletableFuture<VersionManifest> versionManifestFuture;
+	private final ClientPanel clientPanel;
+	private final ServerPanel serverPanel;
 
 	public static void run() {
 		try {
@@ -48,11 +54,27 @@ public final class SwingInstaller extends JFrame {
 	}
 
 	private SwingInstaller() {
-		this.versionManifestFuture = VersionManifest.create();
-
 		// Use a tabbed pane for client/server menus
 		JTabbedPane contentPane = new JTabbedPane(JTabbedPane.TOP);
-		this.setupContent(contentPane);
+		contentPane.addTab(Localization.get("tab.client"), null, this.clientPanel = new ClientPanel(this), Localization.get("tab.client.tooltip"));
+		contentPane.addTab(Localization.get("tab.server"), null, this.serverPanel = new ServerPanel(this), Localization.get("tab.server.tooltip"));
+
+		// Start version lookup before we show the window
+		// Lookup loader and intermediary
+		Set<QuiltMeta.Endpoint<?>> endpoints = new HashSet<>();
+		endpoints.add(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
+		endpoints.add(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
+
+		QuiltMeta.create(QuiltMeta.DEFAULT_META_URL, endpoints).thenAcceptBothAsync(VersionManifest.create(), ((quiltMeta, manifest) -> {
+			List<String> loaderVersions = quiltMeta.getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
+			Collection<String> intermediaryVersions = quiltMeta.getEndpoint(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT).keySet();
+
+			this.clientPanel.receiveVersions(manifest, loaderVersions, intermediaryVersions);
+			this.serverPanel.receiveVersions(manifest, loaderVersions, intermediaryVersions);
+		}), SWING_EXECUTOR).exceptionally(e -> {
+			e.printStackTrace();
+			return null;
+		});
 
 		this.setContentPane(contentPane);
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -60,11 +82,7 @@ public final class SwingInstaller extends JFrame {
 		// TODO: Set icon
 		this.pack();
 		this.setLocationRelativeTo(null); // Center on screen
+		this.setResizable(false);
 		this.setVisible(true);
-	}
-
-	private void setupContent(JTabbedPane contentPane) {
-		contentPane.addTab(Localization.get("tab.client"), null, new ClientPanel(this), Localization.get("tab.client.tooltip"));
-		contentPane.addTab(Localization.get("tab.server"), null, new ServerPanel(this), Localization.get("tab.server.tooltip"));
 	}
 }
