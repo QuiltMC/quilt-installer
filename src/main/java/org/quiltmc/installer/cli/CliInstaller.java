@@ -90,7 +90,7 @@ public final class CliInstaller {
 			String loaderVersion = args.get("loader-version");
 
 			@Nullable
-			String installDir = args.get("installer-dir");
+			String installDir = args.get("install-dir");
 
 			switch (args.get("unnamed_1")) {
 			case "client":
