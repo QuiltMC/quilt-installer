@@ -24,18 +24,12 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.OsPaths;
-import org.quiltmc.installer.QuiltMeta;
-import org.quiltmc.installer.VersionManifest;
 import org.quiltmc.installer.client.LaunchJson;
 import org.quiltmc.installer.client.LauncherProfiles;
 
@@ -75,63 +69,16 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 
 		Path installationDir = OsPaths.getDefaultInstallationDir();
 
-		CompletableFuture<String> minecraftVersion = VersionManifest.create().thenApply(manifest -> {
-			if (manifest.getVersion(this.minecraftVersion) != null) {
-				return this.minecraftVersion;
-			}
+		CompletableFuture<String> loaderVersionFuture = MinecraftInstallation.getInfo(this.minecraftVersion, this.loaderVersion);
 
-			throw new IllegalArgumentException(String.format("Minecraft version %s does not exist", this.minecraftVersion));
-		});
-
-		Set<QuiltMeta.Endpoint<?>> endpoints = new HashSet<>();
-		endpoints.add(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
-		endpoints.add(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
-
-		CompletableFuture<QuiltMeta> metaFuture = QuiltMeta.create(QuiltMeta.DEFAULT_META_URL, endpoints);
-
-		// Verify we actually have intermediary for the specified version
-		CompletableFuture<Void> intermediary = minecraftVersion.thenCompose(mcVersion -> metaFuture.thenAccept(meta -> {
-			Map<String, String> intermediaryVersions = meta.getEndpoint(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
-
-			if (intermediaryVersions.get(this.minecraftVersion) == null) {
-				throw new IllegalArgumentException(String.format("Minecraft version %s exists but has no intermediary", this.minecraftVersion));
-			}
-		}));
-
-		CompletableFuture<String> loaderVersionFuture = metaFuture.thenApply(meta -> {
-			List<String> versions = meta.getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
-
-			if (this.loaderVersion != null) {
-				if (!versions.contains(this.loaderVersion)) {
-					throw new IllegalStateException(String.format("Specified loader version %s was not found", this.loaderVersion));
-				}
-
-				return versions.get(versions.indexOf(this.loaderVersion));
-			}
-
-			if (versions.size() == 0) {
-				throw new IllegalStateException("No loader versions were found");
-			}
-
-			// Choose latest version
-			return versions.get(0);
-		});
-
-		// Wait for loader, intermediary and mc validation to complete.
-		CompletableFuture.allOf(minecraftVersion, intermediary, loaderVersionFuture).thenCompose(_v -> {
-			try {
-				return LaunchJson.get(minecraftVersion.get(), loaderVersionFuture.get());
-			} catch (InterruptedException | ExecutionException e) {
-				throw new RuntimeException(e); // Pass to exceptionally
-			}
-		}).thenAccept(launchJson -> {
+		loaderVersionFuture.thenCompose(loaderVersion -> LaunchJson.get(this.minecraftVersion, loaderVersion)).thenAccept(launchJson -> {
 			println("Creating profile launch json");
 
 			try {
 				String profileName = String.format("%s-%s-%s",
 						LaunchJson.LOADER_ARTIFACT_NAME,
 						loaderVersionFuture.get(),
-						minecraftVersion.get()
+						this.minecraftVersion
 				);
 
 				// Directories
@@ -173,7 +120,7 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 				if (this.generateProfile) {
 					try {
 						println("Creating new profile");
-						LauncherProfiles.updateProfiles(installationDir, profileName, minecraftVersion.get());
+						LauncherProfiles.updateProfiles(installationDir, profileName, this.minecraftVersion);
 					} catch (IOException e) {
 						throw new UncheckedIOException(e); // Handle via exceptionally
 					}

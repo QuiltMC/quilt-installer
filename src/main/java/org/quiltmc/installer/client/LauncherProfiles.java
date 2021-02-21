@@ -186,7 +186,7 @@ public final class LauncherProfiles {
 	}
 
 	private static String createProfileIcon() {
-		// TODO decide on logo lmao and create the file
+		// TODO create the logo file
 		try (InputStream stream = LauncherProfiles.class.getClassLoader().getResourceAsStream("logo.png")) {
 			if (stream != null) {
 				byte[] ret = new byte[4096];
@@ -195,7 +195,10 @@ public final class LauncherProfiles {
 
 				while ((len = stream.read(ret, offset, ret.length - offset)) != -1) {
 					offset += len;
-					if (offset == ret.length) ret = Arrays.copyOf(ret, ret.length * 2);
+
+					if (offset == ret.length) {
+						ret = Arrays.copyOf(ret, ret.length * 2);
+					}
 				}
 
 				return "data:image/png;base64," + Base64.getEncoder().encodeToString(Arrays.copyOf(ret, offset));
