@@ -17,10 +17,12 @@
 package org.quiltmc.installer.gui.swing;
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -33,8 +35,10 @@ import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.Localization;
 import org.quiltmc.installer.OsPaths;
 import org.quiltmc.installer.VersionManifest;
+import org.quiltmc.installer.action.Action;
+import org.quiltmc.installer.action.InstallClient;
 
-final class ClientPanel extends AbstractPanel {
+final class ClientPanel extends AbstractPanel implements Consumer<InstallClient.MessageType> {
 	private final JComboBox<String> minecraftVersionSelector;
 	private final JComboBox<String> loaderVersionSelector;
 	private final JCheckBox showSnapshotsCheckBox;
@@ -122,7 +126,19 @@ final class ClientPanel extends AbstractPanel {
 			row5.add(this.installButton = new JButton());
 			this.installButton.setEnabled(false);
 			this.installButton.setText(Localization.get("gui.install.loading"));
+			this.installButton.addActionListener(this::install);
 		}
+	}
+
+	private void install(ActionEvent event) {
+		Action<InstallClient.MessageType> action = Action.installClient(
+				(String) this.minecraftVersionSelector.getSelectedItem(),
+				(String) this.loaderVersionSelector.getSelectedItem(),
+				this.installLocation.getText(),
+				this.generateProfile
+		);
+
+		action.run(this);
 	}
 
 	@Override
@@ -135,5 +151,9 @@ final class ClientPanel extends AbstractPanel {
 
 		this.installButton.setText(Localization.get("gui.install"));
 		this.installButton.setEnabled(true);
+	}
+
+	@Override
+	public void accept(InstallClient.MessageType messageType) {
 	}
 }

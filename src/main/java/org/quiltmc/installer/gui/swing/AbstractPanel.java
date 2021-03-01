@@ -16,7 +16,10 @@
 
 package org.quiltmc.installer.gui.swing;
 
+import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
@@ -24,8 +27,12 @@ import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.event.HyperlinkEvent;
 
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.Localization;
@@ -111,5 +118,50 @@ abstract class AbstractPanel extends JPanel {
 		}
 
 		return null;
+	}
+
+	protected static void showInstalledMessage() {
+		JEditorPane pane = new JEditorPane("text/html",
+				"<html><body style=\"" + buildEditorPaneStyle() + "\">" + Localization.createFrom(
+						"dialog.install.successful.description",
+						"https://quiltmc.org/qsl"
+				) + "</body></html>");
+
+		pane.setEditable(false);
+		pane.addHyperlinkListener(e -> {
+			try {
+				if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+					if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+						Desktop.getDesktop().browse(e.getURL().toURI());
+					} else {
+						throw new UnsupportedOperationException("Failed to open " + e.getURL().toString());
+					}
+				}
+			} catch (Throwable throwable) {
+				displayError(throwable);
+			}
+		});
+
+		JOptionPane.showMessageDialog(
+				null,
+				pane,
+				Localization.get("dialog.install.successful"),
+				JOptionPane.INFORMATION_MESSAGE
+		);
+	}
+
+	private static String buildEditorPaneStyle() {
+		JLabel label = new JLabel();
+		Font font = label.getFont();
+		Color color = label.getBackground();
+
+		return String.format(
+				"font-family:%s;font-weight:%s;font-size:%dpt;background-color: rgb(%d,%d,%d);",
+				font.getFamily(), (font.isBold() ? "bold" : "normal"), font.getSize(), color.getRed(), color.getGreen(), color.getBlue()
+		);
+	}
+
+	private static void displayError(Throwable throwable) {
+
 	}
 }

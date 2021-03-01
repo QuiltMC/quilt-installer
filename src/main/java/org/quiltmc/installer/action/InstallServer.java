@@ -67,6 +67,8 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 	private final String installDir;
 	private final boolean createScripts;
 	private final boolean installServer;
+	private MinecraftInstallation.InstallationInfo installationInfo;
+	private Path installedDir;
 
 	InstallServer(String minecraftVersion, @Nullable String loaderVersion, String installDir, boolean createScripts, boolean installServer) {
 		this.minecraftVersion = minecraftVersion;
@@ -87,6 +89,8 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 			installDir = Paths.get(this.installDir);
 		}
 
+		this.installedDir = installDir;
+
 		println(String.format("Installing server launcher at: %s", installDir));
 
 		if (this.loaderVersion == null) {
@@ -97,7 +101,10 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 
 		CompletableFuture<MinecraftInstallation.InstallationInfo> installationInfoFuture = MinecraftInstallation.getInfo(this.minecraftVersion, this.loaderVersion);
 
-		installationInfoFuture.thenCompose(installationInfo -> LaunchJson.get(this.minecraftVersion, installationInfo.loaderVersion(), "/v3/versions/loader/%s/%s/server/json")).thenCompose(launchJson -> {
+		installationInfoFuture.thenCompose(installationInfo -> {
+			this.installationInfo = installationInfo;
+			return LaunchJson.get(this.minecraftVersion, installationInfo.loaderVersion(), "/v3/versions/loader/%s/%s/server/json");
+		}).thenCompose(launchJson -> {
 			println("Installing libraries");
 
 			// Now we read the server's launch json
@@ -167,69 +174,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 				// Download Minecraft server and create scripts if specified
 				if (this.installServer) {
 					println("Downloading server");
-
-					return CompletableFuture.supplyAsync(() -> {
-						// Get the info from the manifest
-						VersionManifest.Version version = installationInfo.manifest().getVersion(this.minecraftVersion);
-						// Not gonna be null cause we already validated this
-						@SuppressWarnings("ConstantConditions")
-						String rawUrl = version.url();
-
-						try {
-							URL url = new URL(rawUrl);
-							URLConnection connection = url.openConnection();
-
-							InputStreamReader stream = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
-
-							try (BufferedReader reader = new BufferedReader(stream)) {
-								StringBuilder builder = new StringBuilder();
-								String line;
-
-								while ((line = reader.readLine()) != null) {
-									builder.append(line);
-									builder.append('\n');
-								}
-
-								String content = builder.toString();
-
-								try (JsonReader json = new JsonReader(new StringReader(content))) {
-									Object read = Gsons.read(json);
-
-									if (!(read instanceof Map)) {
-										throw new IllegalStateException(String.format("launchermeta for %s is not an object!", this.minecraftVersion));
-									}
-
-									Object rawDownloads = ((Map<?, ?>) read).get("downloads");
-
-									if (!(rawDownloads instanceof Map)) {
-										throw new IllegalStateException("Downloads in launcher meta must be present and an object");
-									}
-
-									Object rawServer = ((Map<?, ?>) rawDownloads).get("server");
-
-									if (!(rawServer instanceof Map)) {
-										throw new IllegalStateException("Server downloads in launcher meta must be present and an object");
-									}
-
-									Object rawServerUrl = ((Map<?, ?>) rawServer).get("url");
-
-									if (rawServerUrl == null) {
-										throw new IllegalStateException("Server download url must be present");
-									}
-
-									println(String.format("Downloading %s server jar from %s", this.minecraftVersion, rawServerUrl.toString()));
-
-									try (InputStream serverDownloadStream = new URL(rawServerUrl.toString()).openConnection().getInputStream()) {
-										Files.copy(serverDownloadStream, installDir.resolve("server.jar"), StandardCopyOption.REPLACE_EXISTING);
-									}
-								}
-
-								return null;
-							}
-						} catch (IOException e) {
-							throw new UncheckedIOException(e); // Handled via .exceptionally(...)
-						}
-					});
+					return downloadServer(installDir, minecraftVersion, installationInfo);
 				}
 
 				return CompletableFuture.completedFuture(null);
@@ -240,6 +185,71 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 			e.printStackTrace();
 			return null;
 		}).join();
+	}
+
+	public static CompletableFuture<Void> downloadServer(Path installDir, String minecraftVersion, MinecraftInstallation.InstallationInfo info) {
+		return CompletableFuture.supplyAsync(() -> {
+			// Get the info from the manifest
+			VersionManifest.Version version = info.manifest().getVersion(minecraftVersion);
+			// Not gonna be null cause we already validated this
+			@SuppressWarnings("ConstantConditions")
+			String rawUrl = version.url();
+
+			try {
+				URL url = new URL(rawUrl);
+				URLConnection connection = url.openConnection();
+
+				InputStreamReader stream = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
+
+				try (BufferedReader reader = new BufferedReader(stream)) {
+					StringBuilder builder = new StringBuilder();
+					String line;
+
+					while ((line = reader.readLine()) != null) {
+						builder.append(line);
+						builder.append('\n');
+					}
+
+					String content = builder.toString();
+
+					try (JsonReader json = new JsonReader(new StringReader(content))) {
+						Object read = Gsons.read(json);
+
+						if (!(read instanceof Map)) {
+							throw new IllegalStateException(String.format("launchermeta for %s is not an object!", minecraftVersion));
+						}
+
+						Object rawDownloads = ((Map<?, ?>) read).get("downloads");
+
+						if (!(rawDownloads instanceof Map)) {
+							throw new IllegalStateException("Downloads in launcher meta must be present and an object");
+						}
+
+						Object rawServer = ((Map<?, ?>) rawDownloads).get("server");
+
+						if (!(rawServer instanceof Map)) {
+							throw new IllegalStateException("Server downloads in launcher meta must be present and an object");
+						}
+
+						Object rawServerUrl = ((Map<?, ?>) rawServer).get("url");
+
+						if (rawServerUrl == null) {
+							throw new IllegalStateException("Server download url must be present");
+						}
+
+						println(String.format("Downloading %s server jar from %s", minecraftVersion, rawServerUrl.toString()));
+
+						try (InputStream serverDownloadStream = new URL(rawServerUrl.toString()).openConnection().getInputStream()) {
+							Files.copy(serverDownloadStream, installDir.resolve("server.jar"), StandardCopyOption.REPLACE_EXISTING);
+						}
+					}
+
+					return null;
+				}
+			} catch (IOException e) {
+				throw new UncheckedIOException(e); // Handled via .exceptionally(...)
+			}
+		});
 	}
 
 	private static CompletableFuture<Path> downloadLibrary(String name, String url) {
@@ -383,9 +393,21 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 				"/" + parts[1] +									// Artifact name
 				"/" + parts[2] +									// Version
 				"/" + parts[1] +
-				"-" + parts[2] + ".jar";							// Artfact
+				"-" + parts[2] + ".jar";							// Artifact
 
 		return mavenUrl + path;
+	}
+
+	public String minecraftVersion() {
+		return this.minecraftVersion;
+	}
+
+	public MinecraftInstallation.InstallationInfo installationInfo() {
+		return this.installationInfo;
+	}
+
+	public Path installedDir() {
+		return this.installedDir;
 	}
 
 	public enum MessageType {

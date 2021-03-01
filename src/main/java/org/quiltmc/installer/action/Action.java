@@ -88,11 +88,12 @@ public abstract class Action<M> {
 		return new ListVersions(snapshots);
 	}
 
-	public static Action<InstallClient.MessageType> installClient(String minecraftVersion, @Nullable String loaderVersion, @Nullable String installDir, boolean generateProfile) {
+	// TODO: Use install dir
+	public static InstallClient installClient(String minecraftVersion, @Nullable String loaderVersion, @Nullable String installDir, boolean generateProfile) {
 		return new InstallClient(minecraftVersion, loaderVersion, generateProfile);
 	}
 
-	public static Action<InstallServer.MessageType> installServer(String minecraftVersion, @Nullable String loaderVersion, String installDir, boolean createScripts, boolean installServer) {
+	public static InstallServer installServer(String minecraftVersion, @Nullable String loaderVersion, String installDir, boolean createScripts, boolean installServer) {
 		return new InstallServer(minecraftVersion, loaderVersion, installDir, createScripts, installServer);
 	}
 

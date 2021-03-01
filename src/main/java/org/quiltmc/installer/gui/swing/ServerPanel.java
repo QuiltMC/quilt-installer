@@ -17,23 +17,32 @@
 package org.quiltmc.installer.gui.swing;
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.Localization;
 import org.quiltmc.installer.VersionManifest;
+import org.quiltmc.installer.action.Action;
+import org.quiltmc.installer.action.InstallServer;
+import org.quiltmc.installer.action.MinecraftInstallation;
 
-final class ServerPanel extends AbstractPanel {
+final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.MessageType> {
 	private final JComboBox<String> minecraftVersionSelector;
 	private final JComboBox<String> loaderVersionSelector;
 	private final JCheckBox showSnapshotsCheckBox;
@@ -140,5 +149,40 @@ final class ServerPanel extends AbstractPanel {
 
 		this.installButton.setText(Localization.get("gui.install"));
 		this.installButton.setEnabled(true);
+		this.installButton.addActionListener(this::install);
+	}
+
+	private void install(ActionEvent event) {
+		InstallServer action = Action.installServer(
+				(String) this.minecraftVersionSelector.getSelectedItem(),
+				(String) this.loaderVersionSelector.getSelectedItem(),
+				this.installLocation.getText(),
+				this.generateLaunchScripts,
+				this.downloadServer
+		);
+
+		action.run(this);
+
+		if (!this.downloadServer || !this.generateLaunchScripts) {
+			// Open popup with option to download server or generate install scripts
+			displayPopup(action.minecraftVersion(), action.installationInfo(), action.installedDir(), this.downloadServer, this.generateLaunchScripts);
+		} else {
+			showInstalledMessage();
+		}
+	}
+
+	private static void displayPopup(String minecraftVersion, MinecraftInstallation.InstallationInfo installationInfo, Path installedDir, boolean downloadedServer, boolean generatedLaunchScripts) {
+		boolean hasServer = true;
+
+		if (!downloadedServer) {
+			// Try to find the server jar, it will be named `server.jar`
+			hasServer = Files.exists(installedDir.resolve("server.jar")); // TODO: Validate the server jar has a version.json inside and it matches our installed version
+		}
+
+
+	}
+
+	@Override
+	public void accept(InstallServer.MessageType messageType) {
 	}
 }
