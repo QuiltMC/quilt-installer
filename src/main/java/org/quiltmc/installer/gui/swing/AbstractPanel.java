@@ -161,7 +161,7 @@ abstract class AbstractPanel extends JPanel {
 		);
 	}
 
-	private static void displayError(Throwable throwable) {
+	static void displayError(Throwable throwable) {
 
 	}
 }
