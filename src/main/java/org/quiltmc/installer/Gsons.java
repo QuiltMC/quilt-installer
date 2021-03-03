@@ -30,6 +30,13 @@ import org.quiltmc.lib.gson.JsonWriter;
  * Utilities for reading and writing to/from json files from maps, lists, numbers, booleans and null.
  */
 public final class Gsons {
+	/**
+	 * Read json and convert it into the base types.
+	 *
+	 * @param reader the reader
+	 * @return one of the base types representing the json file
+	 * @throws IOException if issues occurred while reading
+	 */
 	public static Object read(JsonReader reader) throws IOException {
 		switch (reader.peek()) {
 		case BEGIN_ARRAY:
