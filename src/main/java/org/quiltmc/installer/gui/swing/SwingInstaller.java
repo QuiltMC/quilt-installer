@@ -22,6 +22,10 @@ import org.quiltmc.installer.VersionManifest;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -40,8 +44,8 @@ public final class SwingInstaller extends JFrame {
 		try {
 			String clazz = UIManager.getSystemLookAndFeelClassName();
 
+			// for some reason it only uses the gtk theme on gnome, even though it can be used on any DE with GTK available
 			if (clazz.equals(UIManager.getCrossPlatformLookAndFeelClassName()) && useGtk()) {
-				// TODO: it may be worth poking around internals a bit more to confirm this class actually exists
 				clazz = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
 			}
 
@@ -62,8 +66,27 @@ public final class SwingInstaller extends JFrame {
 			if (!clazz.isInstance(toolkit)) {
 				return false;
 			}
-			// note: this will throw an exception in later java versions, ask glitch if an uglier version is needed that doesn't break
-			return (boolean) clazz.getDeclaredMethod("isNativeGTKAvailable").invoke(toolkit);
+			// Java 9+ has reflection restrictions, and java 16+ denies most reflective actions into the JDK altogether.
+			// However, Unsafe is on a reflection whitelist, so we can use it to access fields in j16
+			// But we have to use reflection to call any methods on it.
+			Class<?> unsafe = Class.forName("sun.misc.Unsafe");
+			Object unsafeInstance;
+			{
+
+				Field theUnsafe = unsafe.getDeclaredField("theUnsafe");
+				theUnsafe.setAccessible(true);
+				unsafeInstance = theUnsafe.get(null);
+			}
+
+			Method staticFieldBase = unsafe.getDeclaredMethod("staticFieldBase", Field.class);
+			Method staticFieldOffset = unsafe.getDeclaredMethod("staticFieldOffset", Field.class);
+			// Since Unsafe can only access fields, we need some way to call our method.
+			// Luckily, MethodHandles.Lookup has a private static field that lets us get a handle on any method we want, regardless of access restrictions
+			Field impl_lookup = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
+			Method getObj = unsafe.getDeclaredMethod("getObject", Object.class, long.class);
+			MethodHandles.Lookup lookup = (MethodHandles.Lookup) getObj.invoke(unsafeInstance, staticFieldBase.invoke(unsafeInstance, impl_lookup), staticFieldOffset.invoke(unsafeInstance, impl_lookup));
+
+			return (boolean) lookup.findVirtual(clazz, "isNativeGTKAvailable", MethodType.methodType(boolean.class)).invoke(toolkit);
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
