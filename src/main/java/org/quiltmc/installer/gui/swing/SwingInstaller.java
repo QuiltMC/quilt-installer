@@ -16,23 +16,17 @@
 
 package org.quiltmc.installer.gui.swing;
 
-import java.awt.HeadlessException;
+import org.quiltmc.installer.Localization;
+import org.quiltmc.installer.QuiltMeta;
+import org.quiltmc.installer.VersionManifest;
+
+import javax.swing.*;
+import java.awt.*;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
-
-import javax.swing.JFrame;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.WindowConstants;
-
-import org.quiltmc.installer.Localization;
-import org.quiltmc.installer.QuiltMeta;
-import org.quiltmc.installer.VersionManifest;
 
 /**
  * The logic side of the swing gui for the installer.
@@ -44,13 +38,37 @@ public final class SwingInstaller extends JFrame {
 
 	public static void run() {
 		try {
-			// Set to OS theme so Windows and Mac users see something that looks native.
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			String clazz = UIManager.getSystemLookAndFeelClassName();
+
+			if (clazz.equals(UIManager.getCrossPlatformLookAndFeelClassName()) && useGtk()) {
+				// TODO: it may be worth poking around internals a bit more to confirm this class actually exists
+				clazz = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
+			}
+
+			UIManager.setLookAndFeel(clazz);
 		} catch (ReflectiveOperationException | UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
 
 		SwingUtilities.invokeLater(SwingInstaller::new);
+	}
+
+	private static boolean useGtk() {
+		Toolkit toolkit = Toolkit.getDefaultToolkit();
+
+		try {
+			Class<?> clazz = Class.forName("sun.awt.SunToolkit");
+
+			if (!clazz.isInstance(toolkit)) {
+				return false;
+			}
+			// note: this will throw an exception in later java versions, ask glitch if an uglier version is needed that doesn't break
+			return (boolean) clazz.getDeclaredMethod("isNativeGTKAvailable").invoke(toolkit);
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+
+		return false;
 	}
 
 	private SwingInstaller() {
