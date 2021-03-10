@@ -80,7 +80,7 @@ public final class SwingInstaller extends JFrame {
 
 			Method staticFieldBase = unsafe.getDeclaredMethod("staticFieldBase", Field.class);
 			Method staticFieldOffset = unsafe.getDeclaredMethod("staticFieldOffset", Field.class);
-			// Since Unsafe can only access fields, we need some way to call our method.
+			// Since Unsafe can only access fields, we still need some way to call our method.
 			// Luckily, MethodHandles.Lookup has a private static field that lets us get a handle on any method we want, regardless of access restrictions
 			Field impl_lookup = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
 			Method getObj = unsafe.getDeclaredMethod("getObject", Object.class, long.class);
