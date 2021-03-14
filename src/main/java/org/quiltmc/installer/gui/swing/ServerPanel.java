@@ -50,6 +50,9 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 	private boolean downloadServer = true;
 	private boolean generateLaunchScripts = true;
 
+	private boolean downloadServerAutoSelected = true;
+	private boolean generateLaunchScriptsAutoSelected = true;
+
 	ServerPanel(SwingInstaller gui) {
 		super(gui);
 
@@ -119,7 +122,7 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 				this.downloadServer = e.getStateChange() == ItemEvent.SELECTED;
 			});
 
-			row4.add(generateLaunchScriptsButton = new JCheckBox(Localization.get("gui.server.generate-scripts"), this.generateLaunchScripts));
+			row4.add(generateLaunchScriptsButton = new JCheckBox(Localization.get("gui.server.generate-script"), this.generateLaunchScripts));
 			generateLaunchScriptsButton.addItemListener(e -> {
 				this.generateLaunchScripts = e.getStateChange() == ItemEvent.SELECTED;
 			});
@@ -150,6 +153,26 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 	}
 
 	private void install(ActionEvent event) {
+		boolean cancel = false;
+
+		if (!downloadServer && downloadServerAutoSelected) {
+			cancel = !AbstractPanel.showPopup(Localization.get("dialog.install.server.no-jar"), Localization.get("dialog.install.server.no-jar.description"),
+					JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		} else if (downloadServer && !downloadServerAutoSelected) {
+		 	cancel = !AbstractPanel.showPopup(Localization.get("dialog.install.server.overwrite-jar"), Localization.get("dialog.install.server.overwrite-jar.description"),
+					JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		}
+
+		if (!generateLaunchScripts && generateLaunchScriptsAutoSelected) {
+			cancel = cancel | !AbstractPanel.showPopup(Localization.get("dialog.server.noscript"), Localization.get("dialog.server.noscript.description"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		} else if (generateLaunchScripts && !generateLaunchScriptsAutoSelected) {
+			cancel = cancel | !AbstractPanel.showPopup(Localization.get("dialog.server.overwritescript"), Localization.get("dialog.server.overwritescript.description"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		}
+
+		if (cancel) {
+			return;
+		}
+
 		InstallServer action = Action.installServer(
 				(String) this.minecraftVersionSelector.getSelectedItem(),
 				(String) this.loaderVersionSelector.getSelectedItem(),
@@ -177,6 +200,7 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 
 					if (map != null && map.get("id").equals(this.minecraftVersionSelector.getSelectedItem())) {
 						this.downloadServerJarButton.setSelected(false);
+						this.downloadServerAutoSelected = false;
 						return;
 					}
 				} catch (IOException ex) {
@@ -185,7 +209,7 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 			}
 			this.downloadServerJarButton.setSelected(true);
 		});
-		// TODO: detect install script
+		// TODO: detect install script. don't forget to set the auto selected flag!
 	}
 
 	@Override

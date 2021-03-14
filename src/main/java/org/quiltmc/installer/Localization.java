@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
@@ -27,11 +28,23 @@ public final class Localization {
 	private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("lang/installer", Locale.getDefault(), new LocaleFactory());
 
 	public static String get(String key) {
-		return BUNDLE.getString(key);
+		try {
+			return BUNDLE.getString(key);
+		} catch (MissingResourceException ex) {
+			ex.printStackTrace();
+			return key;
+		}
+
 	}
 
 	public static String createFrom(String key, Object... arguments) {
-		return new MessageFormat(BUNDLE.getString(key)).format(arguments);
+		try {
+			return new MessageFormat(BUNDLE.getString(key)).format(arguments);
+		} catch (MissingResourceException ex) {
+			ex.printStackTrace();
+			return key;
+		}
+
 	}
 
 	private static final class LocaleFactory extends ResourceBundle.Control {
