@@ -16,23 +16,21 @@
 
 package org.quiltmc.installer.gui.swing;
 
-import java.awt.HeadlessException;
+import org.quiltmc.installer.Localization;
+import org.quiltmc.installer.QuiltMeta;
+import org.quiltmc.installer.VersionManifest;
+
+import javax.swing.*;
+import java.awt.*;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
-
-import javax.swing.JFrame;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.WindowConstants;
-
-import org.quiltmc.installer.Localization;
-import org.quiltmc.installer.QuiltMeta;
-import org.quiltmc.installer.VersionManifest;
 
 /**
  * The logic side of the swing gui for the installer.
@@ -44,13 +42,56 @@ public final class SwingInstaller extends JFrame {
 
 	public static void run() {
 		try {
-			// Set to OS theme so Windows and Mac users see something that looks native.
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			String clazz = UIManager.getSystemLookAndFeelClassName();
+
+			// for some reason it only uses the gtk theme on gnome, even though it can be used on any DE with GTK available
+			if (clazz.equals(UIManager.getCrossPlatformLookAndFeelClassName()) && useGtk()) {
+				clazz = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
+			}
+
+			UIManager.setLookAndFeel(clazz);
 		} catch (ReflectiveOperationException | UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
 
 		SwingUtilities.invokeLater(SwingInstaller::new);
+	}
+
+	private static boolean useGtk() {
+		Toolkit toolkit = Toolkit.getDefaultToolkit();
+
+		try {
+			Class<?> clazz = Class.forName("sun.awt.SunToolkit");
+
+			if (!clazz.isInstance(toolkit)) {
+				return false;
+			}
+			// Java 9+ has reflection restrictions, and java 16+ denies most reflective actions into the JDK altogether.
+			// However, Unsafe is on a reflection whitelist, so we can use it to access fields in j16
+			// But we have to use reflection to call any methods on it.
+			Class<?> unsafe = Class.forName("sun.misc.Unsafe");
+			Object unsafeInstance;
+			{
+
+				Field theUnsafe = unsafe.getDeclaredField("theUnsafe");
+				theUnsafe.setAccessible(true);
+				unsafeInstance = theUnsafe.get(null);
+			}
+
+			Method staticFieldBase = unsafe.getDeclaredMethod("staticFieldBase", Field.class);
+			Method staticFieldOffset = unsafe.getDeclaredMethod("staticFieldOffset", Field.class);
+			// Since Unsafe can only access fields, we still need some way to call our method.
+			// Luckily, MethodHandles.Lookup has a private static field that lets us get a handle on any method we want, regardless of access restrictions
+			Field impl_lookup = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
+			Method getObj = unsafe.getDeclaredMethod("getObject", Object.class, long.class);
+			MethodHandles.Lookup lookup = (MethodHandles.Lookup) getObj.invoke(unsafeInstance, staticFieldBase.invoke(unsafeInstance, impl_lookup), staticFieldOffset.invoke(unsafeInstance, impl_lookup));
+
+			return (boolean) lookup.findVirtual(clazz, "isNativeGTKAvailable", MethodType.methodType(boolean.class)).invoke(toolkit);
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+
+		return false;
 	}
 
 	private SwingInstaller() {

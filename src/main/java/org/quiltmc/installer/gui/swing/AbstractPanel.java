@@ -120,13 +120,13 @@ abstract class AbstractPanel extends JPanel {
 		return null;
 	}
 
-	protected static void showInstalledMessage() {
+	/**
+	 * Show a popup with hyperlinks and full html formatting.
+	 * @return if the user pressed "ok", "yes", etc. (showOptionDialog returned 0)
+	 */
+	protected static boolean showPopup(String title, String description, int optionType, int messageType) {
 		JEditorPane pane = new JEditorPane("text/html",
-				"<html><body style=\"" + buildEditorPaneStyle() + "\">" + Localization.createFrom(
-						"dialog.install.successful.description",
-						"https://quiltmc.org/qsl"
-				) + "</body></html>");
-
+				"<html><body style=\"" + buildEditorPaneStyle() + "\">" + description + "</body></html>");
 		pane.setEditable(false);
 		pane.addHyperlinkListener(e -> {
 			try {
@@ -141,13 +141,12 @@ abstract class AbstractPanel extends JPanel {
 				displayError(throwable);
 			}
 		});
+		return JOptionPane.showOptionDialog(null, pane, title, optionType, messageType, null, null, null) == 0;
+	}
 
-		JOptionPane.showMessageDialog(
-				null,
-				pane,
-				Localization.get("dialog.install.successful"),
-				JOptionPane.INFORMATION_MESSAGE
-		);
+	protected static void showInstalledMessage() {
+		showPopup(Localization.get("dialog.install.successful"), Localization.createFrom("dialog.install.successful.description", "https://quiltmc.org/qsl"),
+				JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
 	}
 
 	private static String buildEditorPaneStyle() {

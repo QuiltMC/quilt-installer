@@ -19,28 +19,22 @@ package org.quiltmc.installer.gui.swing;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 import org.jetbrains.annotations.Nullable;
+import org.quiltmc.installer.Gsons;
 import org.quiltmc.installer.Localization;
 import org.quiltmc.installer.VersionManifest;
 import org.quiltmc.installer.action.Action;
 import org.quiltmc.installer.action.InstallServer;
-import org.quiltmc.installer.action.MinecraftInstallation;
+import org.quiltmc.lib.gson.JsonReader;
 
 final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.MessageType> {
 	private final JComboBox<String> minecraftVersionSelector;
@@ -49,9 +43,14 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 	private final JTextField installLocation;
 	private final JButton selectInstallationLocation;
 	private final JButton installButton;
+	private final JCheckBox downloadServerJarButton;
+	private final JCheckBox generateLaunchScriptsButton;
 	private boolean showSnapshots;
-	private boolean downloadServer;
-	private boolean generateLaunchScripts;
+	private boolean downloadServer = true;
+	private boolean generateLaunchScripts = true;
+
+	private boolean downloadServerAutoSelected = true;
+	private boolean generateLaunchScriptsAutoSelected = true;
 
 	ServerPanel(SwingInstaller gui) {
 		super(gui);
@@ -67,7 +66,7 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 			this.minecraftVersionSelector.setPreferredSize(new Dimension(170, 26));
 			this.minecraftVersionSelector.addItem(Localization.get("gui.install.loading"));
 			this.minecraftVersionSelector.setEnabled(false);
-
+			this.minecraftVersionSelector.addActionListener(e -> updateFlags());
 			row1.add(this.showSnapshotsCheckBox = new JCheckBox(Localization.get("gui.game.version.snapshots")));
 			this.showSnapshotsCheckBox.setEnabled(false);
 			this.showSnapshotsCheckBox.addItemListener(e -> {
@@ -108,6 +107,7 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 
 				if (newLocation != null) {
 					this.installLocation.setText(newLocation);
+					updateFlags();
 				}
 			});
 		}
@@ -116,15 +116,13 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 		{
 			JComponent row4 = this.addRow();
 
-			JCheckBox downloadServer;
-			row4.add(downloadServer = new JCheckBox(Localization.get("gui.server.download.server")));
-			downloadServer.addItemListener(e -> {
+			row4.add(downloadServerJarButton = new JCheckBox(Localization.get("gui.server.download.server"), this.downloadServer));
+			downloadServerJarButton.addItemListener(e -> {
 				this.downloadServer = e.getStateChange() == ItemEvent.SELECTED;
 			});
 
-			JCheckBox generateLaunchScripts;
-			row4.add(generateLaunchScripts = new JCheckBox(Localization.get("gui.server.generate-scripts")));
-			generateLaunchScripts.addItemListener(e -> {
+			row4.add(generateLaunchScriptsButton = new JCheckBox(Localization.get("gui.server.generate-script"), this.generateLaunchScripts));
+			generateLaunchScriptsButton.addItemListener(e -> {
 				this.generateLaunchScripts = e.getStateChange() == ItemEvent.SELECTED;
 			});
 		}
@@ -144,6 +142,7 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 		super.receiveVersions(manifest, loaderVersions, intermediaryVersions);
 
 		populateMinecraftVersions(this.minecraftVersionSelector, manifest, intermediaryVersions, this.showSnapshots);
+		updateFlags();
 		this.showSnapshotsCheckBox.setEnabled(true);
 		populateLoaderVersions(this.loaderVersionSelector, loaderVersions);
 
@@ -153,6 +152,26 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 	}
 
 	private void install(ActionEvent event) {
+		boolean cancel = false;
+
+		if (!downloadServer && downloadServerAutoSelected) {
+			cancel = !AbstractPanel.showPopup(Localization.get("dialog.install.server.no-jar"), Localization.get("dialog.install.server.no-jar.description"),
+					JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		} else if (downloadServer && !downloadServerAutoSelected) {
+		 	cancel = !AbstractPanel.showPopup(Localization.get("dialog.install.server.overwrite-jar"), Localization.get("dialog.install.server.overwrite-jar.description"),
+					JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		}
+
+		if (!generateLaunchScripts && generateLaunchScriptsAutoSelected) {
+			cancel = cancel | !AbstractPanel.showPopup(Localization.get("dialog.server.noscript"), Localization.get("dialog.server.noscript.description"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		} else if (generateLaunchScripts && !generateLaunchScriptsAutoSelected) {
+			cancel = cancel | !AbstractPanel.showPopup(Localization.get("dialog.server.overwritescript"), Localization.get("dialog.server.overwritescript.description"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		}
+
+		if (cancel) {
+			return;
+		}
+
 		InstallServer action = Action.installServer(
 				(String) this.minecraftVersionSelector.getSelectedItem(),
 				(String) this.loaderVersionSelector.getSelectedItem(),
@@ -163,23 +182,32 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 
 		action.run(this);
 
-		if (!this.downloadServer || !this.generateLaunchScripts) {
-			// Open popup with option to download server or generate install scripts
-			displayPopup(action.minecraftVersion(), action.installationInfo(), action.installedDir(), this.downloadServer, this.generateLaunchScripts);
-		} else {
-			showInstalledMessage();
-		}
+		showInstalledMessage();
 	}
 
-	private static void displayPopup(String minecraftVersion, MinecraftInstallation.InstallationInfo installationInfo, Path installedDir, boolean downloadedServer, boolean generatedLaunchScripts) {
-		boolean hasServer = true;
+	private void updateFlags() {
+		// in case someone has an exceptionally slow disk
+		CompletableFuture.supplyAsync(() -> {
+			Path serverJar = Paths.get(this.installLocation.getText()).resolve("server.jar");
 
-		if (!downloadedServer) {
-			// Try to find the server jar, it will be named `server.jar`
-			hasServer = Files.exists(installedDir.resolve("server.jar")); // TODO: Validate the server jar has a version.json inside and it matches our installed version
-		}
+			if (Files.exists(serverJar)) {
+				try (FileSystem fs = FileSystems.newFileSystem(serverJar, (ClassLoader) null)) {
+					Path versionJson = fs.getPath("version.json");
+					// because of type erasure this should work even if other things are added in the format
+					//noinspection unchecked
+					Map<String, String> map = (Map<String, String>) Gsons.read(new JsonReader(Files.newBufferedReader(versionJson)));
+					return map.get("id");
+				} catch (Throwable ex) {
+					// It's corrupt, not available, whatever, let's just overwrite it
+				}
+			}
 
+			return "";
+		}).thenAcceptAsync(version ->
+				this.downloadServerJarButton.setSelected(!version.equals(this.minecraftVersionSelector.getSelectedItem())),
+				SwingUtilities::invokeLater);
 
+		// TODO detect install script
 	}
 
 	@Override
