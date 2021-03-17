@@ -34,7 +34,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.event.HyperlinkEvent;
 
-import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.Localization;
 import org.quiltmc.installer.VersionManifest;
@@ -125,7 +124,7 @@ abstract class AbstractPanel extends JPanel {
 	 * Show a popup with hyperlinks and full html formatting.
 	 * @return if the user pressed "ok", "yes", etc. (showOptionDialog returned 0)
 	 */
-	protected static boolean showPopup(String title, String description, int optionType, @MagicConstant int messageType) {
+	protected static boolean showPopup(String title, String description, int optionType, int messageType) {
 		JEditorPane pane = new JEditorPane("text/html",
 				"<html><body style=\"" + buildEditorPaneStyle() + "\">" + description + "</body></html>");
 		pane.setEditable(false);
