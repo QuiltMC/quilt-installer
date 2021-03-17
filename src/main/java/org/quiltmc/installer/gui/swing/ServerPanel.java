@@ -19,7 +19,6 @@ package org.quiltmc.installer.gui.swing;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
-import java.io.IOException;
 import java.nio.file.*;
 import java.util.Collection;
 import java.util.List;
@@ -188,7 +187,7 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 
 	private void updateFlags() {
 		// in case someone has an exceptionally slow disk
-		CompletableFuture.runAsync(() -> {
+		CompletableFuture.supplyAsync(() -> {
 			Path serverJar = Paths.get(this.installLocation.getText()).resolve("server.jar");
 
 			if (Files.exists(serverJar)) {
@@ -197,19 +196,18 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 					// because of type erasure this should work even if other things are added in the format
 					//noinspection unchecked
 					Map<String, String> map = (Map<String, String>) Gsons.read(new JsonReader(Files.newBufferedReader(versionJson)));
-
-					if (map != null && map.get("id").equals(this.minecraftVersionSelector.getSelectedItem())) {
-						this.downloadServerJarButton.setSelected(false);
-						this.downloadServerAutoSelected = false;
-						return;
-					}
-				} catch (IOException ex) {
+					return map.get("id");
+				} catch (Throwable ex) {
 					// It's corrupt, not available, whatever, let's just overwrite it
 				}
 			}
-			this.downloadServerJarButton.setSelected(true);
-		});
-		// TODO: detect install script. don't forget to set the auto selected flag!
+
+			return "";
+		}).thenAcceptAsync(version ->
+				this.downloadServerJarButton.setSelected(!version.equals(this.minecraftVersionSelector.getSelectedItem())),
+				SwingUtilities::invokeLater);
+
+		// TODO detect install script
 	}
 
 	@Override
