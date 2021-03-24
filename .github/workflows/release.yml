@@ -1,0 +1,44 @@
+name: Release
+on: [workflow_dispatch] # Manual trigger
+jobs:
+  buildJava:
+    runs-on: ubuntu-20.04
+    container:
+      image: openjdk:15-jdk
+      options: --user root
+    steps:
+      - uses: actions/checkout@v1
+      - uses: gradle/wrapper-validation-action@v1
+      - run: ./gradlew build publish --stacktrace
+        env:
+          MAVEN_URL: ${{ secrets.MAVEN_URL }}
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+  buildNatives:
+    strategy:
+      matrix:
+        target: [ x86_64, i686, aarch64 ]
+    runs-on: windows-2019
+    steps:
+      # TODO: Fix macOS in future
+      - uses: actions/checkout@v2
+      - run: rustup target add ${{ matrix.target }}-pc-windows-msvc
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '15'
+      - uses: gradle/wrapper-validation-action@v1
+      - run: ./gradlew build copyForNative
+      - name: Run Cargo
+        run: cargo build --release --target ${{ matrix.target }}-pc-windows-msvc
+        working-directory: ./native
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Artifacts ${{ matrix.target }}
+          path: target/${{ matrix.target }}-pc-windows-msvc/release/quilt-installer.exe
+      - run: gradle publish --stacktrace
+        env:
+          MAVEN_URL: ${{ secrets.MAVEN_URL }}
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          TARGET: ${{ matrix.target }}

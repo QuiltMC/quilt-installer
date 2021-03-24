@@ -1,6 +1,9 @@
+import java.net.URI
+
 plugins {
 	java
 	`java-library`
+	`maven-publish`
 	// application
 
 	id("net.kyori.blossom") version "1.1.0"
@@ -37,7 +40,12 @@ blossom {
 }
 
 tasks.compileJava {
-	options.release.set(8)
+	if (JavaVersion.current().isJava9Compatible) {
+		options.release.set(8)
+	} else {
+		java.sourceCompatibility = JavaVersion.VERSION_1_8
+		java.targetCompatibility = JavaVersion.VERSION_1_8
+	}
 }
 
 // Cannot use application for the time being because shadow does not like mainClass being set for some reason.
@@ -60,11 +68,61 @@ tasks.shadowJar {
 	relocate("org.quiltmc.lib.gson", "org.quiltmc.installer.lib.gson")
 	minimize()
 
-	// Compiler does not know which set method we are targetting with null value
+	// Compiler does not know which set method we are targeting with null value
 	val classifier: String? = null;
 	archiveClassifier.set(classifier)
 }
 
 tasks.build {
 	dependsOn(tasks.shadowJar)
+}
+
+val copyForNative = tasks.register<Copy>("copyForNative") {
+	dependsOn(tasks.jar)
+	from(tasks.jar)
+	into(file("build"))
+
+	rename {
+		return@rename if (it.contains("quilt-installer")) {
+			"native-quilt-installer.jar"
+		} else {
+			it
+		}
+	}
+}
+
+val env = System.getenv()
+
+publishing {
+	publications {
+		if (env["TARGET"] == null) {
+			create<MavenPublication>("mavenJava") {
+				from(components["java"])
+			}
+		} else {
+			// TODO: When we build macOS make this work
+			val architecture = env["TARGET"]
+			create<MavenPublication>("mavenNatives") {
+				groupId = "org.quiltmc.quilt-installer-native-bootstrap"
+				artifactId = "windows-$architecture"
+
+				artifact {
+					file("$projectDir/native/target/$architecture-pc-windows-msvc/release/")
+				}
+			}
+		}
+	}
+
+	repositories {
+		if (env["MAVEN_URL"] != null) {
+			repositories.maven {
+				url = URI(env["MAVEN_URL"]!!)
+
+				credentials {
+					username = env["MAVEN_USERNAME"]
+					password = env["MAVEN_PASSWORD"]
+				}
+			}
+		}
+	}
 }

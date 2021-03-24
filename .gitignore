@@ -33,5 +33,5 @@ run
 *.db
 $RECYCLE.BIN/
 
-# Mac
+# macOS
 .DS_Store
