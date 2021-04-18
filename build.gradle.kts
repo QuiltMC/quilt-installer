@@ -61,8 +61,6 @@ tasks.jar {
 		attributes["Implementation-Version"] = project.version
 		attributes["Main-Class"] = "org.quiltmc.installer.Main"
 	}
-
-	enabled = false
 }
 
 tasks.shadowJar {
@@ -103,6 +101,7 @@ publishing {
 		} else {
 			// TODO: When we build macOS make this work
 			val architecture = env["TARGET"]
+
 			create<MavenPublication>("mavenNatives") {
 				groupId = "org.quiltmc.quilt-installer-native-bootstrap"
 				artifactId = "windows-$architecture"
