@@ -22,6 +22,7 @@ import org.quiltmc.installer.VersionManifest;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
@@ -122,7 +123,7 @@ public final class SwingInstaller extends JFrame {
 			this.setContentPane(contentPane);
 			this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 			this.setTitle(Localization.get("title"));
-			// TODO: Set icon
+			this.setIconImage(Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemClassLoader().getResource("icon.png")));
 			this.pack();
 			this.setLocationRelativeTo(null); // Center on screen
 			this.setResizable(false);

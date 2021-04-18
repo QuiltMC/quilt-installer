@@ -106,7 +106,7 @@ public final class LauncherProfiles {
 
 	private static String createProfileIcon() {
 		// TODO create the logo file
-		try (InputStream stream = LauncherProfiles.class.getClassLoader().getResourceAsStream("logo.png")) {
+		try (InputStream stream = LauncherProfiles.class.getClassLoader().getResourceAsStream("icon.png")) {
 			if (stream != null) {
 				byte[] ret = new byte[4096];
 				int offset = 0;
