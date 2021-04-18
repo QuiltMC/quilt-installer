@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-	implementation("org.quiltmc:gson-stream:1.0")
+	implementation("org.quiltmc:quilt-json5:1.0.0-rc.3")
 	compileOnly("org.jetbrains:annotations:20.1.0")
 }
 
@@ -64,7 +64,7 @@ tasks.jar {
 }
 
 tasks.shadowJar {
-	relocate("org.quiltmc.lib.gson", "org.quiltmc.installer.lib.gson")
+	relocate("org.quiltmc.json5", "org.quiltmc.installer.lib.json5")
 	minimize()
 
 	// Compiler does not know which set method we are targeting with null value

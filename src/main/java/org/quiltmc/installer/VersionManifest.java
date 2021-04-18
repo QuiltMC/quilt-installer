@@ -32,8 +32,8 @@ import java.util.concurrent.CompletableFuture;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.quiltmc.lib.gson.JsonReader;
-import org.quiltmc.lib.gson.JsonToken;
+import org.quiltmc.json5.JsonReader;
+import org.quiltmc.json5.JsonToken;
 
 /**
  * An object representation of the version manifest used by the launcher.
@@ -53,7 +53,7 @@ public final class VersionManifest implements Iterable<VersionManifest.Version> 
 
 				InputStreamReader stream = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
 
-				try (JsonReader reader = new JsonReader(new BufferedReader(stream))) {
+				try (JsonReader reader = JsonReader.createStrict(new BufferedReader(stream))) {
 					return read(reader);
 				}
 			} catch (IOException e) {

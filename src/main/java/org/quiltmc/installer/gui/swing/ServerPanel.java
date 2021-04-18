@@ -34,7 +34,7 @@ import org.quiltmc.installer.Localization;
 import org.quiltmc.installer.VersionManifest;
 import org.quiltmc.installer.action.Action;
 import org.quiltmc.installer.action.InstallServer;
-import org.quiltmc.lib.gson.JsonReader;
+import org.quiltmc.json5.JsonReader;
 
 final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.MessageType> {
 	private final JComboBox<String> minecraftVersionSelector;
@@ -195,7 +195,7 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 					Path versionJson = fs.getPath("version.json");
 					// because of type erasure this should work even if other things are added in the format
 					//noinspection unchecked
-					Map<String, String> map = (Map<String, String>) Gsons.read(new JsonReader(Files.newBufferedReader(versionJson)));
+					Map<String, String> map = (Map<String, String>) Gsons.read(JsonReader.createStrict(Files.newBufferedReader(versionJson)));
 					return map.get("id");
 				} catch (Throwable ex) {
 					// It's corrupt, not available, whatever, let's just overwrite it

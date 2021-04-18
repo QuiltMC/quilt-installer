@@ -25,8 +25,6 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 
-import org.quiltmc.installer.QuiltMeta;
-
 public final class LaunchJson {
 	// TODO: Switch to quilt
 	public static final String LOADER_ARTIFACT_NAME = "fabric-loader";

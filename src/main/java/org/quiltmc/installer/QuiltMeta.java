@@ -32,8 +32,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-import org.quiltmc.lib.gson.JsonReader;
-import org.quiltmc.lib.gson.JsonToken;
+import org.quiltmc.json5.JsonReader;
+import org.quiltmc.json5.JsonToken;
 
 public final class QuiltMeta {
 	public static final Endpoint<List<String>> LOADER_VERSIONS_ENDPOINT = createVersion("/v3/versions/loader");
@@ -97,7 +97,7 @@ public final class QuiltMeta {
 
 		return ret;
 	});
-	// TODO: Link to the actual meta
+
 	public static final String DEFAULT_META_URL = "https://meta.quiltmc.org";
 	private final String baseMetaUrl;
 	private final Map<Endpoint<?>, Object> endpoints;
@@ -113,7 +113,7 @@ public final class QuiltMeta {
 
 					InputStreamReader stream = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
 
-					try (JsonReader reader = new JsonReader(new BufferedReader(stream))) {
+					try (JsonReader reader = JsonReader.createStrict(new BufferedReader(stream))) {
 						return endpoint.deserializer.apply(reader);
 					}
 				} catch (IOException e) {

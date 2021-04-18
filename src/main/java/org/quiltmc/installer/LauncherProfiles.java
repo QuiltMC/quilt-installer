@@ -29,8 +29,8 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.quiltmc.lib.gson.JsonReader;
-import org.quiltmc.lib.gson.JsonWriter;
+import org.quiltmc.json5.JsonReader;
+import org.quiltmc.json5.JsonWriter;
 
 public final class LauncherProfiles {
 	private static final DateFormat ISO_8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
@@ -53,7 +53,7 @@ public final class LauncherProfiles {
 
 		Object launcherProfiles;
 
-		try (JsonReader reader = new JsonReader(new InputStreamReader(Files.newInputStream(launcherProfilesPath)))) {
+		try (JsonReader reader = JsonReader.createStrict(new InputStreamReader(Files.newInputStream(launcherProfilesPath)))) {
 			launcherProfiles = Gsons.read(reader);
 		}
 
@@ -98,14 +98,13 @@ public final class LauncherProfiles {
 		}
 
 		// Write out the new profiles
-		try (JsonWriter writer = new JsonWriter(Files.newBufferedWriter(launcherProfilesPath))) {
+		try (JsonWriter writer = JsonWriter.createStrict(Files.newBufferedWriter(launcherProfilesPath))) {
 			writer.setIndent("  "); // Prettify it
 			Gsons.write(writer, launcherProfiles);
 		}
 	}
 
 	private static String createProfileIcon() {
-		// TODO create the logo file
 		try (InputStream stream = LauncherProfiles.class.getClassLoader().getResourceAsStream("icon.png")) {
 			if (stream != null) {
 				byte[] ret = new byte[4096];

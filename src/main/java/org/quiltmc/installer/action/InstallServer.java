@@ -54,7 +54,7 @@ import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.Gsons;
 import org.quiltmc.installer.LaunchJson;
 import org.quiltmc.installer.VersionManifest;
-import org.quiltmc.lib.gson.JsonReader;
+import org.quiltmc.json5.JsonReader;
 
 /**
  * An action which creates the server launch jar and downloads the dedicated server.
@@ -108,7 +108,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 			println("Installing libraries");
 
 			// Now we read the server's launch json
-			try (JsonReader reader = new JsonReader(new StringReader(launchJson))) {
+			try (JsonReader reader = JsonReader.createStrict(new StringReader(launchJson))) {
 				Object read = Gsons.read(reader);
 
 				if (!(read instanceof Map)) {
@@ -212,7 +212,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 
 					String content = builder.toString();
 
-					try (JsonReader json = new JsonReader(new StringReader(content))) {
+					try (JsonReader json = JsonReader.createStrict(new StringReader(content))) {
 						Object read = Gsons.read(json);
 
 						if (!(read instanceof Map)) {
