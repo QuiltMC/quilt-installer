@@ -107,7 +107,7 @@ publishing {
 				artifactId = "windows-$architecture"
 
 				artifact {
-					file("$projectDir/native/target/$architecture-pc-windows-msvc/release/")
+					file("$projectDir/native/target/$architecture-pc-windows-msvc/release/quilt-installer.exe")
 				}
 			}
 		}
