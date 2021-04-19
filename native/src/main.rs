@@ -184,9 +184,15 @@ fn try_launch<P: AsRef<Path>>(installer_jar: &PathBuf, jre_path: P) -> JreLaunch
 			}
 		}
 		Err(e) => {
-			match e.kind() {
-				ErrorKind::NotFound => JreLaunchError::NoPermission,
-				ErrorKind::PermissionDenied => JreLaunchError::Jre,
+			return match e.kind() {
+				ErrorKind::NotFound => {
+					eprintln!("Could not find JVM at location");
+					JreLaunchError::Jre
+				},
+				ErrorKind::PermissionDenied => {
+					eprintln!("Permission denied when trying to launch jvm");
+					JreLaunchError::NoPermission
+				},
 				_ => {
 					eprintln!("Failed to launch JVM with error {:?}", e);
 					JreLaunchError::Os(e)
@@ -230,8 +236,14 @@ fn try_launch<P: AsRef<Path>>(installer_jar: &PathBuf, jre_path: P) -> JreLaunch
 		}
 		Err(e) => {
 			match e.kind() {
-				ErrorKind::NotFound => JreLaunchError::NoPermission,
-				ErrorKind::PermissionDenied => JreLaunchError::Jre,
+				ErrorKind::NotFound => {
+					eprintln!("Could not find JVM at location");
+					JreLaunchError::Jre
+				},
+				ErrorKind::PermissionDenied => {
+					eprintln!("Permission denied when trying to launch jvm");
+					JreLaunchError::NoPermission
+				},
 				_ => {
 					eprintln!("Failed to launch JVM with error {:?}", e);
 					JreLaunchError::Os(e)
