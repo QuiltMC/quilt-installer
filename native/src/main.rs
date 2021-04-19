@@ -20,7 +20,7 @@ use rand::random;
 use std::env::temp_dir;
 use std::fs::File;
 use std::io;
-use std::io::Write;
+use std::io::{Write, ErrorKind};
 use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
 
@@ -143,6 +143,17 @@ fn main() {
 				}
 			}
 		}
+		JreLaunchError::NoPermission => {
+			eprintln!("Did not have permission to launch java");
+
+			if let Err(_) = MessageDialog::new()
+				.set_type(MessageType::Error)
+				.set_title("Failed to launch installer")
+				.set_text("Did not have permission to launch any JVM.")
+				.show_alert() {
+				last_resort();
+			}
+		}
 	}
 }
 
@@ -173,8 +184,14 @@ fn try_launch<P: AsRef<Path>>(installer_jar: &PathBuf, jre_path: P) -> JreLaunch
 			}
 		}
 		Err(e) => {
-			eprintln!("Failed to launch JVM with error {:?}", e);
-			return JreLaunchError::Os(e)
+			match e.kind() {
+				ErrorKind::NotFound => JreLaunchError::NoPermission,
+				ErrorKind::PermissionDenied => JreLaunchError::Jre,
+				_ => {
+					eprintln!("Failed to launch JVM with error {:?}", e);
+					JreLaunchError::Os(e)
+				}
+			}
 		},
 	}
 
@@ -212,8 +229,14 @@ fn try_launch<P: AsRef<Path>>(installer_jar: &PathBuf, jre_path: P) -> JreLaunch
 			}
 		}
 		Err(e) => {
-			eprintln!("Failed to launch JVM with error {:?}", e);
-			JreLaunchError::Os(e)
+			match e.kind() {
+				ErrorKind::NotFound => JreLaunchError::NoPermission,
+				ErrorKind::PermissionDenied => JreLaunchError::Jre,
+				_ => {
+					eprintln!("Failed to launch JVM with error {:?}", e);
+					JreLaunchError::Os(e)
+				}
+			}
 		},
 	}
 }
@@ -229,4 +252,6 @@ enum JreLaunchError {
 	Os(io::Error),
 	/// Issue when running the JRE, this includes failing to run with -version
 	Jre,
+	/// OS did not give the application permission to run javaw.
+	NoPermission
 }
