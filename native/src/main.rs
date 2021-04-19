@@ -57,17 +57,37 @@ fn main() {
 	{
 		let mut installer_jar = match File::create(installer_jar.clone()) {
 			Ok(f) => f,
-			Err(_) => {
-				panic!()
+			Err(e) => {
+				eprintln!("Failed to extract installer");
+
+				if let Err(e) = MessageDialog::new()
+					.set_type(MessageType::Error)
+					.set_title("Failed to launch installer")
+					.set_text(format!("Failed to extract installer.\nError: {:?}", e.kind()).as_str())
+					.show_alert() {
+					last_resort();
+				}
+
+				exit(1);
 			}
 		};
 
 		match installer_jar.write_all(INSTALLER_JAR) {
 			Ok(_) => {}
-			Err(_) => {
+			Err(e) => {
 				// Well... this is a problem
 				// Show the dialog and give up I guess
-				// TODO: Show this dialog
+				eprintln!("Failed to extract installer");
+
+				if let Err(e) = MessageDialog::new()
+					.set_type(MessageType::Error)
+					.set_title("Failed to launch installer")
+					.set_text(format!("Failed to extract installer.\nError: {:?}", e.kind()).as_str())
+					.show_alert() {
+					last_resort();
+				}
+
+				exit(1);
 			}
 		}
 	}
@@ -81,7 +101,7 @@ fn main() {
 
 	// Well time for the last resort by testing the system's `javaw` executable.
 	match try_launch(&installer_jar, "javaw") {
-		JreLaunchError::Io(_) => {
+		JreLaunchError::Os(_) => {
 			// Blame the OS
 			let result = MessageDialog::new()
 				.set_type(MessageType::Error)
@@ -132,21 +152,33 @@ fn main() {
 fn try_launch<P: AsRef<Path>>(installer_jar: &PathBuf, jre_path: P) -> JreLaunchError {
 	// Let's see if the jre is valid
 	// -version will always return an exit code of 0 if successful.
+
+	println!("Trying JVM located at: {:?}", jre_path.as_ref());
+
 	match Command::new(jre_path.as_ref()).arg("-version").status() {
 		Ok(status) => {
 			if !status.success() {
 				// TODO: Introspect into the status code
 				//  None only occurs on unix-like OSes, so macOS could have a signal
 				match status.code() {
-					None => {}
-					Some(_) => {}
+					None => {
+						eprintln!("JVM terminated via signal");
+					}
+					Some(code) => {
+						eprintln!("JVM terminated with exit code {}", code);
+					}
 				}
 
 				return JreLaunchError::Jre;
 			}
 		}
-		Err(e) => return JreLaunchError::Io(e),
+		Err(e) => {
+			eprintln!("Failed to launch JVM with error {:?}", e);
+			return JreLaunchError::Os(e)
+		},
 	}
+
+	println!("Running JVM located at {:?}", jre_path.as_ref());
 
 	// We have successfully run -version, so now we launch the installer.
 	let result = Command::new(jre_path.as_ref())
@@ -157,6 +189,7 @@ fn try_launch<P: AsRef<Path>>(installer_jar: &PathBuf, jre_path: P) -> JreLaunch
 	match result {
 		Ok(status) => {
 			if status.success() {
+				println!("Success, terminating bootstrapper");
 				// Our job here is done
 				exit(0);
 			}
@@ -168,15 +201,20 @@ fn try_launch<P: AsRef<Path>>(installer_jar: &PathBuf, jre_path: P) -> JreLaunch
 			match status.code() {
 				None => {
 					// TODO: Signal
+					eprintln!("JVM killed via signal");
 					JreLaunchError::Jre
 				}
-				Some(_) => {
+				Some(code) => {
 					// JVM failed to start
+					eprintln!("JVM terminated with exit code {}", code);
 					JreLaunchError::Jre
 				}
 			}
 		}
-		Err(e) => JreLaunchError::Io(e),
+		Err(e) => {
+			eprintln!("Failed to launch JVM with error {:?}", e);
+			JreLaunchError::Os(e)
+		},
 	}
 }
 
@@ -188,7 +226,7 @@ fn last_resort() -> ! {
 
 enum JreLaunchError {
 	/// OS Error
-	Io(io::Error),
+	Os(io::Error),
 	/// Issue when running the JRE, this includes failing to run with -version
 	Jre,
 }

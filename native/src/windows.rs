@@ -10,6 +10,8 @@ pub const INSTALLER_JRE_HELP_URL: &'static str = "https://quiltmc.org"; // TODO:
 /// Get the installation directory of the vanilla launcher.
 /// Mojang conveniently adds a registry entry for us to find the install location.
 fn launcher_install_dir() -> io::Result<PathBuf> {
+	println!("Attempting to find Minecraft Launcher installation from registry");
+
 	let launcher_install_location = RegKey::predef(winreg::enums::HKEY_CURRENT_USER)
 		.open_subkey(r"SOFTWARE\Mojang\InstalledProducts\Minecraft Launcher")?
 		.get_value::<OsString, &str>("InstallLocation")?;
