@@ -60,7 +60,7 @@ fn main() {
 			Err(e) => {
 				eprintln!("Failed to extract installer");
 
-				if let Err(e) = MessageDialog::new()
+				if let Err(_) = MessageDialog::new()
 					.set_type(MessageType::Error)
 					.set_title("Failed to launch installer")
 					.set_text(format!("Failed to extract installer.\nError: {:?}", e.kind()).as_str())
@@ -149,7 +149,7 @@ fn main() {
 			if let Err(_) = MessageDialog::new()
 				.set_type(MessageType::Error)
 				.set_title("Failed to launch installer")
-				.set_text("Did not have permission to launch any JVM.")
+				.set_text("Did not have permission to launch Java for installer.")
 				.show_alert() {
 				last_resort();
 			}
