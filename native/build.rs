@@ -6,7 +6,7 @@ fn main() {
 		embed_resource::compile("resources/windows/program.rc");
 
 		let result = winres::WindowsResource::new()
-			.set_icon("resources/icon.ico")
+			.set_icon("resources/windows/icon.ico")
 			.set("ProductName", "Quilt Installer")
 			.set("CompanyName", "The Quilt Project")
 			.set("LegalCopyright", "Apache License Version 2.0")
