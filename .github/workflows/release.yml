@@ -36,7 +36,7 @@ jobs:
         with:
           name: Artifacts ${{ matrix.target }}
           path: target/${{ matrix.target }}-pc-windows-msvc/release/quilt-installer.exe
-      - run: gradle publish --stacktrace
+      - run: gradlew publish --stacktrace
         env:
           MAVEN_URL: ${{ secrets.MAVEN_URL }}
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
