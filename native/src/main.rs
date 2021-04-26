@@ -119,8 +119,9 @@ fn main() {
 			{
 				if result {
 					let _ = open::that(OS_ISSUES_URL);
-					exit(1); // We did not successfully start
 				}
+
+				exit(1); // We did not successfully start
 			} else {
 				// Yikes the dialog did not open, last resort it is
 				last_resort();
@@ -136,8 +137,9 @@ fn main() {
 			{
 				if result {
 					let _ = open::that(INSTALLER_JRE_HELP_URL);
-					exit(1); // We did not successfully start
 				}
+
+				exit(1); // We did not successfully start
 			} else {
 				// Yikes the dialog did not open, last resort it is
 				last_resort();
