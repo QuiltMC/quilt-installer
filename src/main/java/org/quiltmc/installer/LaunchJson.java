@@ -27,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 
 public final class LaunchJson {
 	// TODO: Switch to quilt
-	public static final String LOADER_ARTIFACT_NAME = "fabric-loader";
+	public static final String LOADER_ARTIFACT_NAME = "quilt-loader";
 
 	public static CompletableFuture<String> get(String gameVersion, String loaderVersion, String endpoint) {
 		String rawUrl = QuiltMeta.DEFAULT_META_URL + String.format(endpoint, gameVersion, loaderVersion);

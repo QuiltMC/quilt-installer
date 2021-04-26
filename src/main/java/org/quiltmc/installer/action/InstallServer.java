@@ -289,8 +289,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 
 			Manifest manifest = new Manifest();
 			manifest.getMainAttributes().put(new Attributes.Name("Manifest-Version"), "1.0");
-			// TODO: Change this when loader makes it there
-			manifest.getMainAttributes().put(new Attributes.Name("Main-Class"), "net.fabricmc.loader.launch.server.FabricServerLauncher");
+			manifest.getMainAttributes().put(new Attributes.Name("Main-Class"), "org.quiltmc.loader.impl.launch.server.QuiltServerLauncher");
 			manifest.write(zipStream);
 
 			zipStream.closeEntry();
