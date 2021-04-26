@@ -5,15 +5,12 @@ fn main() {
 	if cfg!(windows) {
 		embed_resource::compile("resources/windows/program.rc");
 
-		let result = winres::WindowsResource::new()
+		winres::WindowsResource::new()
 			.set_icon("resources/windows/icon.ico")
 			.set("ProductName", "Quilt Installer")
 			.set("CompanyName", "The Quilt Project")
 			.set("LegalCopyright", "Apache License Version 2.0")
-			.compile();
-
-		if let Err(_) = result {
-			panic!("Failed to set windows resources");
-		}
+			.compile()
+			.expect("Failed to set windows resources");
 	}
 }

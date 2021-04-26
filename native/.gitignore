@@ -1,0 +1,13 @@
+# Everything
+/*
+
+# Pick out what we want
+!build.rs
+!Cargo.toml
+!Cargo.lock
+!rustfmt.toml
+!README.md
+
+!.cargo/
+!src/
+!resources/

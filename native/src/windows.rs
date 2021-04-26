@@ -5,7 +5,7 @@ use std::io;
 use std::path::PathBuf;
 use winreg::RegKey;
 
-pub const INSTALLER_JRE_HELP_URL: &'static str = "https://quiltmc.org"; // TODO: Fill in URL
+pub const INSTALLER_JRE_HELP_URL: &str = "https://quiltmc.org"; // TODO: Fill in URL
 
 /// Get the installation directory of the vanilla launcher.
 /// Mojang conveniently adds a registry entry for us to find the install location.

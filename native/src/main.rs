@@ -20,15 +20,15 @@ use rand::random;
 use std::env::temp_dir;
 use std::fs::File;
 use std::io;
-use std::io::{Write, ErrorKind};
+use std::io::{ErrorKind, Write};
 use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
 
-const INSTALLER_LAST_RESORT_URL: &'static str = "https://quiltmc.org/"; // TODO: Fill in URL
-const OS_ISSUES_URL: &'static str = "https://quiltmc.org/"; // TODO: Fill in URL
+const INSTALLER_LAST_RESORT_URL: &str = "https://quiltmc.org/"; // TODO: Fill in URL
+const OS_ISSUES_URL: &str = "https://quiltmc.org/"; // TODO: Fill in URL
 
 /// The bundled installer jar, see main entrypoint for why we include the bytes of the installer jar.
-const INSTALLER_JAR: &'static [u8] = include_bytes!("../../build/native-quilt-installer.jar");
+const INSTALLER_JAR: &[u8] = include_bytes!("../../build/native-quilt-installer.jar");
 
 // TODO: Some things to do in the future
 //  Error dialog localization, possibly this for getting the OS's locale? https://github.com/i509VCB/os-locale
@@ -60,11 +60,15 @@ fn main() {
 			Err(e) => {
 				eprintln!("Failed to extract installer");
 
-				if let Err(_) = MessageDialog::new()
+				if MessageDialog::new()
 					.set_type(MessageType::Error)
 					.set_title("Failed to launch installer")
-					.set_text(format!("Failed to extract installer.\nError: {:?}", e.kind()).as_str())
-					.show_alert() {
+					.set_text(
+						format!("Failed to extract installer.\nError: {:?}", e.kind()).as_str(),
+					)
+					.show_alert()
+					.is_err()
+				{
 					last_resort();
 				}
 
@@ -79,11 +83,15 @@ fn main() {
 				// Show the dialog and give up I guess
 				eprintln!("Failed to extract installer");
 
-				if let Err(e) = MessageDialog::new()
+				if MessageDialog::new()
 					.set_type(MessageType::Error)
 					.set_title("Failed to launch installer")
-					.set_text(format!("Failed to extract installer.\nError: {:?}", e.kind()).as_str())
-					.show_alert() {
+					.set_text(
+						format!("Failed to extract installer.\nError: {:?}", e.kind()).as_str(),
+					)
+					.show_alert()
+					.is_err()
+				{
 					last_resort();
 				}
 
@@ -103,54 +111,48 @@ fn main() {
 	match try_launch(&installer_jar, "javaw") {
 		JreLaunchError::Os(_) => {
 			// Blame the OS
-			let result = MessageDialog::new()
+			if let Ok(result) = MessageDialog::new()
 				.set_type(MessageType::Error)
 				.set_title("Failed to launch installer")
 				.set_text("The installer failed to launch due to issues with the current OS. Do you want to open a link for more information?")
-				.show_confirm();
-
-			match result {
-				Ok(result) => {
-					if result {
-						open::that(OS_ISSUES_URL);
-						exit(1); // We did not successfully start
-					}
+				.show_confirm()
+			{
+				if result {
+					let _ = open::that(OS_ISSUES_URL);
+					exit(1); // We did not successfully start
 				}
-				Err(_) => {
-					// Yikes the dialog did not open, last resort it is
-					last_resort();
-				}
+			} else {
+				// Yikes the dialog did not open, last resort it is
+				last_resort();
 			}
 		}
 		JreLaunchError::Jre => {
 			// Blame the lack of a JRE
-			let result = MessageDialog::new()
+			if let Ok(result) = MessageDialog::new()
 				.set_type(MessageType::Error)
 				.set_title("Failed to launch installer")
 				.set_text("The installer failed to launch because it could not find a suitable Java runtime. Do you want to open a link for more information?")
-				.show_confirm();
-
-			match result {
-				Ok(result) => {
-					if result {
-						open::that(INSTALLER_JRE_HELP_URL);
-						exit(1); // We did not successfully start
-					}
+				.show_confirm()
+			{
+				if result {
+					let _ = open::that(INSTALLER_JRE_HELP_URL);
+					exit(1); // We did not successfully start
 				}
-				Err(_) => {
-					// Yikes the dialog did not open, last resort it is
-					last_resort();
-				}
+			} else {
+				// Yikes the dialog did not open, last resort it is
+				last_resort();
 			}
 		}
 		JreLaunchError::NoPermission => {
 			eprintln!("Did not have permission to launch java");
 
-			if let Err(_) = MessageDialog::new()
+			if MessageDialog::new()
 				.set_type(MessageType::Error)
 				.set_title("Failed to launch installer")
 				.set_text("Did not have permission to launch Java for installer.")
-				.show_alert() {
+				.show_alert()
+				.is_err()
+			{
 				last_resort();
 			}
 		}
@@ -188,17 +190,17 @@ fn try_launch<P: AsRef<Path>>(installer_jar: &PathBuf, jre_path: P) -> JreLaunch
 				ErrorKind::NotFound => {
 					eprintln!("Could not find JVM at location");
 					JreLaunchError::Jre
-				},
+				}
 				ErrorKind::PermissionDenied => {
 					eprintln!("Permission denied when trying to launch jvm");
 					JreLaunchError::NoPermission
-				},
+				}
 				_ => {
 					eprintln!("Failed to launch JVM with error {:?}", e);
 					JreLaunchError::Os(e)
 				}
 			}
-		},
+		}
 	}
 
 	println!("Running JVM located at {:?}", jre_path.as_ref());
@@ -234,20 +236,18 @@ fn try_launch<P: AsRef<Path>>(installer_jar: &PathBuf, jre_path: P) -> JreLaunch
 				}
 			}
 		}
-		Err(e) => {
-			match e.kind() {
-				ErrorKind::NotFound => {
-					eprintln!("Could not find JVM at location");
-					JreLaunchError::Jre
-				},
-				ErrorKind::PermissionDenied => {
-					eprintln!("Permission denied when trying to launch jvm");
-					JreLaunchError::NoPermission
-				},
-				_ => {
-					eprintln!("Failed to launch JVM with error {:?}", e);
-					JreLaunchError::Os(e)
-				}
+		Err(e) => match e.kind() {
+			ErrorKind::NotFound => {
+				eprintln!("Could not find JVM at location");
+				JreLaunchError::Jre
+			}
+			ErrorKind::PermissionDenied => {
+				eprintln!("Permission denied when trying to launch jvm");
+				JreLaunchError::NoPermission
+			}
+			_ => {
+				eprintln!("Failed to launch JVM with error {:?}", e);
+				JreLaunchError::Os(e)
 			}
 		},
 	}
@@ -255,7 +255,7 @@ fn try_launch<P: AsRef<Path>>(installer_jar: &PathBuf, jre_path: P) -> JreLaunch
 
 /// Given everything else so far has failed, try opening a URL as the last resort.
 fn last_resort() -> ! {
-	open::that(INSTALLER_LAST_RESORT_URL);
+	let _ = open::that(INSTALLER_LAST_RESORT_URL);
 	exit(1)
 }
 
@@ -265,5 +265,5 @@ enum JreLaunchError {
 	/// Issue when running the JRE, this includes failing to run with -version
 	Jre,
 	/// OS did not give the application permission to run javaw.
-	NoPermission
+	NoPermission,
 }

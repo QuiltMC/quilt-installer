@@ -5,7 +5,7 @@
 
 compile_error!("The native launch only supports Windows and macOS!");
 
-pub const INSTALLER_JRE_HELP_URL: &'static str = "DUMMY_STUB";
+pub const INSTALLER_JRE_HELP_URL: &str = "DUMMY_STUB";
 
 use std::io;
 use std::path::PathBuf;
