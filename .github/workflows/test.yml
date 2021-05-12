@@ -4,7 +4,7 @@ jobs:
   build:
     strategy:
       matrix:
-        java: [8-jdk, 11-jdk, 15-jdk]
+        java: [8-jdk, 11-jdk, 16-jdk]
     runs-on: ubuntu-20.04
     container:
       image: openjdk:${{ matrix.java }}
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
-          java-version: '15'
+          java-version: '16'
       - uses: gradle/wrapper-validation-action@v1
       - run: ./gradlew build copyForNative --stacktrace
       - run: rustup target add ${{ matrix.target }}-pc-windows-msvc
