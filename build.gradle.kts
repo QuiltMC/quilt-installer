@@ -6,7 +6,7 @@ plugins {
 	`maven-publish`
 	// application
 
-	id("net.kyori.blossom") version "1.1.0"
+	id("net.kyori.blossom") version "1.2.0"
 	id("com.diffplug.spotless") version "5.8.2"
 	id("com.github.johnrengelman.shadow") version "6.1.0"
 }
