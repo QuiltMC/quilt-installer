@@ -14,7 +14,7 @@ mod platform;
 #[path = "unsupported.rs"]
 mod platform;
 
-use crate::platform::{get_jre_locations, INSTALLER_JRE_HELP_URL};
+use crate::platform::{get_jre_locations, INSTALLER_JRE_HELP_URL, PLATFORM_JAVA_EXECUTABLE_NAME};
 use native_dialog::{MessageDialog, MessageType};
 use rand::random;
 use std::env::temp_dir;
@@ -108,7 +108,7 @@ fn main() {
 	}
 
 	// Well time for the last resort by testing the system's `javaw` executable.
-	match try_launch(&installer_jar, "javaw") {
+	match try_launch(&installer_jar, PLATFORM_JAVA_EXECUTABLE_NAME) {
 		JreLaunchError::Os(_) => {
 			// Blame the OS
 			if let Ok(result) = MessageDialog::new()

@@ -5,6 +5,7 @@ use std::io;
 use std::path::PathBuf;
 use winreg::RegKey;
 
+pub const PLATFORM_JAVA_EXECUTABLE_NAME: &str = "javaw";
 pub const INSTALLER_JRE_HELP_URL: &str = "https://quiltmc.org"; // TODO: Fill in URL
 
 /// Get the installation directory of the vanilla launcher.
@@ -26,12 +27,13 @@ fn launcher_install_dir() -> io::Result<PathBuf> {
 pub(crate) fn get_jre_locations() -> io::Result<Vec<PathBuf>> {
 	let installer_dir = launcher_install_dir()?;
 
-	// FIXME: When Mojang upgrades the JRE they bundle on windows, search for a suitable JRE in the
-	//  proper folder.
 	Ok(vec![
 		installer_dir.join("runtime/jre-legacy/windows-x64/jre-legacy/bin/javaw.exe"),
 		installer_dir.join("runtime/jre-legacy/windows-x86/jre-legacy/bin/javaw.exe"),
 		installer_dir.join("runtime/jre-x64/bin/javaw.exe"),
 		installer_dir.join("runtime/jre-x86/bin/javaw.exe"),
+		// Starting in 21w19a
+		installer_dir.join("runtime/java-runtime-alpha/bin/javaw.exe"),
+		// TODO: Iterate over JREs here
 	])
 }

@@ -5,6 +5,7 @@
 
 compile_error!("The native launch only supports Windows and macOS!");
 
+pub const PLATFORM_JAVA_EXECUTABLE_NAME: &str = "java";
 pub const INSTALLER_JRE_HELP_URL: &str = "DUMMY_STUB";
 
 use std::io;
