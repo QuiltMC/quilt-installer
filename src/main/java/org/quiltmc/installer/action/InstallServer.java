@@ -255,7 +255,8 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 	private static CompletableFuture<Path> downloadLibrary(String name, String url) {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
-				Path path = Files.createTempFile(name, null);
+				String shortName = name.split(":")[1];
+				Path path = Files.createTempFile(shortName, null);
 
 				// Convert to maven url
 				String rawUrl = mavenToUrl(url, name);
