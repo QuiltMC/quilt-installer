@@ -255,7 +255,9 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 	private static CompletableFuture<Path> downloadLibrary(String name, String url) {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
-				String shortName = name.split(":")[1];
+				// Windows does not accept semicolons in filenames, so, we remove them
+				String[] splitName = name.split(":");
+				String shortName = splitName[1] + splitName[2];
 				Path path = Files.createTempFile(shortName, null);
 
 				// Convert to maven url
