@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "org.quiltmc"
-version = "0.2.2"
+version = "0.2.3"
 base.archivesBaseName = project.name
 
 repositories {
