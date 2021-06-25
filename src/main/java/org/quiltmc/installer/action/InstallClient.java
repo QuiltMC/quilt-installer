@@ -23,6 +23,7 @@ import java.io.Writer;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -41,16 +42,31 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 	private final String minecraftVersion;
 	@Nullable
 	private final String loaderVersion;
+	private final String installDir;
 	private final boolean generateProfile;
+	private Path installDirPath;
 
-	InstallClient(String minecraftVersion, @Nullable String loaderVersion, boolean generateProfile) {
+	InstallClient(String minecraftVersion, @Nullable String loaderVersion, String installDir, boolean generateProfile) {
 		this.minecraftVersion = minecraftVersion;
 		this.loaderVersion = loaderVersion;
+		this.installDir = installDir;
 		this.generateProfile = generateProfile;
 	}
 
 	@Override
 	public void run(Consumer<MessageType> statusTracker) {
+		Path installDir;
+
+		if (this.installDir == null) {
+			installDir = OsPaths.getDefaultInstallationDir();
+		} else {
+			installDir = Paths.get(this.installDir);
+		}
+
+		this.installDirPath = installDir;
+
+		println(String.format("Installing Minecraft client at: %s", installDir));
+
 		if (this.loaderVersion != null) {
 			println(String.format("Installing Minecraft client of version %s with loader version %s", this.minecraftVersion, this.loaderVersion));
 		} else {
@@ -59,7 +75,7 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 
 		/*
 		 * Installing the client involves a few steps:
-		 * 1. Get the launcher directory from the OS
+		 * 1. Get the specified launcher directory
 		 * 2. Lookup if the minecraftVersion specified exists and then if it has intermediary
 		 * 3. Lookup if the specified loaderVersion exists, looking up the latest if null
 		 * 4. Get the launch metadata for the specified version of loader
@@ -67,8 +83,6 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 		 * 6. Write it
 		 * 7. (Optional) create profile if needed
 		 */
-
-		Path installationDir = OsPaths.getDefaultInstallationDir();
 
 		CompletableFuture<MinecraftInstallation.InstallationInfo> installationInfoFuture = MinecraftInstallation.getInfo(this.minecraftVersion, this.loaderVersion);
 
@@ -83,7 +97,7 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 				);
 
 				// Directories
-				Path versionsDir = installationDir.resolve("versions");
+				Path versionsDir = this.installDirPath.resolve("versions");
 				Path profileDir = versionsDir.resolve(profileName);
 				Path profileJson = profileDir.resolve(profileName + ".json");
 
@@ -121,7 +135,7 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 				if (this.generateProfile) {
 					try {
 						println("Creating new profile");
-						LauncherProfiles.updateProfiles(installationDir, profileName, this.minecraftVersion);
+						LauncherProfiles.updateProfiles(this.installDirPath, profileName, this.minecraftVersion);
 					} catch (IOException e) {
 						throw new UncheckedIOException(e); // Handle via exceptionally
 					}
