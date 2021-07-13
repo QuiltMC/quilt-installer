@@ -139,6 +139,8 @@ final class ClientPanel extends AbstractPanel implements Consumer<InstallClient.
 		);
 
 		action.run(this);
+
+		showInstalledMessage();
 	}
 
 	@Override
