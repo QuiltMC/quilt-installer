@@ -21,7 +21,7 @@ use std::env::temp_dir;
 use std::fs::File;
 use std::io;
 use std::io::{ErrorKind, Write};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::{exit, Command};
 
 const INSTALLER_LAST_RESORT_URL: &str = "https://quiltmc.org/"; // TODO: Fill in URL
@@ -164,7 +164,7 @@ fn main() {
 /// Try to launch the installer
 ///
 /// This will terminate the process if the java installer was successfully launched.
-fn try_launch<P: AsRef<Path>>(installer_jar: &PathBuf, jre_path: P) -> JreLaunchError {
+fn try_launch<P: AsRef<Path>>(installer_jar: &Path, jre_path: P) -> JreLaunchError {
 	// Let's see if the jre is valid
 	// -version will always return an exit code of 0 if successful.
 

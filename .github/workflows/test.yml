@@ -29,5 +29,5 @@ jobs:
       - run: ./gradlew build copyForNative --stacktrace
       - run: rustup target add ${{ matrix.target }}-pc-windows-msvc
       - name: Run Cargo
-        run: cargo check --target ${{ matrix.target }}-pc-windows-msvc
+        run: cargo clippy --target ${{ matrix.target }}-pc-windows-msvc
         working-directory: ./native
