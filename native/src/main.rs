@@ -99,12 +99,10 @@ fn main() {
 			}
 		}
 	}
+	let possible_jres = get_jre_locations();
 
-	if let Ok(possible_jres) = get_jre_locations() {
-		// Let's try some of the JREs we got
-		for jre in possible_jres {
-			try_launch(&installer_jar, jre);
-		}
+	for jre in possible_jres {
+		try_launch(&installer_jar, jre);
 	}
 
 	// Well time for the last resort by testing the system's `javaw` executable.
