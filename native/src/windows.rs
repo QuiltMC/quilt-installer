@@ -42,7 +42,7 @@ fn launcher_install_dir() -> io::Result<PathBuf> {
 ///
 /// If the Minecraft Launcher is installed, then we may be able to use the JRE the launcher has downloaded
 /// if the system's bundled JRE is not suitable.
-pub(crate) fn get_jre_locations() -> Vec<PathBuf> {
+pub(crate) fn get_jre_locations() -> io::Result<Vec<PathBuf>> {
 	let paths = vec![
 		"runtime/jre-legacy/windows-x64/jre-legacy/bin/javaw.exe",
 		"runtime/jre-legacy/windows-x86/jre-legacy/bin/javaw.exe",
@@ -77,5 +77,5 @@ pub(crate) fn get_jre_locations() -> Vec<PathBuf> {
 		}
 	}
 
-	return candidates
+	Ok(candidates)
 }
