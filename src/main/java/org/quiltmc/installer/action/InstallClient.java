@@ -16,6 +16,7 @@
 
 package org.quiltmc.installer.action;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
@@ -100,7 +101,12 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 				Path versionsDir = this.installDirPath.resolve("versions");
 				Path profileDir = versionsDir.resolve(profileName);
 				Path profileJson = profileDir.resolve(profileName + ".json");
-
+				// Nuke everything that already exists
+				try {
+					Files.walk(profileDir).map(Path::toFile).sorted((o1, o2) -> -o1.compareTo(o2)).forEach(File::delete);
+				 } catch (IOException ignored) {
+					//
+				}
 				try {
 					Files.createDirectories(profileDir);
 				} catch (IOException e) {

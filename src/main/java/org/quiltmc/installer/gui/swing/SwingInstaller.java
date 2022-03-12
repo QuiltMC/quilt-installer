@@ -108,7 +108,7 @@ public final class SwingInstaller extends JFrame {
 			endpoints.add(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
 			endpoints.add(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
 
-			QuiltMeta.create(QuiltMeta.DEFAULT_META_URL, endpoints).thenAcceptBothAsync(VersionManifest.create(), ((quiltMeta, manifest) -> {
+			QuiltMeta.create(QuiltMeta.DEFAULT_META_URL, QuiltMeta.DEFAULT_FABRIC_META_URL, endpoints).thenAcceptBothAsync(VersionManifest.create(), ((quiltMeta, manifest) -> {
 				List<String> loaderVersions = quiltMeta.getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
 				Collection<String> intermediaryVersions = quiltMeta.getEndpoint(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT).keySet();
 
@@ -128,7 +128,7 @@ public final class SwingInstaller extends JFrame {
 			this.setLocationRelativeTo(null); // Center on screen
 			this.setResizable(false);
 			this.setVisible(true);
-		} catch (HeadlessException e){
+		} catch (HeadlessException e) {
 			System.exit(1); // Don't know how we got here
 			throw new IllegalStateException(); // Make javac happy
 		} catch (Throwable t) {

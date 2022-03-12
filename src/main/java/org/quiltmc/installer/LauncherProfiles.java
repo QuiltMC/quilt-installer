@@ -53,7 +53,7 @@ public final class LauncherProfiles {
 
 		Object launcherProfiles;
 
-		try (JsonReader reader = JsonReader.createStrict(new InputStreamReader(Files.newInputStream(launcherProfilesPath)))) {
+		try (JsonReader reader = JsonReader.json(new InputStreamReader(Files.newInputStream(launcherProfilesPath)))) {
 			launcherProfiles = Gsons.read(reader);
 		}
 
@@ -98,7 +98,7 @@ public final class LauncherProfiles {
 		}
 
 		// Write out the new profiles
-		try (JsonWriter writer = JsonWriter.createStrict(Files.newBufferedWriter(launcherProfilesPath))) {
+		try (JsonWriter writer = JsonWriter.json(Files.newBufferedWriter(launcherProfilesPath))) {
 			writer.setIndent("  "); // Prettify it
 			Gsons.write(writer, launcherProfiles);
 		}

@@ -108,7 +108,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 			println("Installing libraries");
 
 			// Now we read the server's launch json
-			try (JsonReader reader = JsonReader.createStrict(new StringReader(launchJson))) {
+			try (JsonReader reader = JsonReader.json(new StringReader(launchJson))) {
 				Object read = Gsons.read(reader);
 
 				if (!(read instanceof Map)) {
@@ -212,7 +212,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 
 					String content = builder.toString();
 
-					try (JsonReader json = JsonReader.createStrict(new StringReader(content))) {
+					try (JsonReader json = JsonReader.json(new StringReader(content))) {
 						Object read = Gsons.read(json);
 
 						if (!(read instanceof Map)) {

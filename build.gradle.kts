@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "org.quiltmc"
-version = "0.2.3"
+version = "0.3.0"
 base.archivesBaseName = project.name
 
 repositories {
@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-	implementation("org.quiltmc:quilt-json5:1.0.0-rc.3")
+	implementation("org.quiltmc:quilt-json5:1.0.0")
 	compileOnly("org.jetbrains:annotations:20.1.0")
 }
 

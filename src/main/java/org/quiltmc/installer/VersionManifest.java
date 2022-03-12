@@ -53,7 +53,7 @@ public final class VersionManifest implements Iterable<VersionManifest.Version> 
 
 				InputStreamReader stream = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
 
-				try (JsonReader reader = JsonReader.createStrict(new BufferedReader(stream))) {
+				try (JsonReader reader = JsonReader.json(new BufferedReader(stream))) {
 					return read(reader);
 				}
 			} catch (IOException e) {

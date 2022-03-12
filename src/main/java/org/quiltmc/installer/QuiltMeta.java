@@ -42,7 +42,8 @@ public final class QuiltMeta {
 	 *
 	 * <p>The returned map has the version as the key and the maven artifact as the value
 	 */
-	public static final Endpoint<Map<String, String>> INTERMEDIARY_VERSIONS_ENDPOINT = new Endpoint<>("/v3/versions/intermediary", reader -> {
+	// TODO: use
+	public static final Endpoint<Map<String, String>> INTERMEDIARY_VERSIONS_ENDPOINT = new Endpoint<>("/v2/versions/intermediary", reader -> {
 		Map<String, String> ret = new LinkedHashMap<>();
 
 		if (reader.peek() != JsonToken.BEGIN_ARRAY) {
@@ -63,20 +64,23 @@ public final class QuiltMeta {
 
 			while (reader.hasNext()) {
 				switch (reader.nextName()) {
-				case "version":
-					if (reader.peek() != JsonToken.STRING) {
-						throw new ParseException("Version must be a string", reader);
-					}
+					case "version":
+						if (reader.peek() != JsonToken.STRING) {
+							throw new ParseException("Version must be a string", reader);
+						}
 
-					version = reader.nextString();
-					break;
-				case "maven":
-					if (reader.peek() != JsonToken.STRING) {
-						throw new ParseException("maven must be a string", reader);
-					}
+						version = reader.nextString();
+						break;
+					case "maven":
+						if (reader.peek() != JsonToken.STRING) {
+							throw new ParseException("maven must be a string", reader);
+						}
 
-					maven = reader.nextString();
-					break;
+						maven = reader.nextString();
+						break;
+					case "stable":
+						reader.nextBoolean(); // TODO
+						break;
 				}
 			}
 
@@ -96,24 +100,29 @@ public final class QuiltMeta {
 		reader.endArray();
 
 		return ret;
-	});
+	}, MetaType.FABRIC);
 
 	public static final String DEFAULT_META_URL = "https://meta.quiltmc.org";
-	private final String baseMetaUrl;
+	public static final String DEFAULT_FABRIC_META_URL = "https://meta.fabricmc.net";
 	private final Map<Endpoint<?>, Object> endpoints;
 
-	public static CompletableFuture<QuiltMeta> create(String baseMetaUrl, Set<Endpoint<?>> endpoints) {
+	public static CompletableFuture<QuiltMeta> create(String baseQuiltMetaUrl, String baseFabricMetaUrl, Set<Endpoint<?>> endpoints) {
 		Map<Endpoint<?>, CompletableFuture<?>> futures = new HashMap<>();
-
 		for (Endpoint<?> endpoint : endpoints) {
 			futures.put(endpoint, CompletableFuture.supplyAsync(() -> {
 				try {
-					URL url = new URL(baseMetaUrl + endpoint.endpointPath);
+					URL url;
+					if (endpoint.metaType == MetaType.FABRIC) {
+						url = new URL(baseFabricMetaUrl + endpoint.endpointPath);
+					} else {
+						url = new URL(baseQuiltMetaUrl + endpoint.endpointPath);
+					}
+
 					URLConnection connection = url.openConnection();
 
 					InputStreamReader stream = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
 
-					try (JsonReader reader = JsonReader.createStrict(new BufferedReader(stream))) {
+					try (JsonReader reader = JsonReader.json(new BufferedReader(stream))) {
 						return endpoint.deserializer.apply(reader);
 					}
 				} catch (IOException e) {
@@ -131,7 +140,7 @@ public final class QuiltMeta {
 				resolvedEndpoints.put(entry.getKey(), entry.getValue().join());
 			}
 
-			return new QuiltMeta(baseMetaUrl, resolvedEndpoints);
+			return new QuiltMeta(baseQuiltMetaUrl, resolvedEndpoints);
 		});
 	}
 
@@ -178,11 +187,10 @@ public final class QuiltMeta {
 			reader.endArray();
 
 			return versions;
-		});
+		}, MetaType.QUILT);
 	}
 
 	private QuiltMeta(String baseMetaUrl, Map<Endpoint<?>, Object> endpoints) {
-		this.baseMetaUrl = baseMetaUrl;
 		this.endpoints = endpoints;
 	}
 
@@ -202,15 +210,22 @@ public final class QuiltMeta {
 	public static final class Endpoint<T> {
 		private final String endpointPath;
 		private final ThrowingFunction<JsonReader, T, ParseException> deserializer;
+		private final MetaType metaType;
 
-		Endpoint(String endpointPath, ThrowingFunction<JsonReader, T, ParseException> deserializer) {
+		Endpoint(String endpointPath, ThrowingFunction<JsonReader, T, ParseException> deserializer, MetaType metaType) {
 			this.endpointPath = endpointPath;
 			this.deserializer = deserializer;
+			this.metaType = metaType;
 		}
 
 		@Override
 		public String toString() {
-			return "Endpoint{endpointPath=\"" + this.endpointPath + "\"}";
+			return "Endpoint{endpointPath=\"" + this.endpointPath + "\",metaType=\"" + metaType + "\"}";
 		}
+	}
+
+	public enum MetaType {
+		FABRIC,
+		QUILT
 	}
 }

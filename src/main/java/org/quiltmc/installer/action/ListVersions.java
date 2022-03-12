@@ -48,7 +48,7 @@ public final class ListVersions extends Action<Void> {
 				.thenAccept(this::displayMinecraftVerions)
 				.exceptionally(this::handleMinecraftVersionExceptions);
 
-		CompletableFuture<Void> quiltMeta = QuiltMeta.create(QuiltMeta.DEFAULT_META_URL, Collections.singleton(QuiltMeta.LOADER_VERSIONS_ENDPOINT))
+		CompletableFuture<Void> quiltMeta = QuiltMeta.create(QuiltMeta.DEFAULT_META_URL, QuiltMeta.DEFAULT_FABRIC_META_URL, Collections.singleton(QuiltMeta.LOADER_VERSIONS_ENDPOINT))
 				.thenAccept(this::displayLoaderVersions)
 				.exceptionally(e -> {
 					e.printStackTrace();

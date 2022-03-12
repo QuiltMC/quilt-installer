@@ -49,7 +49,7 @@ public final class MinecraftInstallation {
 		endpoints.add(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
 		endpoints.add(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
 
-		CompletableFuture<QuiltMeta> metaFuture = QuiltMeta.create(QuiltMeta.DEFAULT_META_URL, endpoints);
+		CompletableFuture<QuiltMeta> metaFuture = QuiltMeta.create(QuiltMeta.DEFAULT_META_URL, QuiltMeta.DEFAULT_FABRIC_META_URL, endpoints);
 
 		// Verify we actually have intermediary for the specified version
 		CompletableFuture<Void> intermediary = versionManifest.thenCompose(mcVersion -> metaFuture.thenAccept(meta -> {
