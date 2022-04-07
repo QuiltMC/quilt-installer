@@ -18,6 +18,9 @@ rand = { version = "0.8.3" }
 # Error dialogs
 native-dialog = { version = "0.5.5" }
 
+# Get the home directory on Mac (might be a better way?)
+dirs = { version = "1.0.4" }
+
 [target.'cfg(windows)'.dependencies]
 # Lookup in registry for installation location for additional JREs
 winreg = { version = "0.8.0" }
