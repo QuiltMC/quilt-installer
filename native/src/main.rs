@@ -16,7 +16,6 @@ mod platform;
 
 use crate::platform::{get_jre_locations, INSTALLER_JRE_HELP_URL, PLATFORM_JAVA_EXECUTABLE_NAME};
 use native_dialog::{MessageDialog, MessageType};
-use rand::random;
 use std::env::temp_dir;
 use std::fs::File;
 use std::io;
@@ -48,7 +47,7 @@ fn main() {
 	// We will be prudent and bundle the bytes of the installer jar right into the binary and copy it to a temporary file at runtime.
 
 	// Generate a randomish file name so we can write the bundled jar to it for launching.
-	let mut installer_jar_name = random::<u32>().to_string();
+	let mut installer_jar_name = format!("{:X}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos());
 	installer_jar_name.push_str("quilt-installer.jar");
 
 	let installer_jar = temp_dir().join(installer_jar_name);
