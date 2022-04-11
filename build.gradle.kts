@@ -12,7 +12,12 @@ plugins {
 }
 
 group = "org.quiltmc"
-version = "0.3.1"
+val env = System.getenv()
+version = if (env["SNAPSHOTS_URL"] != null) {
+	"0-SNAPSHOT"
+} else {
+	"0.3.2"
+}
 base.archivesBaseName = project.name
 
 repositories {
@@ -90,7 +95,6 @@ val copyForNative = tasks.register<Copy>("copyForNative") {
 	}
 }
 
-val env = System.getenv()
 
 publishing {
 	publications {
@@ -121,6 +125,15 @@ publishing {
 				credentials {
 					username = env["MAVEN_USERNAME"]
 					password = env["MAVEN_PASSWORD"]
+				}
+			}
+		} else if (env["SNAPSHOTS_URL"] != null) {
+			repositories.maven {
+				url = URI(env["SNAPSHOTS_URL"]!!)
+
+				credentials {
+					username = env["SNAPSHOTS_USERNAME"]
+					password = env["SNAPSHOTS_PASSWORD"]
 				}
 			}
 		}
