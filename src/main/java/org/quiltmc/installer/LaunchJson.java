@@ -16,13 +16,19 @@
 
 package org.quiltmc.installer;
 
+import org.quiltmc.json5.JsonReader;
+import org.quiltmc.json5.JsonWriter;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public final class LaunchJson {
@@ -53,6 +59,29 @@ public final class LaunchJson {
 			} catch (IOException e) {
 				throw new UncheckedIOException(e); // Handled via .exceptionally(...)
 			}
+			// TODO: HACK HACK HACK: inject intermediary instead of hashed
+		}).thenApplyAsync(raw -> {
+			Map<String, Object> map;
+			try {
+				//noinspection unchecked
+				map = (Map<String, Object>) Gsons.read(JsonReader.json(raw));
+			} catch (IOException e) {
+				throw new UncheckedIOException(e); // Handled via .exceptionally(...)
+			}
+			@SuppressWarnings("unchecked") List<Map<String, String>> libraries = (List<Map<String, String>>) map.get("libraries");
+			for (Map<String, String> library : libraries) {
+				if (library.get("name").startsWith("org.quiltmc:hashed")) {
+					library.replace("name", library.get("name").replace("org.quiltmc:hashed", "net.fabricmc:intermediary"));
+					library.replace("url", "https://maven.fabricmc.net/");
+				}
+			}
+			StringWriter writer = new StringWriter();
+			try {
+				Gsons.write(JsonWriter.json(writer), map);
+			} catch (IOException e) {
+				throw new UncheckedIOException(e); // Handled via .exceptionally(...)
+			}
+			return writer.toString();
 		});
 	}
 
