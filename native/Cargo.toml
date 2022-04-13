@@ -5,13 +5,15 @@ authors = [
     "QuiltMC"
 ]
 
-edition = "2021"
+edition = "2018"
 
 [dependencies]
 
 # Opening URLs
 open = { version = "1.6.0" }
 
+# We use this to generate a random name for the temporary file we make as needed.
+rand = { version = "0.8.3" }
 
 # Error dialogs
 native-dialog = { version = "0.5.5" }
@@ -28,7 +30,5 @@ embed-resource = "1.6.0"
 winres = "0.1.11"
 
 [profile.release]
-codegen-units = 1
 lto = true
 opt-level = 'z'
-strip = "symbols"
