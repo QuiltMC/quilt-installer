@@ -19,6 +19,8 @@ package org.quiltmc.installer.gui.swing;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.nio.file.*;
 import java.util.Collection;
 import java.util.List;
@@ -46,11 +48,6 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 	private final JCheckBox downloadServerJarButton;
 	private final JCheckBox generateLaunchScriptsButton;
 	private boolean showSnapshots;
-	private boolean downloadServer = true;
-	private boolean generateLaunchScripts = true;
-
-	private boolean downloadServerAutoSelected = true;
-	private boolean generateLaunchScriptsAutoSelected = true;
 
 	ServerPanel(SwingInstaller gui) {
 		super(gui);
@@ -98,6 +95,13 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 			this.installLocation.setPreferredSize(new Dimension(300, 26));
 			// For server create a server subdir relative to current running directory
 			this.installLocation.setText(Paths.get(System.getProperty("user.dir")).resolve("server").toString());
+			this.installLocation.addKeyListener(new KeyListener() {
+				@Override public void keyTyped(KeyEvent e) {
+					updateFlags();
+				}
+				@Override public void keyPressed(KeyEvent e) {}
+				@Override public void keyReleased(KeyEvent e) {}
+			});
 
 			row3.add(this.selectInstallationLocation = new JButton());
 			this.selectInstallationLocation.setText("...");
@@ -116,15 +120,8 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 		{
 			JComponent row4 = this.addRow();
 
-			row4.add(downloadServerJarButton = new JCheckBox(Localization.get("gui.server.download.server"), this.downloadServer));
-			downloadServerJarButton.addItemListener(e -> {
-				this.downloadServer = e.getStateChange() == ItemEvent.SELECTED;
-			});
-
-			row4.add(generateLaunchScriptsButton = new JCheckBox(Localization.get("gui.server.generate-script"), this.generateLaunchScripts));
-			generateLaunchScriptsButton.addItemListener(e -> {
-				this.generateLaunchScripts = e.getStateChange() == ItemEvent.SELECTED;
-			});
+			row4.add(downloadServerJarButton = new JCheckBox(Localization.get("gui.server.download.server"), true));
+			row4.add(generateLaunchScriptsButton = new JCheckBox(Localization.get("gui.server.generate-script"), true));
 		}
 
 		// Install button
@@ -154,17 +151,23 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 	private void install(ActionEvent event) {
 		boolean cancel = false;
 
-		if (!downloadServer && downloadServerAutoSelected) {
+		boolean shouldDownloadServer = this.downloadServerJarButton.isSelected();
+		boolean shouldGenerateScripts = this.generateLaunchScriptsButton.isSelected();
+
+		boolean hasServerJar = detectServerJar().join();
+		boolean hasScripts = detectLaunchScripts().join();
+
+		if (!shouldDownloadServer && !hasServerJar) {
 			cancel = !AbstractPanel.showPopup(Localization.get("dialog.install.server.no-jar"), Localization.get("dialog.install.server.no-jar.description"),
 					JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-		} else if (downloadServer && !downloadServerAutoSelected) {
+		} else if (shouldDownloadServer && hasServerJar) {
 		 	cancel = !AbstractPanel.showPopup(Localization.get("dialog.install.server.overwrite-jar"), Localization.get("dialog.install.server.overwrite-jar.description"),
 					JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 		}
 
-		if (!generateLaunchScripts && generateLaunchScriptsAutoSelected) {
+		if (!shouldGenerateScripts && !hasScripts) {
 			cancel = cancel | !AbstractPanel.showPopup(Localization.get("dialog.server.noscript"), Localization.get("dialog.server.noscript.description"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-		} else if (generateLaunchScripts && !generateLaunchScriptsAutoSelected) {
+		} else if (shouldGenerateScripts && hasScripts) {
 			cancel = cancel | !AbstractPanel.showPopup(Localization.get("dialog.server.overwritescript"), Localization.get("dialog.server.overwritescript.description"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 		}
 
@@ -176,8 +179,8 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 				(String) this.minecraftVersionSelector.getSelectedItem(),
 				(String) this.loaderVersionSelector.getSelectedItem(),
 				this.installLocation.getText(),
-				this.generateLaunchScripts,
-				this.downloadServer
+				shouldGenerateScripts,
+				shouldDownloadServer
 		);
 
 		action.run(this);
@@ -186,8 +189,18 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 	}
 
 	private void updateFlags() {
+		detectServerJar().thenAcceptAsync(hasServer -> {
+			this.downloadServerJarButton.setSelected(!hasServer);
+		}, SwingUtilities::invokeLater);
+
+		detectLaunchScripts().thenAcceptAsync(hasScripts -> {
+			this.generateLaunchScriptsButton.setSelected(!hasScripts);
+		}, SwingUtilities::invokeLater);
+	}
+
+	private CompletableFuture<Boolean> detectServerJar() {
 		// in case someone has an exceptionally slow disk
-		CompletableFuture.supplyAsync(() -> {
+		return CompletableFuture.supplyAsync(() -> {
 			Path serverJar = Paths.get(this.installLocation.getText()).resolve("server.jar");
 
 			if (Files.exists(serverJar)) {
@@ -196,18 +209,23 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 					// because of type erasure this should work even if other things are added in the format
 					//noinspection unchecked
 					Map<String, String> map = (Map<String, String>) Gsons.read(JsonReader.json(Files.newBufferedReader(versionJson)));
-					return map.get("id");
+					String versionId = map.get("id");
+					return versionId.equals(this.minecraftVersionSelector.getSelectedItem());
 				} catch (Throwable ex) {
 					// It's corrupt, not available, whatever, let's just overwrite it
 				}
 			}
 
-			return "";
-		}).thenAcceptAsync(version ->
-				this.downloadServerJarButton.setSelected(!version.equals(this.minecraftVersionSelector.getSelectedItem())),
-				SwingUtilities::invokeLater);
+			return false;
+		});
+	}
 
-		// TODO detect install script
+	private CompletableFuture<Boolean> detectLaunchScripts() {
+		// in case someone has an exceptionally slow disk
+		return CompletableFuture.supplyAsync(() -> {
+			Path root = Paths.get(this.installLocation.getText());
+			return Files.exists(root.resolve("start.sh")) || Files.exists(root.resolve("start.bat"));
+		});
 	}
 
 	@Override
