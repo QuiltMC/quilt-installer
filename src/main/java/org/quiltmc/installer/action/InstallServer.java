@@ -35,7 +35,6 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -45,8 +44,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -133,6 +130,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 				}
 
 				Set<CompletableFuture<Path>> libraryFiles = new HashSet<>();
+				Path libRoot = installDir.resolve("libraries");
 
 				for (Object library : libraries) {
 					if (!(library instanceof Map)) {
@@ -145,7 +143,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 					String name = libraryFields.computeIfAbsent("name", k -> { throw new IllegalStateException("Library had no name!"); });
 					String url = libraryFields.computeIfAbsent("url", k -> { throw new IllegalStateException("Library had no url!"); });
 
-					libraryFiles.add(downloadLibrary(name, url));
+					libraryFiles.add(downloadLibrary(libRoot, name, url));
 				}
 
 				return CompletableFuture.allOf(libraryFiles.toArray(new CompletableFuture[0])).thenAccept(_v -> {
@@ -254,13 +252,12 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 		});
 	}
 
-	private static CompletableFuture<Path> downloadLibrary(String name, String url) {
+	private static CompletableFuture<Path> downloadLibrary(Path libRoot, String name, String url) {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
-				// Windows does not accept semicolons in filenames, so, we remove them
-				String[] splitName = name.split(":");
-				String shortName = splitName[1] + splitName[2];
-				Path path = Files.createTempFile(shortName, null);
+				Path destination = libRoot.resolve(artifactNotationToPath(name));
+				boolean madeFiles = destination.getParent().toFile().mkdirs();
+				if (!madeFiles) eprintln("Couldn't create parent directories for "+destination);
 
 				// Convert to maven url
 				String rawUrl = mavenToUrl(url, name);
@@ -269,10 +266,10 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 				URLConnection connection = new URL(rawUrl).openConnection();
 
 				try (InputStream stream = connection.getInputStream()) {
-					Files.copy(stream, path, StandardCopyOption.REPLACE_EXISTING);
+					Files.copy(stream, destination, StandardCopyOption.REPLACE_EXISTING);
 				}
 
-				return path;
+				return destination;
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
 			}
@@ -295,8 +292,16 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 			Manifest manifest = new Manifest();
 			manifest.getMainAttributes().put(new Attributes.Name("Manifest-Version"), "1.0");
 			manifest.getMainAttributes().put(new Attributes.Name("Main-Class"), "net.fabricmc.loader.launch.server.FabricServerLauncher");
-			manifest.write(zipStream);
 
+			List<String> classPath = new ArrayList<>(libraries.size());
+			for (CompletableFuture<Path> library : libraries) {
+				Path libraryJar = library.get();
+				classPath.add(path.getParent().relativize(libraryJar).toString());
+			}
+
+			manifest.getMainAttributes().put(new Attributes.Name("Class-Path"), String.join(" ", classPath));
+
+			manifest.write(zipStream);
 			zipStream.closeEntry();
 
 			// server launch properties
@@ -304,103 +309,21 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 			zipStream.putNextEntry(new ZipEntry("quilt-server-launch.properties"));
 			zipStream.write(("launch.mainClass=" + mainClass + "\n").getBytes(StandardCharsets.UTF_8));
 			zipStream.closeEntry();
-
-			Map<String, Set<String>> services = new HashMap<>();
-			byte[] buffer = new byte[32768];
-
-			// Combine services and copy other files
-			for (CompletableFuture<Path> library : libraries) {
-				Path libraryJar = library.get();
-
-				try (JarInputStream jarStream = new JarInputStream(Files.newInputStream(libraryJar))) {
-					JarEntry entry;
-
-					while ((entry = jarStream.getNextJarEntry()) != null) {
-						if (entry.isDirectory()) {
-							continue;
-						}
-
-						String name = entry.getName();
-						// exclude signatures
-						if (name.startsWith("META-INF/") && name.endsWith(".SF") || name.endsWith(".RSA")) {
-							continue;
-						} else if (name.startsWith(SERVICES_DIR) && name.indexOf('/', SERVICES_DIR.length()) < 0) { // service definition file
-							parseServiceDefinition(name, jarStream, services);
-						} else if (!addedEntries.add(name)) {
-							System.out.printf("duplicate file: %s%n", name);
-						} else {
-							JarEntry newEntry = new JarEntry(name);
-							zipStream.putNextEntry(newEntry);
-
-							int r;
-							while ((r = jarStream.read(buffer, 0, buffer.length)) >= 0) {
-								zipStream.write(buffer, 0, r);
-							}
-
-							zipStream.closeEntry();
-						}
-					}
-				}
-			}
-
-			// write service definitions
-			for (Map.Entry<String, Set<String>> entry : services.entrySet()) {
-				JarEntry newEntry = new JarEntry(entry.getKey());
-				zipStream.putNextEntry(newEntry);
-
-				writeServiceDefinition(entry.getValue(), zipStream);
-
-				zipStream.closeEntry();
-			}
 		}
-	}
-
-	private static void parseServiceDefinition(String name, InputStream rawIs, Map<String, Set<String>> services) throws IOException {
-		Collection<String> out = null;
-		BufferedReader reader = new BufferedReader(new InputStreamReader(rawIs, StandardCharsets.UTF_8));
-		String line;
-
-		while ((line = reader.readLine()) != null) {
-			// Drop comments
-			int pos = line.indexOf('#');
-
-			if (pos >= 0) {
-				line = line.substring(0, pos);
-			}
-
-			line = line.trim();
-
-			if (!line.isEmpty()) {
-				if (out == null) {
-					out = services.computeIfAbsent(name, ignore -> new LinkedHashSet<>());
-				}
-
-				out.add(line);
-			}
-		}
-	}
-
-	private static void writeServiceDefinition(Collection<String> entries, OutputStream stream) throws IOException {
-		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stream, StandardCharsets.UTF_8));
-
-		for (String def : entries) {
-			writer.write(def);
-			writer.write('\n');
-		}
-
-		writer.flush();
 	}
 
 	private static String mavenToUrl(String mavenUrl, String artifactNotation) {
-		String[] parts = artifactNotation.split(":", 3);
+		return mavenUrl + artifactNotationToPath(artifactNotation);
+	}
 
-		String path = parts[0].replace(".", "/") + // Group
+	private static String artifactNotationToPath(String artifact) {
+		String[] parts = artifact.split(":", 3);
+
+		return parts[0].replace(".", "/") + // Group
 				"/" + parts[1] +									// Artifact name
 				"/" + parts[2] +									// Version
 				"/" + parts[1] +
-				"-" + parts[2] + ".jar";							// Artifact
-
-		return mavenUrl + path;
+				"-" + parts[2] + ".jar";
 	}
 
 	public String minecraftVersion() {
