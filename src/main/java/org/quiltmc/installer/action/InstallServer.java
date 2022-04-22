@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,6 +62,7 @@ import org.quiltmc.json5.JsonReader;
  */
 public final class InstallServer extends Action<InstallServer.MessageType> {
 	public static final String SERVICES_DIR = "META-INF/services/";
+
 	private final String minecraftVersion;
 	@Nullable
 	private final String loaderVersion;
@@ -292,15 +294,14 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 
 			Manifest manifest = new Manifest();
 			manifest.getMainAttributes().put(new Attributes.Name("Manifest-Version"), "1.0");
-			manifest.getMainAttributes().put(new Attributes.Name("Main-Class"), "org.quiltmc.loader.impl.launch.server.QuiltServerLauncher");
+			manifest.getMainAttributes().put(new Attributes.Name("Main-Class"), "net.fabricmc.loader.launch.server.FabricServerLauncher");
 			manifest.write(zipStream);
 
 			zipStream.closeEntry();
 
 			// server launch properties
-			// TODO: Generate quilt file, but also read old fabric files
-			addedEntries.add("fabric-server-launch.properties");
-			zipStream.putNextEntry(new ZipEntry("fabric-server-launch.properties"));
+			addedEntries.add("quilt-server-launch.properties");
+			zipStream.putNextEntry(new ZipEntry("quilt-server-launch.properties"));
 			zipStream.write(("launch.mainClass=" + mainClass + "\n").getBytes(StandardCharsets.UTF_8));
 			zipStream.closeEntry();
 
@@ -320,8 +321,10 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 						}
 
 						String name = entry.getName();
-
-						if (name.startsWith(SERVICES_DIR) && name.indexOf('/', SERVICES_DIR.length()) < 0) { // service definition file
+						// exclude signatures
+						if (name.startsWith("META-INF/") && name.endsWith(".SF") || name.endsWith(".RSA")) {
+							continue;
+						} else if (name.startsWith(SERVICES_DIR) && name.indexOf('/', SERVICES_DIR.length()) < 0) { // service definition file
 							parseServiceDefinition(name, jarStream, services);
 						} else if (!addedEntries.add(name)) {
 							System.out.printf("duplicate file: %s%n", name);
