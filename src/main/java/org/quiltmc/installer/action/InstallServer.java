@@ -48,6 +48,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -119,10 +120,10 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 
 				@SuppressWarnings("unchecked")
 				Map<String, Object> root = ((Map<String, Object>) read);
-				String mainClass = (String) root.get("mainClass");
+				String mainClass = (String) root.get("launcherMainClass");
 
 				if (mainClass == null) {
-					throw new IllegalStateException("mainClass in server launch json was not present");
+					throw new IllegalStateException("launcherMainClass in server launch json was not present");
 				}
 
 				@SuppressWarnings("unchecked")
@@ -145,7 +146,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 					String name = libraryFields.computeIfAbsent("name", k -> { throw new IllegalStateException("Library had no name!"); });
 					String url = libraryFields.computeIfAbsent("url", k -> { throw new IllegalStateException("Library had no url!"); });
 
-					libraryFiles.add(downloadLibrary(name, url));
+					libraryFiles.add(downloadLibrary(installDir.resolve("libraries"), name, url));
 				}
 
 				return CompletableFuture.allOf(libraryFiles.toArray(new CompletableFuture[0])).thenAccept(_v -> {
@@ -254,14 +255,10 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 		});
 	}
 
-	private static CompletableFuture<Path> downloadLibrary(String name, String url) {
+	private static CompletableFuture<Path> downloadLibrary(Path librariesDir, String name, String url) {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
-				// Windows does not accept semicolons in filenames, so, we remove them
-				String[] splitName = name.split(":");
-				String shortName = splitName[1] + splitName[2];
-				Path path = Files.createTempFile(shortName, null);
-
+				Path path = librariesDir.resolve(splitArtifact(name));
 				// Convert to maven url
 				String rawUrl = mavenToUrl(url, name);
 				println("Downloading library at: " + rawUrl);
@@ -269,6 +266,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 				URLConnection connection = new URL(rawUrl).openConnection();
 
 				try (InputStream stream = connection.getInputStream()) {
+					Files.createDirectories(path.getParent());
 					Files.copy(stream, path, StandardCopyOption.REPLACE_EXISTING);
 				}
 
@@ -286,72 +284,13 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 		}
 
 		try (ZipOutputStream zipStream = new ZipOutputStream(Files.newOutputStream(path, StandardOpenOption.CREATE_NEW))) {
-			Set<String> addedEntries = new HashSet<>();
-
-			// Manifest
-			addedEntries.add("META-INF/MANIFEST.MF");
 			zipStream.putNextEntry(new ZipEntry("META-INF/MANIFEST.MF"));
-
 			Manifest manifest = new Manifest();
-			manifest.getMainAttributes().put(new Attributes.Name("Manifest-Version"), "1.0");
-			manifest.getMainAttributes().put(new Attributes.Name("Main-Class"), "net.fabricmc.loader.launch.server.FabricServerLauncher");
+			manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+			manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, mainClass);
+			manifest.getMainAttributes().put(Attributes.Name.CLASS_PATH, libraries.stream().map(CompletableFuture::join).map(p -> path.getParent().relativize(p)).map(Path::toString).collect(Collectors.joining(" ")));
 			manifest.write(zipStream);
-
 			zipStream.closeEntry();
-
-			// server launch properties
-			addedEntries.add("quilt-server-launch.properties");
-			zipStream.putNextEntry(new ZipEntry("quilt-server-launch.properties"));
-			zipStream.write(("launch.mainClass=" + mainClass + "\n").getBytes(StandardCharsets.UTF_8));
-			zipStream.closeEntry();
-
-			Map<String, Set<String>> services = new HashMap<>();
-			byte[] buffer = new byte[32768];
-
-			// Combine services and copy other files
-			for (CompletableFuture<Path> library : libraries) {
-				Path libraryJar = library.get();
-
-				try (JarInputStream jarStream = new JarInputStream(Files.newInputStream(libraryJar))) {
-					JarEntry entry;
-
-					while ((entry = jarStream.getNextJarEntry()) != null) {
-						if (entry.isDirectory()) {
-							continue;
-						}
-
-						String name = entry.getName();
-						// exclude signatures
-						if (name.startsWith("META-INF/") && name.endsWith(".SF") || name.endsWith(".RSA")) {
-							continue;
-						} else if (name.startsWith(SERVICES_DIR) && name.indexOf('/', SERVICES_DIR.length()) < 0) { // service definition file
-							parseServiceDefinition(name, jarStream, services);
-						} else if (!addedEntries.add(name)) {
-							System.out.printf("duplicate file: %s%n", name);
-						} else {
-							JarEntry newEntry = new JarEntry(name);
-							zipStream.putNextEntry(newEntry);
-
-							int r;
-							while ((r = jarStream.read(buffer, 0, buffer.length)) >= 0) {
-								zipStream.write(buffer, 0, r);
-							}
-
-							zipStream.closeEntry();
-						}
-					}
-				}
-			}
-
-			// write service definitions
-			for (Map.Entry<String, Set<String>> entry : services.entrySet()) {
-				JarEntry newEntry = new JarEntry(entry.getKey());
-				zipStream.putNextEntry(newEntry);
-
-				writeServiceDefinition(entry.getValue(), zipStream);
-
-				zipStream.closeEntry();
-			}
 		}
 	}
 
@@ -392,15 +331,17 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 	}
 
 	private static String mavenToUrl(String mavenUrl, String artifactNotation) {
-		String[] parts = artifactNotation.split(":", 3);
+		return mavenUrl + splitArtifact(artifactNotation);
+	}
 
+	private static String splitArtifact(String artifactNotation) {
+		String[] parts = artifactNotation.split(":", 3);
 		String path = parts[0].replace(".", "/") + // Group
 				"/" + parts[1] +									// Artifact name
 				"/" + parts[2] +									// Version
 				"/" + parts[1] +
 				"-" + parts[2] + ".jar";							// Artifact
-
-		return mavenUrl + path;
+		return path;
 	}
 
 	public String minecraftVersion() {

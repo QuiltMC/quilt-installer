@@ -47,7 +47,7 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 	private final JCheckBox generateLaunchScriptsButton;
 	private boolean showSnapshots;
 	private boolean downloadServer = true;
-	private boolean generateLaunchScripts = true;
+	private boolean generateLaunchScripts = false;
 
 	private boolean downloadServerAutoSelected = true;
 	private boolean generateLaunchScriptsAutoSelected = true;
@@ -125,6 +125,8 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 			generateLaunchScriptsButton.addItemListener(e -> {
 				this.generateLaunchScripts = e.getStateChange() == ItemEvent.SELECTED;
 			});
+			generateLaunchScriptsButton.setToolTipText("Coming soon!");
+			generateLaunchScriptsButton.setEnabled(false);
 		}
 
 		// Install button
