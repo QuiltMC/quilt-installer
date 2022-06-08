@@ -165,9 +165,9 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 		}
 
 		if (!generateLaunchScripts && generateLaunchScriptsAutoSelected) {
-			cancel = cancel | !AbstractPanel.showPopup(Localization.get("dialog.server.noscript"), Localization.get("dialog.server.noscript.description"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+			cancel = cancel | !AbstractPanel.showPopup(Localization.get("dialog.install.server.no-script"), Localization.get("dialog.install.server.no-script.description"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 		} else if (generateLaunchScripts && !generateLaunchScriptsAutoSelected) {
-			cancel = cancel | !AbstractPanel.showPopup(Localization.get("dialog.server.overwritescript"), Localization.get("dialog.server.overwritescript.description"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+			cancel = cancel | !AbstractPanel.showPopup(Localization.get("dialog.install.server.overwrite-script"), Localization.get("dialog.install.server.overwrite-script.description"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 		}
 
 		if (cancel) {
