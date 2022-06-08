@@ -288,7 +288,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 			Manifest manifest = new Manifest();
 			manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
 			manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, mainClass);
-			manifest.getMainAttributes().put(Attributes.Name.CLASS_PATH, libraries.stream().map(CompletableFuture::join).map(p -> path.getParent().relativize(p)).map(Path::toString).collect(Collectors.joining(" ")));
+			manifest.getMainAttributes().put(Attributes.Name.CLASS_PATH, libraries.stream().map(CompletableFuture::join).map(p -> path.getParent().relativize(p).toString().replace("\\", "/")).collect(Collectors.joining(" ")));
 			manifest.write(zipStream);
 			zipStream.closeEntry();
 		}
