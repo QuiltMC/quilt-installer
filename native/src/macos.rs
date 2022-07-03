@@ -58,6 +58,8 @@ pub(crate) fn get_jre_locations() -> io::Result<Vec<PathBuf>> {
 		"runtime/jre-legacy/jre.bundle/Contents/Home/bin/java",
 		"runtime/java-runtime-alpha/macos/java-runtime-alpha/jre.bundle/Contents/Home/bin/java",
 		"runtime/java-runtime-beta/macos/java-runtime-beta/jre.bundle/Contents/Home/bin/java",
+		"runtime/java-runtime-gamma/macos/java-runtime-gamma/jre.bundle/Contents/Home/bin/java",
+		"runtime/java-runtime-delta/macos/java-runtime-delta/jre.bundle/Contents/Home/bin/java",
 	];
 
 	let mut candidates = Vec::new();

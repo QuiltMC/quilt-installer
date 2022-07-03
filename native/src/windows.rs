@@ -54,9 +54,11 @@ pub(crate) fn get_jre_locations() -> io::Result<Vec<PathBuf>> {
 		"runtime/java-runtime-alpha/windows-x86/javaw.exe",
 		"runtime/java-runtime-beta/windows-x86/javaw.exe",
 		"runtime/java-runtime-beta/windows-x64/javaw.exe",
-		// Haven't seen these in the wild, but it's worth future-proofing I guess
-		"runtime/java-runtime/windows-x64/javaw.exe",
-		"runtime/java-runtime/windows-x86/javaw.exe"
+		"runtime/java-runtime-gamma/windows-x86/javaw.exe",
+		"runtime/java-runtime-gamma/windows-x64/javaw.exe",
+		// All signs point to a versioning scheme based on Greek letters. Let's future-proof it against the next predicted one 
+		"runtime/java-runtime-delta/windows-x64/javaw.exe",
+		"runtime/java-runtime-delta/windows-x86/javaw.exe"
 	];
 
 	let mut candidates = Vec::new();
