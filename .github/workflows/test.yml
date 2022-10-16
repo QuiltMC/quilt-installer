@@ -4,27 +4,27 @@ jobs:
   build:
     strategy:
       matrix:
-        java: [8-jdk, 11-jdk, 16-jdk]
-    runs-on: ubuntu-20.04
+        java: [8, 11, 17]
+    runs-on: ubuntu-22.04
     container:
-      image: openjdk:${{ matrix.java }}
+      image: eclipse-temurin:${{ matrix.java }}
       options: --user root
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - uses: gradle/wrapper-validation-action@v1
       - run: ./gradlew build test --stacktrace
   buildNatives:
     strategy:
       matrix:
         target: [ x86_64, i686, aarch64 ]
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
       # TODO: Fix macOS in future
-      - uses: actions/checkout@v2
-      - uses: actions/setup-java@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
-          java-version: '16'
+          distribution: 'temurin'
+          java-version: '17'
       - uses: gradle/wrapper-validation-action@v1
       - run: ./gradlew build copyForNative --stacktrace
       - run: rustup target add ${{ matrix.target }}-pc-windows-msvc

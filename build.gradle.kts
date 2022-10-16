@@ -6,9 +6,9 @@ plugins {
 	`maven-publish`
 	// application
 
-	id("net.kyori.blossom") version "1.2.0"
+	id("net.kyori.blossom") version "1.3.1"
 	id("com.diffplug.spotless") version "5.8.2"
-	id("com.github.johnrengelman.shadow") version "6.1.0"
+	id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "org.quiltmc"
@@ -29,8 +29,8 @@ repositories {
 }
 
 dependencies {
-	implementation("org.quiltmc:quilt-json5:1.0.0")
-	compileOnly("org.jetbrains:annotations:20.1.0")
+	implementation("org.quiltmc:quilt-json5:1.0.2")
+	compileOnly("org.jetbrains:annotations:23.0.0")
 }
 
 spotless {
