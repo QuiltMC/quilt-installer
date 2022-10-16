@@ -29,8 +29,8 @@ repositories {
 }
 
 dependencies {
-	implementation("org.quiltmc:quilt-json5:${project.quilt_json5}")
-	compileOnly("org.jetbrains:annotations:${project.annotations}")
+	implementation("org.quiltmc:quilt-json5:1.0.2")
+	compileOnly("org.jetbrains:annotations:23.0.0")
 }
 
 spotless {
