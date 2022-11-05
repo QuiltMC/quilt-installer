@@ -84,8 +84,8 @@ public abstract class Action<M> {
 		}
 	};
 
-	public static Action<Void> listVersions(boolean snapshots) {
-		return new ListVersions(snapshots);
+	public static Action<Void> listVersions(boolean minecraftSnapshots, boolean loaderBetas) {
+		return new ListVersions(minecraftSnapshots, loaderBetas);
 	}
 
 	public static InstallClient installClient(String minecraftVersion, @Nullable String loaderVersion, @Nullable String installDir, boolean generateProfile) {
