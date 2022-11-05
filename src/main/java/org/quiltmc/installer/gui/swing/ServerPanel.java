@@ -40,12 +40,14 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 	private final JComboBox<String> minecraftVersionSelector;
 	private final JComboBox<String> loaderVersionSelector;
 	private final JCheckBox showSnapshotsCheckBox;
+	private final JCheckBox showLoaderBetasCheckBox;
 	private final JTextField installLocation;
 	private final JButton selectInstallationLocation;
 	private final JButton installButton;
 	private final JCheckBox downloadServerJarButton;
 	private final JCheckBox generateLaunchScriptsButton;
 	private boolean showSnapshots;
+	private boolean showLoaderBetas;
 	private boolean downloadServer = true;
 	private boolean generateLaunchScripts = false;
 
@@ -87,6 +89,15 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 			this.loaderVersionSelector.setPreferredSize(new Dimension(200, 26));
 			this.loaderVersionSelector.addItem(Localization.get("gui.install.loading"));
 			this.loaderVersionSelector.setEnabled(false);
+			row2.add(this.showLoaderBetasCheckBox = new JCheckBox(Localization.get("gui.loader.version.betas")));
+			this.showLoaderBetasCheckBox.setEnabled(false);
+			this.showLoaderBetasCheckBox.addItemListener(e -> {
+				// Versions are already loaded, repopulate the combo box
+				if (this.loaderVersions() != null) {
+					this.showLoaderBetas = e.getStateChange() == ItemEvent.SELECTED;
+					populateLoaderVersions(this.loaderVersionSelector, this.loaderVersions(), this.showLoaderBetas);
+				}
+			});
 		}
 
 		// Install location
@@ -146,7 +157,8 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 		populateMinecraftVersions(this.minecraftVersionSelector, manifest, intermediaryVersions, this.showSnapshots);
 		updateFlags();
 		this.showSnapshotsCheckBox.setEnabled(true);
-		populateLoaderVersions(this.loaderVersionSelector, loaderVersions);
+		populateLoaderVersions(this.loaderVersionSelector, loaderVersions, this.showLoaderBetas);
+		this.showLoaderBetasCheckBox.setEnabled(true);
 
 		this.installButton.setText(Localization.get("gui.install"));
 		this.installButton.setEnabled(true);

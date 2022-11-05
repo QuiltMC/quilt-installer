@@ -75,8 +75,8 @@ public final class MinecraftInstallation {
 				throw new IllegalStateException("No loader versions were found");
 			}
 
-			// Choose latest version
-			return versions.get(0);
+			// Choose latest stable version
+			return versions.stream().filter(version -> !version.contains("-")).findFirst().get();
 		});
 
 		return CompletableFuture.allOf(versionManifest, intermediary, loaderVersionFuture).thenApply(_v -> {

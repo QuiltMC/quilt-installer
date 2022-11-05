@@ -36,10 +36,12 @@ public final class ListVersions extends Action<Void> {
 	/**
 	 * Whether to display snapshot Minecraft versions.
 	 */
-	private final boolean snapshots;
+	private final boolean minecraftSnapshots;
+	private final boolean loaderBetas;
 
-	ListVersions(boolean snapshots) {
-		this.snapshots = snapshots;
+	ListVersions(boolean minecraftSnapshots, boolean loaderBetas) {
+		this.minecraftSnapshots = minecraftSnapshots;
+		this.loaderBetas = loaderBetas;
 	}
 
 	@Override
@@ -64,14 +66,18 @@ public final class ListVersions extends Action<Void> {
 	private void displayMinecraftVerions(VersionManifest manifest) {
 		println(Localization.createFrom("cli.latest.minecraft.release", manifest.latestRelease().id()));
 
-		if (this.snapshots) {
+		if (this.minecraftSnapshots) {
 			println(Localization.createFrom("cli.latest.minecraft.snapshot", manifest.latestSnapshot().id()));
 		}
 	}
 
 	private void displayLoaderVersions(QuiltMeta meta) {
 		List<String> endpoint = meta.getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
-		println(Localization.createFrom("cli.latest.loader", endpoint.get(0)));
+		println(Localization.createFrom("cli.latest.loader.release", endpoint.stream().filter(version -> !version.contains("-")).findFirst().get()));
+
+		if (this.loaderBetas) {
+			println(Localization.createFrom("cli.latest.loader.beta", endpoint.stream().filter(version -> version.contains("-")).findFirst().get()));
+		}
 	}
 
 	private Void handleMinecraftVersionExceptions(Throwable exc) {

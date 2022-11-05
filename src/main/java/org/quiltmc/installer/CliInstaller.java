@@ -71,20 +71,30 @@ public final class CliInstaller {
 			return Action.DISPLAY_HELP;
 		case "listVersions":
 			if (split.size() == 0) {
-				return Action.listVersions(false);
+				return Action.listVersions(false, false);
 			}
 
-			arg = split.remove();
+			boolean minecraftSnapshots = false;
+			boolean loaderBetas = false;
+			boolean hasError = false;
 
-			if (arg.equals("--snapshots")) {
-				return Action.listVersions(true);
-			} else if (arg.startsWith("--")) {
-				System.err.printf("Invalid option \"%s\"%n", arg);
-			} else {
-				System.err.printf("Unexpected additional argument \"%s\"%n", arg);
+			while (split.peek() != null) {
+				String option = split.remove();
+
+				if (option.equals("--snapshots")) {
+					minecraftSnapshots = true;
+				} else if (option.equals("--loader-betas")) {
+					loaderBetas = true;
+				} else if (option.startsWith("--")) {
+					System.err.printf("Invalid option \"%s\"%n", arg);
+					hasError = true;
+				} else {
+					System.err.printf("Unexpected additional argument \"%s\"%n", arg);
+					hasError = true;
+				}
 			}
 
-			return Action.DISPLAY_HELP;
+			return !hasError ? Action.listVersions(minecraftSnapshots, loaderBetas) : Action.DISPLAY_HELP;
 		case "install":
 			if (split.size() == 0) {
 				System.err.println("Side is required: \"client\" or \"server\"");

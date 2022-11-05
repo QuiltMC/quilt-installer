@@ -95,11 +95,13 @@ abstract class AbstractPanel extends JPanel {
 		comboBox.setEnabled(true);
 	}
 
-	static void populateLoaderVersions(JComboBox<String> comboBox, List<String> loaderVersions) {
+	static void populateLoaderVersions(JComboBox<String> comboBox, List<String> loaderVersions, boolean betas) {
 		comboBox.removeAllItems();
 
 		for (String loaderVersion : loaderVersions) {
-			comboBox.addItem(loaderVersion);
+			if (betas || !loaderVersion.contains("-")) {
+				comboBox.addItem(loaderVersion);
+			}
 		}
 
 		comboBox.setEnabled(true);
