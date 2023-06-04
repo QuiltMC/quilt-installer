@@ -16,10 +16,7 @@
 
 package org.quiltmc.installer;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -31,6 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.jar.Manifest;
 
 import org.quiltmc.json5.JsonReader;
 import org.quiltmc.json5.JsonToken;
@@ -104,6 +102,7 @@ public final class QuiltMeta {
 
 	public static final String DEFAULT_META_URL = "https://meta.quiltmc.org";
 	public static final String DEFAULT_FABRIC_META_URL = "https://meta.fabricmc.net";
+	private static final String INSTALLER_VERSION = getInstallerVersion();
 	private final Map<Endpoint<?>, Object> endpoints;
 
 	public static CompletableFuture<QuiltMeta> create(String baseQuiltMetaUrl, String baseFabricMetaUrl, Set<Endpoint<?>> endpoints) {
@@ -119,6 +118,7 @@ public final class QuiltMeta {
 					}
 
 					URLConnection connection = url.openConnection();
+					connection.setRequestProperty("User-Agent", "Quilt-Installer/"+INSTALLER_VERSION);
 
 					InputStreamReader stream = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
 
@@ -142,6 +142,15 @@ public final class QuiltMeta {
 
 			return new QuiltMeta(baseQuiltMetaUrl, resolvedEndpoints);
 		});
+	}
+
+	private static String getInstallerVersion() {
+		String version = QuiltMeta.class.getPackage().getImplementationVersion();
+		if (version != null) {
+			return version;
+		}
+
+		return "dev";
 	}
 
 	private static Endpoint<List<String>> createVersion(String endpointPath) {
