@@ -41,7 +41,7 @@ public final class LaunchJson {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
 				URL url = new URL(rawUrl);
-				URLConnection connection = QuiltMeta.openMetaConnection(url);
+				URLConnection connection = Connections.openConnection(url);
 
 				InputStreamReader stream = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
 

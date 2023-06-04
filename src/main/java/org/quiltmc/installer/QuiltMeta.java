@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.jar.Manifest;
 
 import org.quiltmc.json5.JsonReader;
 import org.quiltmc.json5.JsonToken;
@@ -102,15 +101,8 @@ public final class QuiltMeta {
 
 	public static final String DEFAULT_META_URL = "https://meta.quiltmc.org";
 	public static final String DEFAULT_FABRIC_META_URL = "https://meta.fabricmc.net";
-	private static final String INSTALLER_VERSION = getInstallerVersion();
 	private final Map<Endpoint<?>, Object> endpoints;
 
-	public static URLConnection openMetaConnection(URL url) throws IOException {
-		URLConnection connection = url.openConnection();
-		connection.setRequestProperty("User-Agent", "Quilt-Installer/"+INSTALLER_VERSION);
-
-		return connection;
-	}
 
 	public static CompletableFuture<QuiltMeta> create(String baseQuiltMetaUrl, String baseFabricMetaUrl, Set<Endpoint<?>> endpoints) {
 		Map<Endpoint<?>, CompletableFuture<?>> futures = new HashMap<>();
@@ -124,7 +116,7 @@ public final class QuiltMeta {
 						url = new URL(baseQuiltMetaUrl + endpoint.endpointPath);
 					}
 
-					URLConnection connection = openMetaConnection(url);
+					URLConnection connection = Connections.openConnection(url);
 
 					InputStreamReader stream = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
 

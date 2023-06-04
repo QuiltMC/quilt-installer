@@ -24,13 +24,11 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.json5.JsonReader;
 import org.quiltmc.json5.JsonToken;
@@ -49,7 +47,7 @@ public final class VersionManifest implements Iterable<VersionManifest.Version> 
 		return CompletableFuture.supplyAsync(() -> {
 			try {
 				URL url = new URL(LAUNCHER_META_URL);
-				URLConnection connection = url.openConnection();
+				URLConnection connection = Connections.openConnection(url);
 
 				InputStreamReader stream = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
 

@@ -33,9 +33,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -45,14 +43,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.jetbrains.annotations.Nullable;
+import org.quiltmc.installer.Connections;
 import org.quiltmc.installer.Gsons;
 import org.quiltmc.installer.LaunchJson;
 import org.quiltmc.installer.VersionManifest;
@@ -200,7 +197,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 
 			try {
 				URL url = new URL(rawUrl);
-				URLConnection connection = url.openConnection();
+				URLConnection connection = Connections.openConnection(url);
 
 				InputStreamReader stream = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
 
@@ -242,7 +239,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 
 						println(String.format("Downloading %s server jar from %s", minecraftVersion, rawServerUrl.toString()));
 
-						try (InputStream serverDownloadStream = new URL(rawServerUrl.toString()).openConnection().getInputStream()) {
+						try (InputStream serverDownloadStream = Connections.openConnection(new URL(rawServerUrl.toString())).getInputStream()) {
 							Files.copy(serverDownloadStream, installDir.resolve("server.jar"), StandardCopyOption.REPLACE_EXISTING);
 						}
 					}
@@ -263,7 +260,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 				String rawUrl = mavenToUrl(url, name);
 				println("Downloading library at: " + rawUrl);
 
-				URLConnection connection = new URL(rawUrl).openConnection();
+				URLConnection connection = Connections.openConnection(new URL(rawUrl));
 
 				try (InputStream stream = connection.getInputStream()) {
 					Files.createDirectories(path.getParent());
