@@ -16,7 +16,10 @@
 
 package org.quiltmc.installer;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -103,7 +106,6 @@ public final class QuiltMeta {
 	public static final String DEFAULT_FABRIC_META_URL = "https://meta.fabricmc.net";
 	private final Map<Endpoint<?>, Object> endpoints;
 
-
 	public static CompletableFuture<QuiltMeta> create(String baseQuiltMetaUrl, String baseFabricMetaUrl, Set<Endpoint<?>> endpoints) {
 		Map<Endpoint<?>, CompletableFuture<?>> futures = new HashMap<>();
 		for (Endpoint<?> endpoint : endpoints) {
@@ -140,15 +142,6 @@ public final class QuiltMeta {
 
 			return new QuiltMeta(baseQuiltMetaUrl, resolvedEndpoints);
 		});
-	}
-
-	private static String getInstallerVersion() {
-		String version = QuiltMeta.class.getPackage().getImplementationVersion();
-		if (version != null) {
-			return version;
-		}
-
-		return "dev";
 	}
 
 	private static Endpoint<List<String>> createVersion(String endpointPath) {
