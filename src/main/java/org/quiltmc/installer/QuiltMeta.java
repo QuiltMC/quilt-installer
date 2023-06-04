@@ -105,6 +105,13 @@ public final class QuiltMeta {
 	private static final String INSTALLER_VERSION = getInstallerVersion();
 	private final Map<Endpoint<?>, Object> endpoints;
 
+	public static URLConnection openMetaConnection(URL url) throws IOException {
+		URLConnection connection = url.openConnection();
+		connection.setRequestProperty("User-Agent", "Quilt-Installer/"+INSTALLER_VERSION);
+
+		return connection;
+	}
+
 	public static CompletableFuture<QuiltMeta> create(String baseQuiltMetaUrl, String baseFabricMetaUrl, Set<Endpoint<?>> endpoints) {
 		Map<Endpoint<?>, CompletableFuture<?>> futures = new HashMap<>();
 		for (Endpoint<?> endpoint : endpoints) {
@@ -117,8 +124,7 @@ public final class QuiltMeta {
 						url = new URL(baseQuiltMetaUrl + endpoint.endpointPath);
 					}
 
-					URLConnection connection = url.openConnection();
-					connection.setRequestProperty("User-Agent", "Quilt-Installer/"+INSTALLER_VERSION);
+					URLConnection connection = openMetaConnection(url);
 
 					InputStreamReader stream = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
 
