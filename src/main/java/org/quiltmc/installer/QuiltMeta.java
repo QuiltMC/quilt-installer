@@ -118,7 +118,7 @@ public final class QuiltMeta {
 						url = new URL(baseQuiltMetaUrl + endpoint.endpointPath);
 					}
 
-					URLConnection connection = url.openConnection();
+					URLConnection connection = Connections.openConnection(url);
 
 					InputStreamReader stream = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
 
