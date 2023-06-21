@@ -6,9 +6,9 @@ plugins {
 	`maven-publish`
 	// application
 
-	id("net.kyori.blossom") version "1.2.0"
-	id("com.diffplug.spotless") version "5.8.2"
-	id("com.github.johnrengelman.shadow") version "6.1.0"
+	id("net.kyori.blossom") version "1.3.1"
+	id("com.diffplug.spotless") version "6.19.0"
+	id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "org.quiltmc"
