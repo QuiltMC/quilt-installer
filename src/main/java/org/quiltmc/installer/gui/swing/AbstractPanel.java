@@ -16,10 +16,7 @@
 
 package org.quiltmc.installer.gui.swing;
 
-import java.awt.Color;
-import java.awt.Desktop;
-import java.awt.FlowLayout;
-import java.awt.Font;
+import java.awt.*;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
@@ -140,7 +137,7 @@ abstract class AbstractPanel extends JPanel {
 					}
 				}
 			} catch (Throwable throwable) {
-				displayError(throwable);
+				displayError(pane, throwable);
 			}
 		});
 		return JOptionPane.showOptionDialog(null, pane, title, optionType, messageType, null, null, null) == 0;
@@ -162,7 +159,7 @@ abstract class AbstractPanel extends JPanel {
 		);
 	}
 
-	static void displayError(Throwable throwable) {
-
+	 static void displayError(Component parent, Throwable throwable) {
+		JOptionPane.showMessageDialog(parent, throwable.toString(), "Error!", JOptionPane.ERROR_MESSAGE);
 	}
 }

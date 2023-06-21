@@ -121,7 +121,7 @@ public final class SwingInstaller extends JFrame {
 				this.serverPanel.receiveVersions(manifest, loaderVersions, intermediaryVersions);
 			}), SWING_EXECUTOR).exceptionally(e -> {
 				e.printStackTrace();
-				AbstractPanel.displayError(e);
+				AbstractPanel.displayError(this, e);
 				return null;
 			});
 
@@ -137,7 +137,7 @@ public final class SwingInstaller extends JFrame {
 			System.exit(1); // Don't know how we got here
 			throw new IllegalStateException(); // Make javac happy
 		} catch (Throwable t) {
-			AbstractPanel.displayError(t);
+			AbstractPanel.displayError(this, t);
 			System.exit(1); // TODO: May be overkill?
 			throw new IllegalStateException(); // Make javac happy
 		}
