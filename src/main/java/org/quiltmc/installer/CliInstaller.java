@@ -114,7 +114,7 @@ public final class CliInstaller {
 
 				// At this point all the require arguments have been parsed
 				if (split.size() == 0) {
-					return Action.installClient(minecraftVersion, null, null, false);
+					return Action.installClient(minecraftVersion, null, null, false, false);
 				}
 
 				// Try to parse loader version first
@@ -129,7 +129,7 @@ public final class CliInstaller {
 
 				// No more arguments, just loader version
 				if (split.size() == 0) {
-					return Action.installClient(minecraftVersion, loaderVersion, null, false);
+					return Action.installClient(minecraftVersion, loaderVersion, null, false, false);
 				}
 
 				// There are some additional options
@@ -181,7 +181,7 @@ public final class CliInstaller {
 					}
 				}
 
-				return Action.installClient(minecraftVersion, loaderVersion, options.get("--install-dir"), !options.containsKey("--no-profile"));
+				return Action.installClient(minecraftVersion, loaderVersion, options.get("--install-dir"), !options.containsKey("--no-profile"), false);
 			}
 			case "server": {
 				if (split.size() == 0) {

@@ -128,6 +128,9 @@ final class ClientPanel extends AbstractPanel implements Consumer<InstallClient.
 				this.generateProfile = e.getStateChange() == ItemEvent.SELECTED;
 			});
 			this.generateProfile = true;
+
+			JCheckBox beaconOptOut = this.createBeaconOptOut();
+			if (beaconOptOut != null) row4.add(beaconOptOut);
 		}
 
 		// Install button
@@ -146,7 +149,8 @@ final class ClientPanel extends AbstractPanel implements Consumer<InstallClient.
 				(String) this.minecraftVersionSelector.getSelectedItem(),
 				(String) this.loaderVersionSelector.getSelectedItem(),
 				this.installLocation.getText(),
-				this.generateProfile
+				this.generateProfile,
+				this.beaconOptOut
 		);
 
 		action.run(this);

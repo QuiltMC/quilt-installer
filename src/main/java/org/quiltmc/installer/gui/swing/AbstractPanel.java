@@ -17,18 +17,12 @@
 package org.quiltmc.installer.gui.swing;
 
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
 
-import javax.swing.BoxLayout;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JEditorPane;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 
 import org.jetbrains.annotations.Nullable;
@@ -43,6 +37,7 @@ abstract class AbstractPanel extends JPanel {
 	private List<String> loaderVersions;
 	@Nullable
 	private Collection<String> intermediaryVersions;
+	protected boolean beaconOptOut = false;
 
 	AbstractPanel(SwingInstaller gui) {
 		this.gui = gui;
@@ -102,6 +97,22 @@ abstract class AbstractPanel extends JPanel {
 		}
 
 		comboBox.setEnabled(true);
+	}
+
+	protected @Nullable JCheckBox createBeaconOptOut() {
+		if ("true".equals(System.getenv().get("QUILT_DISABLE_BEACON")) ||
+			"true".equals(System.getenv().get("CI")) ||
+			Boolean.getBoolean("loader.disable_beacon")) {
+			// Telemetry is already disabled, likely for the whole system.
+			// We shouldn't show an opt-out checkbox in order not to confuse users
+			return null;
+		}
+		JCheckBox optOutBox = new JCheckBox(Localization.get("gui.beacon-opt-out"), null, this.beaconOptOut);
+		optOutBox.setToolTipText(Localization.get("gui.beacon-opt-out.tooltip"));
+		optOutBox.addItemListener(e -> {
+			this.beaconOptOut = e.getStateChange() == ItemEvent.SELECTED;
+		});
+		return optOutBox;
 	}
 
 	@Nullable
