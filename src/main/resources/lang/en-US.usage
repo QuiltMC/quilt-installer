@@ -27,6 +27,8 @@ where install options for only the client also include:
 
    --no-profile
                   Causes the installer to not generate a new profile.
+   --disable-beacon
+                  Prevents you from counting towards the monthly user statistics
 
 where install options for only the server also include:
 

@@ -150,6 +150,12 @@ public final class CliInstaller {
 						}
 
 						options.put("--no-profile", null);
+					} else if (option.equals("--disable-beacon")) {
+						if (options.containsKey("--disable-beacon")) {
+							System.err.println("Encountered duplicate option \"--disable-beacon\", This shouldn't affect anything");
+						}
+
+						options.put("--disable-beacon", null);
 					// Common option
 					} else if (option.startsWith("--install-dir")) {
 						if (options.containsKey("--install-dir")) {
@@ -181,7 +187,7 @@ public final class CliInstaller {
 					}
 				}
 
-				return Action.installClient(minecraftVersion, loaderVersion, options.get("--install-dir"), !options.containsKey("--no-profile"), false);
+				return Action.installClient(minecraftVersion, loaderVersion, options.get("--install-dir"), !options.containsKey("--no-profile"), options.containsKey("--disable-beacon"));
 			}
 			case "server": {
 				if (split.size() == 0) {
