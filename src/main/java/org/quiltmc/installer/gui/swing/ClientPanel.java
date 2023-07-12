@@ -129,8 +129,10 @@ final class ClientPanel extends AbstractPanel implements Consumer<InstallClient.
 			});
 			this.generateProfile = true;
 
-			JCheckBox beaconOptOut = this.createBeaconOptOut();
-			if (beaconOptOut != null) row4.add(beaconOptOut);
+			List<JComponent> beaconOptOutComponents = this.createBeaconOptOut();
+			if (beaconOptOutComponents != null) {
+				beaconOptOutComponents.forEach(row4::add);
+			};
 		}
 
 		// Install button
