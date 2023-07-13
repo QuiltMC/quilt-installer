@@ -128,7 +128,7 @@ abstract class AbstractPanel extends JPanel {
 		JLabel linkLabel = new JLabel(String.format("<html><a href=\"%s\">(?)</a></html>", link));
 		linkLabel.setToolTipText(Localization.get("gui.beacon-opt-out.link-hover"));
 		linkLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-		linkLabel.addMouseListener(new MouseListener() {
+		linkLabel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				try {
@@ -137,18 +137,6 @@ abstract class AbstractPanel extends JPanel {
 					throw new RuntimeException(ex);
 				}
 			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {}
-
-			@Override
-			public void mouseExited(MouseEvent e) {}
 		});
 
 		JCheckBox optOutBox = new JCheckBox(Localization.get("gui.beacon-opt-out"), null, this.beaconOptOut);
