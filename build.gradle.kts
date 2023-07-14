@@ -82,8 +82,9 @@ tasks.build {
 }
 
 val copyForNative = tasks.register<Copy>("copyForNative") {
+	dependsOn(tasks.shadowJar)
 	dependsOn(tasks.jar)
-	from(tasks.jar)
+	from(tasks.shadowJar)
 	into(file("build"))
 
 	rename {
