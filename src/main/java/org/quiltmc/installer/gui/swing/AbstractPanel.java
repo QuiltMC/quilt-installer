@@ -114,7 +114,7 @@ abstract class AbstractPanel extends JPanel {
 	}
 
 	protected @Nullable List<JComponent> createBeaconOptOut() {
-		if (Boolean.parseBoolean(System.getenv().get("QUILT_DISABLE_BEACON")) ||
+		if (Boolean.parseBoolean(System.getenv().get("QUILT_LOADER_DISABLE_BEACON")) ||
 			Boolean.parseBoolean(System.getenv().get("CI")) ||
 			Boolean.getBoolean("loader.disable_beacon")) {
 			// Telemetry is already disabled, likely for the whole system.
