@@ -16,11 +16,12 @@
 
 package org.quiltmc.installer;
 
-import org.quiltmc.json5.JsonReader;
+
+import org.quiltmc.parsers.json.JsonReader;
 
 // RuntimeException is intentional as we will catch this via `.exceptionally(...)` normally.
 public final class ParseException extends RuntimeException {
 	public ParseException(String reason, JsonReader reader) {
-		super(reason + ": " + reader.locationString());
+		super(reason + ": " + reader.toString());
 	}
 }

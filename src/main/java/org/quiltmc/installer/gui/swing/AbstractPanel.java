@@ -160,6 +160,7 @@ abstract class AbstractPanel extends JPanel {
 	}
 
 	 static void displayError(Component parent, Throwable throwable) {
+		 throwable.printStackTrace(System.out);
 		JOptionPane.showMessageDialog(parent, throwable.toString(), "Error!", JOptionPane.ERROR_MESSAGE);
 	}
 }

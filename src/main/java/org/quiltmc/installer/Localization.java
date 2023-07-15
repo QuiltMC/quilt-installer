@@ -25,7 +25,7 @@ import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 public final class Localization {
-	private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("lang/installer", Locale.getDefault(), new LocaleFactory());
+	private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("lang/installer", Locale.getDefault());
 
 	public static String get(String key) {
 		try {

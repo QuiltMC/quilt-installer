@@ -1,18 +1,18 @@
+import java.lang.UnsupportedOperationException
 import java.net.URI
 
 plugins {
 	java
 	`java-library`
 	`maven-publish`
-	// application
-
-	id("net.kyori.blossom") version "1.3.1"
 	id("com.diffplug.spotless") version "6.19.0"
-	id("com.github.johnrengelman.shadow") version "8.1.1"
+//	id("com.github.johnrengelman.shadow") version "8.1.1"
+	id("org.beryx.jlink") version "2.26.0"
 }
 
 group = "org.quiltmc"
 val env = System.getenv()
+// also set this in <X>
 version = if (env["SNAPSHOTS_URL"] != null) {
 	"0-SNAPSHOT"
 } else {
@@ -29,7 +29,7 @@ repositories {
 }
 
 dependencies {
-	implementation("org.quiltmc:quilt-json5:1.0.0")
+	implementation("org.quiltmc.parsers:json:0.2.1")
 	compileOnly("org.jetbrains:annotations:20.1.0")
 }
 
@@ -40,25 +40,27 @@ spotless {
 	}
 }
 
-// Apply constant string constant replacements for the project version in CLI class
-blossom {
-	replaceToken("__INSTALLER_VERSION", project.version)
+java {
+	toolchain {
+		languageVersion.set(JavaLanguageVersion.of(17))
+	}
 }
 
 tasks.compileJava {
 	if (JavaVersion.current().isJava9Compatible) {
-		options.release.set(8)
+		options.release.set(17)
 	} else {
-		java.sourceCompatibility = JavaVersion.VERSION_1_8
-		java.targetCompatibility = JavaVersion.VERSION_1_8
+		java.sourceCompatibility = JavaVersion.VERSION_17
+		java.targetCompatibility = JavaVersion.VERSION_17
 	}
 }
 
 // Cannot use application for the time being because shadow does not like mainClass being set for some reason.
 // There is a PR which has fixed this, so update shadow probably when 6.10.1 or 6.11 is out
-//application {
-//	mainClass.set("org.quiltmc.installer.Main")
-//}
+application {
+	mainClass.set("org.quiltmc.installer.Main")
+	mainModule.set("org.quiltmc.installer")
+}
 
 tasks.jar {
 	manifest {
@@ -68,51 +70,30 @@ tasks.jar {
 	}
 }
 
-tasks.shadowJar {
-	relocate("org.quiltmc.json5", "org.quiltmc.installer.lib.json5")
-	minimize()
-
-	// Compiler does not know which set method we are targeting with null value
-	val classifier: String? = null;
-	archiveClassifier.set(classifier)
-}
-
-tasks.build {
-	dependsOn(tasks.shadowJar)
-}
-
-val copyForNative = tasks.register<Copy>("copyForNative") {
-	dependsOn(tasks.shadowJar)
-	dependsOn(tasks.jar)
-	from(tasks.shadowJar)
-	into(file("build"))
-
-	rename {
-		return@rename if (it.contains("quilt-installer")) {
-			"native-quilt-installer.jar"
-		} else {
-			it
-		}
-	}
-}
-
-
+val platform = env["PLATFORM"]
+//val arch = env["ARCH"]
 publishing {
 	publications {
-		if (env["TARGET"] == null) {
+		if (platform == null) {
 			create<MavenPublication>("mavenJava") {
 				from(components["java"])
 			}
 		} else {
 			// TODO: When we build macOS make this work
-			val architecture = env["TARGET"]
-
 			create<MavenPublication>("mavenNatives") {
-				groupId = "org.quiltmc.quilt-installer-native-bootstrap"
-				artifactId = "windows-$architecture"
+				groupId = "org.quiltmc.quilt-installer.native"
+				artifactId = "$platform-x64"
 
+				tasks.publish {
+					dependsOn("jpackage")
+				}
 				artifact {
-					file("$projectDir/native/target/$architecture-pc-windows-msvc/release/quilt-installer.exe")
+					val executableName = if (platform == "windows") {
+						"quilt-installer.exe"
+					} else {
+						throw UnsupportedOperationException("Unknown platform")
+					}
+					file("$buildDir/jpackage/quilt-installer/$executableName")
 				}
 			}
 		}
@@ -137,6 +118,20 @@ publishing {
 					password = env["SNAPSHOTS_PASSWORD"]
 				}
 			}
+		}
+	}
+}
+
+jlink {
+//	options.set(listOf("--strip-debug"))
+	jpackage {
+		skipInstaller = true
+		imageOptions = listOf("--win-console")
+		// sorry everyone, but i use windows
+		icon = if (platform == null || platform == "windows") {
+			"icon.ico"
+		} else {
+			"src/main/resources/icon.png"
 		}
 	}
 }

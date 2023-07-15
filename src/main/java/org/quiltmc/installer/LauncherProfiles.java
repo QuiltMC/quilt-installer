@@ -16,6 +16,9 @@
 
 package org.quiltmc.installer;
 
+import org.quiltmc.parsers.json.JsonReader;
+import org.quiltmc.parsers.json.JsonWriter;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,8 +32,6 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.quiltmc.json5.JsonReader;
-import org.quiltmc.json5.JsonWriter;
 
 public final class LauncherProfiles {
 	private static final DateFormat ISO_8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");

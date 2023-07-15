@@ -13,10 +13,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: gradle/wrapper-validation-action@v1
       - run: ./gradlew build test --stacktrace
-  buildNatives:
-    strategy:
-      matrix:
-        target: [ x86_64, i686, aarch64 ]
+  buildWindowsNatives:
     runs-on: windows-2019
     steps:
       # TODO: Fix macOS in future
@@ -24,10 +21,21 @@ jobs:
       - uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
-          java-version: '16'
+          java-version: '17'
       - uses: gradle/wrapper-validation-action@v1
-      - run: ./gradlew build copyForNative --stacktrace
-      - run: rustup target add ${{ matrix.target }}-pc-windows-msvc
-      - name: Run Cargo
-        run: cargo check --target ${{ matrix.target }}-pc-windows-msvc
-        working-directory: ./native
+      - run: ./gradlew build jpackage --stacktrace
+        with:
+          PLATFORM: "windows"
+  buildMacNatives:
+    runs-on: macos-12
+    steps:
+      # TODO: Fix macOS in future
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '17'
+      - uses: gradle/wrapper-validation-action@v1
+      - run: ./gradlew build jpackage --stacktrace
+        with:
+          PLATFORM: "macos"
