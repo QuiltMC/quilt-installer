@@ -12,7 +12,7 @@ plugins {
 
 group = "org.quiltmc"
 val env = System.getenv()
-// also set this in <X>
+// also set this in CliInstaller
 val baseVersion = "0.6.0"
 version = if (env["SNAPSHOTS_URL"] != null) {
 	"0-SNAPSHOT"
@@ -132,7 +132,8 @@ jlink {
 		vendor = "The Quilt Project"
 		// i use windows, sorry.
 		if (platform == "windows" || platform == null) {
-			imageOptions = listOf("--win-console")
+			// only enable for debugging
+//			imageOptions = listOf("--win-console")
 			skipInstaller = true
 		}
 		appVersion = if (baseVersion.startsWith("0.")) {

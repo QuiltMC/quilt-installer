@@ -28,8 +28,7 @@ import org.quiltmc.installer.action.Action;
  * The main entrypoint when installing from the command line.
  */
 public final class CliInstaller {
-	// The value in this variable will be set by blossom at compile time.
-	public static final String INSTALLER_VERSION = "__INSTALLER_VERSION";
+	public static final String INSTALLER_VERSION = "0.6.0";
 
 	public static void run(String[] args) {
 		// Assemble the array of args back into a single string

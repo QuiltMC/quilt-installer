@@ -16,6 +16,7 @@
 
 package org.quiltmc.installer.gui.swing;
 
+import org.quiltmc.installer.CliInstaller;
 import org.quiltmc.installer.Localization;
 import org.quiltmc.installer.QuiltMeta;
 import org.quiltmc.installer.VersionManifest;
@@ -127,7 +128,7 @@ public final class SwingInstaller extends JFrame {
 
 			this.setContentPane(contentPane);
 			this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-			this.setTitle(Localization.get("title"));
+			this.setTitle(Localization.get("title") + " v" + CliInstaller.INSTALLER_VERSION);
 			this.setIconImage(Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemClassLoader().getResource("icon.png")));
 			this.pack();
 			this.setLocationRelativeTo(null); // Center on screen
