@@ -13,7 +13,7 @@ plugins {
 group = "org.quiltmc"
 val env = System.getenv()
 // also set this in CliInstaller
-val baseVersion = "0.6.3"
+val baseVersion = "0.6.4"
 version = if (env["SNAPSHOTS_URL"] != null) {
 	"0-SNAPSHOT"
 } else {
@@ -70,7 +70,7 @@ tasks.jar {
 		attributes["Main-Class"] = "org.quiltmc.installer.Main"
 	}
 }
-val platform = "windows"
+val platform = env["PLATFORM"]
 //val arch = env["ARCH"]
 
 publishing {
