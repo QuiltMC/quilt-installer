@@ -129,7 +129,9 @@ jlink {
 //	options.set(listOf("--strip-debug"))
 	jpackage {
 		skipInstaller = true
-		imageOptions = listOf("--win-console")
+		if (platform == "windows") {
+			imageOptions = listOf("--win-console")
+		}
 		// sorry everyone, but i use windows
 		icon = if (platform == null || platform == "windows") {
 			"icon.ico"
