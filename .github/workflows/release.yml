@@ -19,7 +19,7 @@ jobs:
     runs-on: windows-2019
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v3
         with:
           distribution: 'adopt'
           java-version: '17'
@@ -31,3 +31,5 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
           PLATFORM: "windows"
+# TODO: It would be nice to distribute a macos version, but it's $99 a year and nobody on our
+# dev team seems to own a mac.

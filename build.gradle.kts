@@ -129,20 +129,27 @@ publishing {
 jlink {
 //	options.set(listOf("--strip-debug"))
 	jpackage {
-		skipInstaller = true
-		if (platform == "windows") {
+		vendor = "The Quilt Project"
+		// i use windows, sorry.
+		if (platform == "windows" || platform == null) {
 			imageOptions = listOf("--win-console")
+			skipInstaller = true
 		}
 		appVersion = if (baseVersion.startsWith("0.")) {
 			baseVersion.substring(2)
 		} else {
 			baseVersion
 		}
-		// sorry everyone, but i use windows
 		icon = if (platform == null || platform == "windows") {
 			"icon.ico"
+		} else if (platform == "macos") {
+			"icon.icns"
 		} else {
 			"src/main/resources/icon.png"
+		}
+
+		if (platform == "macos") {
+			imageOptions = listOf("--copyright", "The Quilt Project", "--mac-package-name", "Quilt Installer")
 		}
 	}
 }
