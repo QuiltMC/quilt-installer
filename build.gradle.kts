@@ -13,7 +13,7 @@ plugins {
 group = "org.quiltmc"
 val env = System.getenv()
 // also set this in CliInstaller
-val baseVersion = "0.6.0"
+val baseVersion = "0.6.1"
 version = if (env["SNAPSHOTS_URL"] != null) {
 	"0-SNAPSHOT"
 } else {
@@ -70,7 +70,6 @@ tasks.jar {
 		attributes["Main-Class"] = "org.quiltmc.installer.Main"
 	}
 }
-
 val platform = env["PLATFORM"]
 //val arch = env["ARCH"]
 publishing {
@@ -85,9 +84,7 @@ publishing {
 				groupId = "org.quiltmc.quilt-installer.native"
 				artifactId = "$platform-x64"
 
-				tasks.publish {
-					dependsOn("jpackage")
-				}
+
 				artifact {
 					val executableName = if (platform == "windows") {
 						"quilt-installer.exe"
@@ -97,6 +94,7 @@ publishing {
 					else {
 						throw UnsupportedOperationException("Unknown platform")
 					}
+					tasks.jpackageImage.get().outputs // trick gradle into letting us run publish
 					file("$buildDir/jpackage/quilt-installer/$executableName")
 				}
 			}

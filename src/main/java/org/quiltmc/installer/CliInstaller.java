@@ -28,7 +28,7 @@ import org.quiltmc.installer.action.Action;
  * The main entrypoint when installing from the command line.
  */
 public final class CliInstaller {
-	public static final String INSTALLER_VERSION = "0.6.0";
+	public static final String INSTALLER_VERSION = "0.6.1";
 
 	public static void run(String[] args) {
 		// Assemble the array of args back into a single string
