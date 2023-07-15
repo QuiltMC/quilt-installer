@@ -27,6 +27,7 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -35,7 +36,7 @@ public final class LaunchJson {
 	// TODO: Switch to quilt
 	public static final String LOADER_ARTIFACT_NAME = "quilt-loader";
 
-	public static CompletableFuture<String> get(String gameVersion, String loaderVersion, String endpoint) {
+	public static CompletableFuture<String> get(String gameVersion, String loaderVersion, String endpoint, boolean beaconOptOut) {
 		String rawUrl = QuiltMeta.DEFAULT_META_URL + String.format(endpoint, gameVersion, loaderVersion);
 
 		return CompletableFuture.supplyAsync(() -> {
@@ -59,7 +60,6 @@ public final class LaunchJson {
 			} catch (IOException e) {
 				throw new UncheckedIOException(e); // Handled via .exceptionally(...)
 			}
-			// TODO: HACK HACK HACK: inject intermediary instead of hashed
 		}).thenApplyAsync(raw -> {
 			Map<String, Object> map;
 			try {
@@ -68,6 +68,16 @@ public final class LaunchJson {
 			} catch (IOException e) {
 				throw new UncheckedIOException(e); // Handled via .exceptionally(...)
 			}
+
+			if (beaconOptOut) {
+				@SuppressWarnings("unchecked")
+				Map<String, List<Object>> arguments = (Map<String,List<Object>>)map.get("arguments");
+				arguments
+						.computeIfAbsent("jvm", (key) -> new ArrayList<>())
+						.add("-Dloader.disable_beacon=true");
+			}
+
+			// TODO: HACK HACK HACK: inject intermediary instead of hashed
 			@SuppressWarnings("unchecked") List<Map<String, String>> libraries = (List<Map<String, String>>) map.get("libraries");
 			for (Map<String, String> library : libraries) {
 				if (library.get("name").startsWith("org.quiltmc:hashed")) {
