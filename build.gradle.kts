@@ -133,7 +133,11 @@ jlink {
 		if (platform == "windows") {
 			imageOptions = listOf("--win-console")
 		}
-		appVersion = baseVersion
+		appVersion = if (baseVersion.startsWith("0.")) {
+			baseVersion.substring(2)
+		} else {
+			baseVersion
+		}
 		// sorry everyone, but i use windows
 		icon = if (platform == null || platform == "windows") {
 			"icon.ico"
