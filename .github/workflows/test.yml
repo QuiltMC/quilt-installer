@@ -24,7 +24,7 @@ jobs:
           java-version: '17'
       - uses: gradle/wrapper-validation-action@v1
       - run: ./gradlew build jpackage --stacktrace
-        with:
+        env:
           PLATFORM: "windows"
   buildMacNatives:
     runs-on: macos-12
@@ -37,5 +37,5 @@ jobs:
           java-version: '17'
       - uses: gradle/wrapper-validation-action@v1
       - run: ./gradlew build jpackage --stacktrace
-        with:
+        env:
           PLATFORM: "macos"
