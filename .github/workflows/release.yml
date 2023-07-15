@@ -7,7 +7,7 @@ jobs:
       image: openjdk:17-jdk
       options: --user root
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - uses: gradle/wrapper-validation-action@v1
       - run: ./gradlew build publish --stacktrace
         env:
@@ -18,7 +18,7 @@ jobs:
   buildNatives:
     runs-on: windows-2019
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-java@v2
         with:
           distribution: 'adopt'

@@ -90,7 +90,10 @@ publishing {
 				artifact {
 					val executableName = if (platform == "windows") {
 						"quilt-installer.exe"
-					} else {
+					} else if (platform == "macos") {
+						"TODO" // todo
+					}
+					else {
 						throw UnsupportedOperationException("Unknown platform")
 					}
 					file("$buildDir/jpackage/quilt-installer/$executableName")
