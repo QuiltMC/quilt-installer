@@ -13,10 +13,11 @@ plugins {
 group = "org.quiltmc"
 val env = System.getenv()
 // also set this in <X>
+val baseVersion = "0.6.0"
 version = if (env["SNAPSHOTS_URL"] != null) {
 	"0-SNAPSHOT"
 } else {
-	"0.5.2"
+	baseVersion
 }
 base.archivesBaseName = project.name
 
@@ -132,6 +133,7 @@ jlink {
 		if (platform == "windows") {
 			imageOptions = listOf("--win-console")
 		}
+		appVersion = baseVersion
 		// sorry everyone, but i use windows
 		icon = if (platform == null || platform == "windows") {
 			"icon.ico"
