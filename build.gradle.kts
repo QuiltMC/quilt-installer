@@ -13,7 +13,7 @@ plugins {
 group = "org.quiltmc"
 val env = System.getenv()
 // also set this in CliInstaller
-val baseVersion = "0.6.2"
+val baseVersion = "0.6.3"
 version = if (env["SNAPSHOTS_URL"] != null) {
 	"0-SNAPSHOT"
 } else {
@@ -70,8 +70,9 @@ tasks.jar {
 		attributes["Main-Class"] = "org.quiltmc.installer.Main"
 	}
 }
-val platform = env["PLATFORM"]
+val platform = "windows"
 //val arch = env["ARCH"]
+
 publishing {
 	publications {
 		if (platform == null) {
@@ -84,16 +85,19 @@ publishing {
 				groupId = "org.quiltmc.quilt-installer.native"
 				artifactId = "$platform-x64"
 
-				val executableName = if (platform == "windows") {
-					"quilt-installer/quilt-installer.exe"
-				} else if (platform == "macos") {
-					"TODO" // todo
+
+				artifact {
+					val executableName = if (platform == "windows") {
+						"quilt-installer.exe"
+					} else if (platform == "macos") {
+						"TODO" // todo
+					}
+					else {
+						throw UnsupportedOperationException("Unknown platform")
+					}
+
+					file("$buildDir/jpackage/quilt-installer/$executableName")
 				}
-				else {
-					throw UnsupportedOperationException("Unknown platform")
-				}
-				// FIXME: awful way to force gradle to not whine about an implicit dependency
-				artifact(tasks.jpackage.get().outputs.files.filter {it.name.equals("jpackage")}.first().resolve("$executableName"))
 			}
 		}
 	}
