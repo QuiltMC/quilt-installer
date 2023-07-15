@@ -1,0 +1,4 @@
+hard_tabs = true
+newline_style = "Unix"
+# license_template_path = "HEADER" # TODO License header
+empty_item_single_line = false

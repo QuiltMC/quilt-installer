@@ -28,7 +28,8 @@ import org.quiltmc.installer.action.Action;
  * The main entrypoint when installing from the command line.
  */
 public final class CliInstaller {
-	public static final String INSTALLER_VERSION = "0.6.4";
+	// The value in this variable will be set by blossom at compile time.
+	public static final String INSTALLER_VERSION = "__INSTALLER_VERSION";
 
 	public static void run(String[] args) {
 		// Assemble the array of args back into a single string
@@ -113,7 +114,7 @@ public final class CliInstaller {
 
 				// At this point all the require arguments have been parsed
 				if (split.size() == 0) {
-					return Action.installClient(minecraftVersion, null, null, false, false);
+					return Action.installClient(minecraftVersion, null, null, false);
 				}
 
 				// Try to parse loader version first
@@ -128,7 +129,7 @@ public final class CliInstaller {
 
 				// No more arguments, just loader version
 				if (split.size() == 0) {
-					return Action.installClient(minecraftVersion, loaderVersion, null, false, false);
+					return Action.installClient(minecraftVersion, loaderVersion, null, false);
 				}
 
 				// There are some additional options
@@ -149,12 +150,6 @@ public final class CliInstaller {
 						}
 
 						options.put("--no-profile", null);
-					} else if (option.equals("--disable-beacon")) {
-						if (options.containsKey("--disable-beacon")) {
-							System.err.println("Encountered duplicate option \"--disable-beacon\", This shouldn't affect anything");
-						}
-
-						options.put("--disable-beacon", null);
 					// Common option
 					} else if (option.startsWith("--install-dir")) {
 						if (options.containsKey("--install-dir")) {
@@ -186,7 +181,7 @@ public final class CliInstaller {
 					}
 				}
 
-				return Action.installClient(minecraftVersion, loaderVersion, options.get("--install-dir"), !options.containsKey("--no-profile"), options.containsKey("--disable-beacon"));
+				return Action.installClient(minecraftVersion, loaderVersion, options.get("--install-dir"), !options.containsKey("--no-profile"));
 			}
 			case "server": {
 				if (split.size() == 0) {

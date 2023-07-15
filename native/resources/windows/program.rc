@@ -1,0 +1,5 @@
+/*
+	This is used to enable visual styling and DPI awareness in the error dialog.
+*/
+#define RT_MANIFEST 24
+1 RT_MANIFEST "program.manifest" // Link to our manifest

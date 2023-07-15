@@ -30,8 +30,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.jetbrains.annotations.Nullable;
-import org.quiltmc.parsers.json.JsonReader;
-import org.quiltmc.parsers.json.JsonToken;
+import org.quiltmc.json5.JsonReader;
+import org.quiltmc.json5.JsonToken;
 
 /**
  * An object representation of the version manifest used by the launcher.

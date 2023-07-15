@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.jetbrains.annotations.Nullable;
-import org.quiltmc.parsers.json.JsonReader;
-import org.quiltmc.parsers.json.JsonWriter;
+import org.quiltmc.json5.JsonReader;
+import org.quiltmc.json5.JsonWriter;
 
 /**
  * Utilities for reading and writing to/from json files from maps, lists, numbers, booleans and null.

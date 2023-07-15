@@ -34,7 +34,7 @@ import org.quiltmc.installer.Localization;
 import org.quiltmc.installer.VersionManifest;
 import org.quiltmc.installer.action.Action;
 import org.quiltmc.installer.action.InstallServer;
-import org.quiltmc.parsers.json.JsonReader;
+import org.quiltmc.json5.JsonReader;
 
 final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.MessageType> {
 	private final JComboBox<String> minecraftVersionSelector;

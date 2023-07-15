@@ -1,0 +1,13 @@
+# Warning: Glorious Hacks.
+# Because we don't distribute VCRUNTIME140.dll we statically link.
+# Would be nice to find a proper solition to this in the future.
+# Static link vc runtime this fixes the error about VCRUNTIME140.dll being missing.
+
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-Ctarget-feature=+crt-static"]
+
+[target.i686-pc-windows-msvc]
+rustflags = ["-Ctarget-feature=+crt-static"]
+
+[target.aarch64-pc-windows-msvc]
+rustflags = ["-Ctarget-feature=+crt-static"]
