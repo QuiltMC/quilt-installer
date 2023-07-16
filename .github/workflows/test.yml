@@ -24,7 +24,7 @@ jobs:
       - uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
-          java-version: '16'
+          java-version: '17'
       - uses: gradle/wrapper-validation-action@v1
       - run: ./gradlew build copyForNative --stacktrace
       - run: rustup target add ${{ matrix.target }}-pc-windows-msvc
