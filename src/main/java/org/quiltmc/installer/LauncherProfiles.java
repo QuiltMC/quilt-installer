@@ -34,7 +34,7 @@ import org.quiltmc.parsers.json.JsonWriter;
 
 public final class LauncherProfiles {
 	private static final DateFormat ISO_8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-	private static final String LOADER_NAME = "quilt-loader";
+	private static final String LOADER_NAME = "Quilt";
 
 	/**
 	 * Reads the launcher_profiles, creates or modifies the existing launcher profile and then writes the new launcher profiles.
@@ -69,7 +69,7 @@ public final class LauncherProfiles {
 
 		@SuppressWarnings("unchecked")
 		Map<String, Object> profiles = (Map<String, Object>) rawProfiles;
-		String newProfileName = LOADER_NAME + "-" + gameVersion;
+		String newProfileName = LOADER_NAME + " " + gameVersion;
 
 		// Modify the profile
 		if (profiles.containsKey(newProfileName)) {
@@ -83,6 +83,18 @@ public final class LauncherProfiles {
 			Map<String, Object> profile = (Map<String, Object>) rawProfile;
 
 			profile.put("lastVersionId", name);
+		} else if (profiles.containsKey("quilt-loader-" + gameVersion)) { // old style
+			Object rawProfile = profiles.get("quilt-loader-" + gameVersion);
+
+			if (!(rawProfile instanceof Map)) {
+				throw new IllegalStateException(String.format("Cannot update profile of name %s because it is not an object!", newProfileName));
+			}
+
+			@SuppressWarnings("unchecked")
+			Map<String, Object> profile = (Map<String, Object>) rawProfile;
+
+			profile.put("lastVersionId", name);
+			profile.put("name", newProfileName); // update name too
 		} else {
 			// Create a new profile
 			Map<String, Object> profile = new LinkedHashMap<>();

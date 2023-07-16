@@ -14,7 +14,7 @@ mod platform;
 #[path = "unsupported.rs"]
 mod platform;
 
-use crate::platform::{get_jre_locations, INSTALLER_JRE_HELP_URL, PLATFORM_JAVA_EXECUTABLE_NAME};
+use crate::platform::{get_jre_locations, PLATFORM_JAVA_EXECUTABLE_NAME};
 use native_dialog::{MessageDialog, MessageType};
 use rand::random;
 use std::env::temp_dir;
@@ -108,7 +108,7 @@ fn main() {
 		.set_type(MessageType::Error)
 		.set_title("Failed to launch installer")
 		.set_text("You must have launched Minecraft (1.18.2 or above) with the official launcher at least once to open the installer.\
-		If the issue persists, please ask for support on the Quilt Forums.")
+		\n\nIf the issue persists, please ask for support on the Quilt Forums.")
 		.show_alert().is_err() {
 		last_resort();
 	}

@@ -7,7 +7,6 @@ use std::path::PathBuf;
 use winreg::RegKey;
 
 pub const PLATFORM_JAVA_EXECUTABLE_NAME: &str = "javaw";
-pub const INSTALLER_JRE_HELP_URL: &str = "https://quiltmc.org"; // TODO: Fill in URL
 pub const UWP_PATH: &str = "Packages/Microsoft.4297127D64EC6_8wekyb3d8bbwe/LocalCache/Local/";
 
 fn get_uwp_installer() -> io::Result<PathBuf> {
@@ -54,8 +53,8 @@ pub(crate) fn get_jre_locations() -> io::Result<Vec<PathBuf>> {
 
 
 		// All signs point to a versioning scheme based on Greek letters. Let's future-proof it against the next predicted one
-		"runtime/java-runtime-delta/windows-x64/javaw.exe",
-		"runtime/java-runtime-delta/windows-x86/javaw.exe"
+		"runtime/java-runtime-delta/windows-x64/java-runtime-delta/javaw.exe",
+		"runtime/java-runtime-delta/windows-x86/java-runtime-delta/javaw.exe"
 	];
 
 	let mut candidates = Vec::new();
