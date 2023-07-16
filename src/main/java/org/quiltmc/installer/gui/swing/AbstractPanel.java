@@ -18,6 +18,7 @@ package org.quiltmc.installer.gui.swing;
 
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -207,5 +208,6 @@ abstract class AbstractPanel extends JPanel {
 
 	 static void displayError(Component parent, Throwable throwable) {
 		JOptionPane.showMessageDialog(parent, throwable.toString(), "Error!", JOptionPane.ERROR_MESSAGE);
+		throwable.printStackTrace();
 	}
 }

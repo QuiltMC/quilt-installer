@@ -24,9 +24,6 @@ use std::io::{ErrorKind, Write};
 use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
 
-const INSTALLER_LAST_RESORT_URL: &str = "https://quiltmc.org/"; // TODO: Fill in URL
-const OS_ISSUES_URL: &str = "https://quiltmc.org/"; // TODO: Fill in URL
-
 /// The bundled installer jar, see main entrypoint for why we include the bytes of the installer jar.
 const INSTALLER_JAR: &[u8] = include_bytes!("../../build/native-quilt-installer.jar");
 
@@ -103,62 +100,72 @@ fn main() {
 	if let Ok(possible_jres) = get_jre_locations() {
 		for jre in possible_jres {
 			// Let's try some of the JREs we got
-			try_launch(&installer_jar, jre);
+		 	try_launch(&installer_jar, jre);
 		}
 	}
 
-	// Well time for the last resort by testing the system's `javaw` executable.
-	match try_launch(&installer_jar, PLATFORM_JAVA_EXECUTABLE_NAME) {
-		JreLaunchError::Os(_) => {
-			// Blame the OS
-			if let Ok(result) = MessageDialog::new()
-				.set_type(MessageType::Error)
-				.set_title("Failed to launch installer")
-				.set_text("The installer failed to launch due to issues with the current OS. Do you want to open a link for more information?")
-				.show_confirm()
-			{
-				if result {
-					let _ = open::that(OS_ISSUES_URL);
-				}
-
-				exit(1); // We did not successfully start
-			} else {
-				// Yikes the dialog did not open, last resort it is
-				last_resort();
-			}
-		}
-		JreLaunchError::Jre => {
-			// Blame the lack of a JRE
-			if let Ok(result) = MessageDialog::new()
-				.set_type(MessageType::Error)
-				.set_title("Failed to launch installer")
-				.set_text("The installer failed to launch because it could not find a suitable Java runtime. Do you want to open a link for more information?")
-				.show_confirm()
-			{
-				if result {
-					let _ = open::that(INSTALLER_JRE_HELP_URL);
-				}
-
-				exit(1); // We did not successfully start
-			} else {
-				// Yikes the dialog did not open, last resort it is
-				last_resort();
-			}
-		}
-		JreLaunchError::NoPermission => {
-			eprintln!("Did not have permission to launch java");
-
-			if MessageDialog::new()
-				.set_type(MessageType::Error)
-				.set_title("Failed to launch installer")
-				.set_text("Did not have permission to launch Java for installer.")
-				.show_alert()
-				.is_err()
-			{
-				last_resort();
-			}
-		}
+	if MessageDialog::new()
+		.set_type(MessageType::Error)
+		.set_title("Failed to launch installer")
+		.set_text("You must have launched Minecraft (1.18.2 or above) with the official launcher at least once to open the installer.\
+		If the issue persists, please ask for support on the Quilt Forums.")
+		.show_alert().is_err() {
+		last_resort();
 	}
+
+	exit(1);
+	// // Well time for the last resort by testing the system's `javaw` executable.
+	// match try_launch(&installer_jar, PLATFORM_JAVA_EXECUTABLE_NAME) {
+	// 	JreLaunchError::Os(_) => {
+	// 		// Blame the OS
+	// 		if let Ok(result) = MessageDialog::new()
+	// 			.set_type(MessageType::Error)
+	// 			.set_title("Failed to launch installer")
+	// 			.set_text("The installer failed to launch due to issues with the current OS. Do you want to open a link for more information?")
+	// 			.show_confirm()
+	// 		{
+	// 			if result {
+	// 				let _ = open::that(OS_ISSUES_URL);
+	// 			}
+	//
+	// 			exit(1); // We did not successfully start
+	// 		} else {
+	// 			// Yikes the dialog did not open, last resort it is
+	// 			last_resort();
+	// 		}
+	// 	}
+	// 	JreLaunchError::Jre => {
+	// 		// Blame the lack of a JRE
+	// 		if let Ok(result) = MessageDialog::new()
+	// 			.set_type(MessageType::Error)
+	// 			.set_title("Failed to launch installer")
+	// 			.set_text("The installer failed to launch because it could not find a suitable Java runtime. Do you want to open a link for more information?")
+	// 			.show_confirm()
+	// 		{
+	// 			if result {
+	// 				let _ = open::that(INSTALLER_JRE_HELP_URL);
+	// 			}
+	//
+	// 			exit(1); // We did not successfully start
+	// 		} else {
+	// 			// Yikes the dialog did not open, last resort it is
+	// 			last_resort();
+	// 		}
+	// 	}
+	// 	JreLaunchError::NoPermission => {
+	// 		eprintln!("Did not have permission to launch java");
+	//
+	// 		if MessageDialog::new()
+	// 			.set_type(MessageType::Error)
+	// 			.set_title("Failed to launch installer")
+	// 			.set_text("Did not have permission to launch Java for installer.")
+	// 			.show_alert()
+	// 			.is_err()
+	// 		{
+	// 			last_resort();
+	// 		}
+	// 	}
+	// }
 }
 
 /// Try to launch the installer
@@ -255,12 +262,11 @@ fn try_launch<P: AsRef<Path>>(installer_jar: &PathBuf, jre_path: P) -> JreLaunch
 	}
 }
 
-/// Given everything else so far has failed, try opening a URL as the last resort.
 fn last_resort() -> ! {
-	let _ = open::that(INSTALLER_LAST_RESORT_URL);
 	exit(1)
 }
 
+#[derive(Debug)]
 enum JreLaunchError {
 	/// OS Error
 	Os(io::Error),

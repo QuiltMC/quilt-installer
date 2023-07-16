@@ -16,7 +16,7 @@ val env = System.getenv()
 version = if (env["SNAPSHOTS_URL"] != null) {
 	"0-SNAPSHOT"
 } else {
-	"0.7.0"
+	"0.7.1"
 }
 base.archivesBaseName = project.name
 
@@ -29,7 +29,7 @@ repositories {
 }
 
 dependencies {
-	implementation("org.quiltmc:quilt-json5:1.0.0")
+	implementation("org.quiltmc.parsers:json:0.2.1")
 	compileOnly("org.jetbrains:annotations:20.1.0")
 }
 
@@ -47,13 +47,14 @@ blossom {
 
 tasks.compileJava {
 	if (JavaVersion.current().isJava9Compatible) {
-		options.release.set(8)
-	} else {
-		java.sourceCompatibility = JavaVersion.VERSION_1_8
-		java.targetCompatibility = JavaVersion.VERSION_1_8
+		options.release.set(17)
 	}
 }
-
+java {
+	toolchain {
+		languageVersion.set(JavaLanguageVersion.of(17))
+	}
+}
 // Cannot use application for the time being because shadow does not like mainClass being set for some reason.
 // There is a PR which has fixed this, so update shadow probably when 6.10.1 or 6.11 is out
 //application {
@@ -69,7 +70,7 @@ tasks.jar {
 }
 
 tasks.shadowJar {
-	relocate("org.quiltmc.json5", "org.quiltmc.installer.lib.json5")
+	relocate("org.quiltmc.parsers.json", "org.quiltmc.installer.lib.parsers.json")
 	minimize()
 
 	// Compiler does not know which set method we are targeting with null value

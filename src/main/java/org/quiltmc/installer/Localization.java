@@ -25,7 +25,7 @@ import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 public final class Localization {
-	private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("lang/installer", Locale.getDefault(), new LocaleFactory());
+	private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("lang/installer", Locale.getDefault());
 
 	public static String get(String key) {
 		try {
@@ -47,19 +47,4 @@ public final class Localization {
 
 	}
 
-	private static final class LocaleFactory extends ResourceBundle.Control {
-		@Override
-		public ResourceBundle newBundle(String baseName, Locale locale, String format, ClassLoader loader, boolean reload) throws IllegalAccessException, InstantiationException, IOException {
-			String bundleName = this.toBundleName(baseName, locale);
-			String resourceName = this.toResourceName(bundleName, "properties");
-
-			try (InputStream stream = loader.getResourceAsStream(resourceName)) {
-				if (stream != null) {
-					return new PropertyResourceBundle(stream);
-				}
-			}
-
-			return super.newBundle(baseName, locale, format, loader, reload);
-		}
-	}
 }

@@ -44,19 +44,16 @@ fn launcher_install_dir() -> io::Result<PathBuf> {
 /// if the system's bundled JRE is not suitable.
 pub(crate) fn get_jre_locations() -> io::Result<Vec<PathBuf>> {
 	let paths = vec![
-		"runtime/jre-legacy/windows-x64/jre-legacy/bin/javaw.exe",
-		"runtime/jre-legacy/windows-x86/jre-legacy/bin/javaw.exe",
-		"runtime/jre-x64/bin/javaw.exe",
-		"runtime/jre-x86/bin/javaw.exe",
-		"runtime/jre-legacy/windows-x64/javaw.exe",
-		"runtime/jre-legacy/windows-x86/javaw.exe",
-		"runtime/java-runtime-alpha/windows-x64/javaw.exe",
-		"runtime/java-runtime-alpha/windows-x86/javaw.exe",
-		"runtime/java-runtime-beta/windows-x86/javaw.exe",
-		"runtime/java-runtime-beta/windows-x64/javaw.exe",
-		"runtime/java-runtime-gamma/windows-x86/javaw.exe",
-		"runtime/java-runtime-gamma/windows-x64/javaw.exe",
-		// All signs point to a versioning scheme based on Greek letters. Let's future-proof it against the next predicted one 
+		"runtime/java-runtime-gamma/windows-x64/java-runtime-gamma/bin/javaw.exe",
+		"runtime/java-runtime-beta/windows-x64/java-runtime-beta/bin/javaw.exe",
+
+		// x86 versions
+		"runtime/java-runtime-gamma/windows-x86/java-runtime-gamma/bin/javaw.exe",
+		"runtime/java-runtime-beta/windows-x86/java-runtime-beta/bin/javaw.exe", // used by at least 1.18.2
+
+
+
+		// All signs point to a versioning scheme based on Greek letters. Let's future-proof it against the next predicted one
 		"runtime/java-runtime-delta/windows-x64/javaw.exe",
 		"runtime/java-runtime-delta/windows-x86/javaw.exe"
 	];

@@ -29,8 +29,8 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.quiltmc.json5.JsonReader;
-import org.quiltmc.json5.JsonWriter;
+import org.quiltmc.parsers.json.JsonReader;
+import org.quiltmc.parsers.json.JsonWriter;
 
 public final class LauncherProfiles {
 	private static final DateFormat ISO_8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");

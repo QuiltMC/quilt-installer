@@ -16,8 +16,8 @@
 
 package org.quiltmc.installer;
 
-import org.quiltmc.json5.JsonReader;
-import org.quiltmc.json5.JsonWriter;
+import org.quiltmc.parsers.json.JsonReader;
+import org.quiltmc.parsers.json.JsonWriter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
