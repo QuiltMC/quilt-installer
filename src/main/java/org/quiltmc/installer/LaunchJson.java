@@ -30,6 +30,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.concurrent.CompletableFuture;
 
 public final class LaunchJson {
@@ -78,13 +80,20 @@ public final class LaunchJson {
 			}
 
 			// TODO: HACK HACK HACK: inject intermediary instead of hashed
+			Set<String> libraryNames = new HashSet<>();
+			List<Map<String, String>> newLibraries = new ArrayList<>();
 			@SuppressWarnings("unchecked") List<Map<String, String>> libraries = (List<Map<String, String>>) map.get("libraries");
 			for (Map<String, String> library : libraries) {
 				if (library.get("name").startsWith("org.quiltmc:hashed")) {
 					library.replace("name", library.get("name").replace("org.quiltmc:hashed", "net.fabricmc:intermediary"));
 					library.replace("url", "https://maven.fabricmc.net/");
 				}
+				if (!libraryNames.contains(library.get("name"))) {
+        				libraryNames.add(library.get("name"));
+        				newLibraries.add(library);
+    				}
 			}
+			map.put("libraries", newLibraries);
 			StringWriter writer = new StringWriter();
 			try {
 				Gsons.write(JsonWriter.json(writer), map);
