@@ -28,6 +28,10 @@ repositories {
 	}
 }
 
+sourceSets {
+	create("java8")
+}
+
 dependencies {
 	implementation("org.quiltmc.parsers:json:0.2.1")
 	compileOnly("org.jetbrains:annotations:20.1.0")
@@ -46,9 +50,11 @@ blossom {
 }
 
 tasks.compileJava {
-	if (JavaVersion.current().isJava9Compatible) {
-		options.release.set(17)
-	}
+	options.release.set(17)
+}
+
+tasks.getByName("compileJava8Java", JavaCompile::class) {
+	options.release.set(8)
 }
 java {
 	toolchain {
@@ -61,21 +67,25 @@ java {
 //	mainClass.set("org.quiltmc.installer.Main")
 //}
 
+tasks.jar.get().dependsOn(tasks["compileJava8Java"])
 tasks.jar {
 	manifest {
 		attributes["Implementation-Title"] = "Quilt-Installer"
 		attributes["Implementation-Version"] = project.version
+		attributes["Multi-Release"] = true
+
 		attributes["Main-Class"] = "org.quiltmc.installer.Main"
 	}
 }
 
 tasks.shadowJar {
 	relocate("org.quiltmc.parsers.json", "org.quiltmc.installer.lib.parsers.json")
-	minimize()
+//	minimize()
 
 	// Compiler does not know which set method we are targeting with null value
 	val classifier: String? = null;
 	archiveClassifier.set(classifier)
+	from(sourceSets["java8"].output)
 }
 
 tasks.build {
