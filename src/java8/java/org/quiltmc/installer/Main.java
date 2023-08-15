@@ -30,11 +30,11 @@ public class Main {
             if (GraphicsEnvironment.isHeadless() || args.length != 0) {
                 MethodHandles.lookup()
                         .findStatic(Class.forName("org.quiltmc.installer.CliInstaller"), "run", MethodType.methodType(void.class, String[].class))
-                        .invoke();
+                        .invokeExact(args);
             } else {
                 MethodHandles.lookup()
                         .findStatic(Class.forName("org.quiltmc.installer.gui.swing.SwingInstaller"), "run", MethodType.methodType(void.class))
-                        .invoke();
+                        .invokeExact();
             }
         } catch (UnsupportedClassVersionError error) {
             if (GraphicsEnvironment.isHeadless() || args.length != 0) {
