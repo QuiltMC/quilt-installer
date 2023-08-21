@@ -52,7 +52,7 @@ public class Main {
 
                 showPopup("Quilt Installer crashed!", "<html>Quilt Installer needs Java 17 to run.<br><br>" +
                         "Install the latest LTS release of Java from <a href=\"https://adoptium.net/\">Eclipse Adoptium</a> and try again." +
-                        "<br><br>If you need help, ask on the <a href=\"https://forums.quiltmc.org/c/9/\">Quilt Forum</a>" +
+                        "<br><br>If you need help, ask on the <a href=\"https://forum.quiltmc.org/c/9/\">Quilt Forum</a>" +
                         " or in the <a href=\"discord.quiltmc.org\">Quilt Discord server</a>.</html>", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
                 System.exit(1);
             }
