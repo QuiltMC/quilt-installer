@@ -76,7 +76,7 @@ pub(crate) fn get_jre_locations() -> io::Result<Vec<PathBuf>> {
 	}
 
 	let program_files_dir = PathBuf::from(PROGRAM_FILES_PATH);
-	if program_files_dir.try_exists().or_else(false) {
+	if program_files_dir.try_exists().unwrap_or(false) {
 		for x in &paths {
 			candidates.push(program_files_dir.join(x))
 		}

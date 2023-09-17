@@ -108,7 +108,7 @@ fn main() {
 		.set_type(MessageType::Error)
 		.set_title("Failed to launch installer")
 		.set_text("You must have launched Minecraft (1.18.2 or above) with the official launcher at least once to open the installer.\
-		\n\nIf the issue persists, please ask for support on the Quilt Forums.")
+		\n\nIf the issue persists, please ask for support on the Quilt Forums, or try the JAR installer.")
 		.show_alert().is_err() {
 		last_resort();
 	}
