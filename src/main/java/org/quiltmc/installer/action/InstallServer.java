@@ -103,7 +103,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 
 		installationInfoFuture.thenCompose(installationInfo -> {
 			this.installationInfo = installationInfo;
-			return LaunchJson.get(this.minecraftVersion, installationInfo.loaderVersion(), "/v3/versions/loader/%s/%s/server/json", false);
+			return LaunchJson.get(this.minecraftVersion, installationInfo.loaderVersion(), "/v3/versions/loader/%s/%s/server/json");
 		}).thenCompose(launchJson -> {
 			println("Installing libraries");
 

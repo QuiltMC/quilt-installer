@@ -114,7 +114,7 @@ public final class CliInstaller {
 
 				// At this point all the require arguments have been parsed
 				if (split.size() == 0) {
-					return Action.installClient(minecraftVersion, null, null, false, false);
+					return Action.installClient(minecraftVersion, null, null, false);
 				}
 
 				// Try to parse loader version first
@@ -129,7 +129,7 @@ public final class CliInstaller {
 
 				// No more arguments, just loader version
 				if (split.size() == 0) {
-					return Action.installClient(minecraftVersion, loaderVersion, null, false, false);
+					return Action.installClient(minecraftVersion, loaderVersion, null, false);
 				}
 
 				// There are some additional options
@@ -150,12 +150,6 @@ public final class CliInstaller {
 						}
 
 						options.put("--no-profile", null);
-					} else if (option.equals("--disable-beacon")) {
-						if (options.containsKey("--disable-beacon")) {
-							System.err.println("Encountered duplicate option \"--disable-beacon\", This shouldn't affect anything");
-						}
-
-						options.put("--disable-beacon", null);
 					// Common option
 					} else if (option.startsWith("--install-dir")) {
 						if (options.containsKey("--install-dir")) {
@@ -187,7 +181,7 @@ public final class CliInstaller {
 					}
 				}
 
-				return Action.installClient(minecraftVersion, loaderVersion, options.get("--install-dir"), !options.containsKey("--no-profile"), options.containsKey("--disable-beacon"));
+				return Action.installClient(minecraftVersion, loaderVersion, options.get("--install-dir"), !options.containsKey("--no-profile"));
 			}
 			case "server": {
 				if (split.size() == 0) {

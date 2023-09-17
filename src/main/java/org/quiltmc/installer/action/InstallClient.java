@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.OsPaths;
 import org.quiltmc.installer.LaunchJson;
 import org.quiltmc.installer.LauncherProfiles;
+import org.quiltmc.installer.VersionManifest;
 
 /**
  * An action which installs a new client instance.
@@ -44,15 +45,13 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 	private final String loaderVersion;
 	private final String installDir;
 	private final boolean generateProfile;
-	private final boolean beaconOptOut;
 	private Path installDirPath;
 
-	InstallClient(String minecraftVersion, @Nullable String loaderVersion, String installDir, boolean generateProfile, boolean beaconOptOut) {
+	InstallClient(String minecraftVersion, @Nullable String loaderVersion, String installDir, boolean generateProfile) {
 		this.minecraftVersion = minecraftVersion;
 		this.loaderVersion = loaderVersion;
 		this.installDir = installDir;
 		this.generateProfile = generateProfile;
-		this.beaconOptOut = beaconOptOut;
 	}
 
 	@Override
@@ -88,7 +87,7 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 
 		CompletableFuture<MinecraftInstallation.InstallationInfo> installationInfoFuture = MinecraftInstallation.getInfo(this.minecraftVersion, this.loaderVersion);
 
-		installationInfoFuture.thenCompose(installationInfo -> LaunchJson.get(this.minecraftVersion, installationInfo.loaderVersion(), "/v3/versions/loader/%s/%s/profile/json", this.beaconOptOut)).thenAccept(launchJson -> {
+		installationInfoFuture.thenCompose(installationInfo -> LaunchJson.get(this.minecraftVersion, installationInfo.loaderVersion(), "/v3/versions/loader/%s/%s/profile/json")).thenAccept(launchJson -> {
 			println("Creating profile launch json");
 
 			try {

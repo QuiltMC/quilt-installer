@@ -17,20 +17,11 @@
 package org.quiltmc.installer.gui.swing;
 
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -52,7 +43,6 @@ abstract class AbstractPanel extends JPanel {
 	private List<String> loaderVersions;
 	@Nullable
 	private Collection<String> intermediaryVersions;
-	protected boolean beaconOptOut = false;
 
 	AbstractPanel(SwingInstaller gui) {
 		this.gui = gui;
@@ -112,43 +102,6 @@ abstract class AbstractPanel extends JPanel {
 		}
 
 		comboBox.setEnabled(true);
-	}
-
-	protected @Nullable List<JComponent> createBeaconOptOut() {
-		if (Boolean.parseBoolean(System.getenv().get("QUILT_LOADER_DISABLE_BEACON")) ||
-			Boolean.parseBoolean(System.getenv().get("CI")) ||
-			Boolean.getBoolean("loader.disable_beacon")) {
-			// Telemetry is already disabled, likely for the whole system.
-			// We shouldn't show an opt-out checkbox in order not to confuse users
-			return null;
-		}
-
-		List<JComponent> components = new ArrayList<>();
-
-		String link = "https://quiltmc.org/en/blog/2023-06-26-mau-beacon/";
-		JLabel linkLabel = new JLabel(String.format("<html><a href=\"%s\">(?)</a></html>", link));
-		linkLabel.setToolTipText(Localization.get("gui.beacon-opt-out.link-hover"));
-		linkLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-		linkLabel.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				try {
-					Desktop.getDesktop().browse(new URI(link));
-				} catch (IOException | URISyntaxException ex) {
-					throw new RuntimeException(ex);
-				}
-			}
-		});
-
-		JCheckBox optOutBox = new JCheckBox(Localization.get("gui.beacon-opt-out"), null, this.beaconOptOut);
-		optOutBox.addItemListener(e -> {
-			this.beaconOptOut = e.getStateChange() == ItemEvent.SELECTED;
-		});
-		optOutBox.add(linkLabel);
-
-		components.add(optOutBox);
-		components.add(linkLabel);
-		return components;
 	}
 
 	@Nullable
