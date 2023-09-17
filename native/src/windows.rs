@@ -2,12 +2,12 @@
 // Some code in this file referenced from fabric-installer-native-bootstrap
 use std::ffi::OsString;
 use std::io;
-use std::io::Error;
 use std::path::PathBuf;
 use winreg::RegKey;
 
 pub const PLATFORM_JAVA_EXECUTABLE_NAME: &str = "javaw";
 pub const UWP_PATH: &str = "Packages/Microsoft.4297127D64EC6_8wekyb3d8bbwe/LocalCache/Local/";
+pub const PROGRAM_FILES_PATH: &str = "C:/Program Files (x86)/Minecraft Launcher/";
 
 fn get_uwp_installer() -> io::Result<PathBuf> {
 	println!("Attempting to find a Java version from the UWP Minecraft installer");
@@ -72,6 +72,13 @@ pub(crate) fn get_jre_locations() -> io::Result<Vec<PathBuf>> {
 	if let Ok(installer_dir) = installer_dir {
 		for x in &paths {
 			candidates.push(installer_dir.join(x));
+		}
+	}
+
+	let program_files_dir = PathBuf::from(PROGRAM_FILES_PATH);
+	if program_files_dir.try_exists().or_else(false) {
+		for x in &paths {
+			candidates.push(program_files_dir.join(x))
 		}
 	}
 
