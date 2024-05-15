@@ -45,16 +45,12 @@ pub(crate) fn get_jre_locations() -> io::Result<Vec<PathBuf>> {
 	let paths = vec![
 		"runtime/java-runtime-gamma/windows-x64/java-runtime-gamma/bin/javaw.exe",
 		"runtime/java-runtime-beta/windows-x64/java-runtime-beta/bin/javaw.exe",
+		"runtime/java-runtime-delta/windows-x64/java-runtime-delta/bin/javaw.exe",
 
 		// x86 versions
 		"runtime/java-runtime-gamma/windows-x86/java-runtime-gamma/bin/javaw.exe",
-		"runtime/java-runtime-beta/windows-x86/java-runtime-beta/bin/javaw.exe", // used by at least 1.18.2
-
-
-
-		// All signs point to a versioning scheme based on Greek letters. Let's future-proof it against the next predicted one
-		"runtime/java-runtime-delta/windows-x64/java-runtime-delta/javaw.exe",
-		"runtime/java-runtime-delta/windows-x86/java-runtime-delta/javaw.exe"
+		"runtime/java-runtime-beta/windows-x86/java-runtime-beta/bin/javaw.exe", // Used 1.18.2 and above
+		"runtime/java-runtime-delta/windows-x86/java-runtime-delta/bin/javaw.exe", // Used by 1.20.5 and above
 	];
 
 	let mut candidates = Vec::new();
