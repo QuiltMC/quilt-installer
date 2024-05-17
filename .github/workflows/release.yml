@@ -1,5 +1,5 @@
 name: Release
-on: [workflow_dispatch] # Manual trigger
+on: [ workflow_dispatch ] # Manual trigger
 jobs:
   buildJava:
     runs-on: ubuntu-latest
@@ -39,7 +39,7 @@ jobs:
           java-version: '17'
           cache: 'gradle'
       - uses: gradle/actions/wrapper-validation@v3
-      - run: ./gradlew build copyForNative
+      - run: ./gradlew assemble copyForNative
       - name: Run Cargo
         run: cargo build --release --target ${{ matrix.target }}-pc-windows-msvc
         working-directory: ./native
