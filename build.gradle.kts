@@ -16,9 +16,12 @@ val env = System.getenv()
 version = if (env["SNAPSHOTS_URL"] != null) {
 	"0-SNAPSHOT"
 } else {
-	"0.9.1"
+	"0.9.2"
 }
-base.archivesBaseName = project.name
+
+base {
+	archivesName.set(project.name)
+}
 
 repositories {
 	mavenCentral()
