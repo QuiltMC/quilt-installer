@@ -91,7 +91,7 @@ tasks.shadowJar {
 	from(sourceSets["java8"].output)
 }
 
-tasks.build {
+tasks.assemble {
 	dependsOn(tasks.shadowJar)
 }
 
