@@ -23,6 +23,7 @@ use std::io;
 use std::io::{ErrorKind, Write};
 use std::path::Path;
 use std::process::{exit, Command};
+use winapi::um::wincon;
 
 /// The bundled installer jar, see main entrypoint for why we include the bytes of the installer jar.
 const INSTALLER_JAR: &[u8] = include_bytes!(env!("QUILT_INSTALLER_JAR_INCLUDE_PATH"));
@@ -30,6 +31,14 @@ const INSTALLER_JAR: &[u8] = include_bytes!(env!("QUILT_INSTALLER_JAR_INCLUDE_PA
 // TODO: Some things to do in the future
 //  Error dialog localization, possibly this for getting the OS's locale? https://github.com/i509VCB/os-locale
 fn main() {
+
+	#[cfg(windows)]
+	unsafe {
+		// We need to manually attach to the parent process's console if one exists,
+		// otherwise we will never have a console to print to
+		wincon::AttachConsole(wincon::ATTACH_PARENT_PROCESS);
+	}
+
 	// Let's begin
 	//
 	// So we need to setup the jar file for this native installer launcher to actually launch.

@@ -448,6 +448,7 @@ dependencies = [
  "execute",
  "native-dialog",
  "rand",
+ "winapi",
  "winreg 0.55.0",
  "winres",
 ]
