@@ -11,14 +11,11 @@ pub const PROGRAM_FILES_PATH: &str = "C:/Program Files (x86)/Minecraft Launcher/
 
 fn get_uwp_installer() -> io::Result<PathBuf> {
 	println!("Attempting to find a Java version from the UWP Minecraft installer");
-	let mut path = std::env::var_os("LOCALAPPDATA");
-	if path.is_none() {
-		return Err(io::Error::from(io::ErrorKind::Unsupported))
-	}
-	let mut path = PathBuf::from(path.unwrap());
+
+	let Some(mut path) = std::env::var_os("LOCALAPPDATA").map(PathBuf::from) else { return Err(io::Error::from(io::ErrorKind::Unsupported)) };
 	path.push(UWP_PATH);
 
-	return if path.exists() {
+	if path.exists() {
 		Ok(path)
 	} else {
 		Err(io::Error::from(io::ErrorKind::NotFound))
