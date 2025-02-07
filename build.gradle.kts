@@ -5,6 +5,7 @@ plugins {
 	`java-library`
 	`maven-publish`
 
+	id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.10"
 	id("net.kyori.blossom") version "2.1.0"
 	id("com.diffplug.spotless") version "6.19.0"
 	id("com.github.johnrengelman.shadow") version "8.1.1"
@@ -35,7 +36,16 @@ repositories {
 }
 
 sourceSets {
-	create("java8")
+	create("java8") {
+		blossom {
+			javaSources {
+				property("minimum_java_version", projectJavaVersion.toString())
+			}
+		}
+	}
+	main {
+		compileClasspath += sourceSets["java8"].output
+	}
 }
 
 dependencies {

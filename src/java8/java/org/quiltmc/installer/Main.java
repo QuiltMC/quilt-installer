@@ -25,8 +25,6 @@ import java.lang.invoke.MethodType;
 // We enter in java 8 so we can display a nice error message if things don't work
 public class Main {
 
-    private static final int MIN_JAVA_VERSION = 17;
-
     public static void main(String[] args) {
 
         // Only use CLI mode if there are any arguments or we have a headless JVM
@@ -44,7 +42,7 @@ public class Main {
                         .invokeExact();
             }
         } catch (UnsupportedClassVersionError error) {
-            System.err.printf("Quilt Installer requires Java %s or greater to run.%n", MIN_JAVA_VERSION);
+            System.err.printf("Quilt Installer requires Java %s or greater to run.%n", BuildConstants8.MIN_JAVA_VERSION);
             if (!cliMode) {
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -78,7 +76,7 @@ public class Main {
 
                 showPopup("Quilt Installer crashed!", String.format("Quilt Installer needs Java %s to run." +
                         "<br><br>Install the latest LTS release of Java from <a href=\"%s\">Adoptium</a> and try again." +
-                        "<br><br>If you need help, ask in the <a href=\"discord.quiltmc.org\">Quilt Discord server</a>.", MIN_JAVA_VERSION, javaDownloadUrl), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                        "<br><br>If you need help, ask in the <a href=\"discord.quiltmc.org\">Quilt Discord server</a>.", BuildConstants8.MIN_JAVA_VERSION, javaDownloadUrl), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             }
 
             System.exit(1);

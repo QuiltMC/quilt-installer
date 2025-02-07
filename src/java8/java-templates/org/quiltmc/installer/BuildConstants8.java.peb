@@ -1,0 +1,6 @@
+package org.quiltmc.installer;
+
+public class BuildConstants8 {
+
+    public static final String MIN_JAVA_VERSION = "{{ minimum_java_version }}";
+}

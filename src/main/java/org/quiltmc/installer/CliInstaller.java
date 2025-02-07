@@ -26,7 +26,7 @@ import java.util.*;
  */
 public final class CliInstaller {
 
-	public static final String INSTALLER_VERSION = Objects.requireNonNullElse(CliInstaller.class.getPackage().getImplementationVersion(), "DEVELOPMENT");
+	public static final String INSTALLER_VERSION = Objects.requireNonNullElse(CliInstaller.class.getPackage().getImplementationVersion(), "UNKNOWN");
 
 	public static void run(String[] args) {
 		// Assemble the array of args back into a single string
