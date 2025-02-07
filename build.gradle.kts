@@ -11,14 +11,16 @@ plugins {
 	id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
-var projectJavaVersion = 17;
+val projectJavaVersion = 17;
 
 group = "org.quiltmc"
 val env = System.getenv()
 version = if (env["SNAPSHOTS_URL"] != null) {
 	"0-SNAPSHOT"
+} else if (env["VERSION"] != null) {
+	env["VERSION"]!!
 } else {
-	"0.9.2"
+	"development"
 }
 
 base {

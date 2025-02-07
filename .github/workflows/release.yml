@@ -1,5 +1,16 @@
 name: Release
-on: [ workflow_dispatch ] # Manual trigger
+on:
+  workflow_dispatch: # Manual trigger
+    inputs:
+      version:
+        type: string
+        description: Version to release
+        required: true
+
+env:
+  JAVA_VERSION: 21
+  VERSION: ${{ inputs.version }}
+
 jobs:
   buildJava:
     runs-on: ubuntu-latest
@@ -7,53 +18,73 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
+          java-version: ${{ env.JAVA_VERSION }}
           distribution: 'microsoft'
-          java-version: 17
-          cache: 'gradle'
-      - uses: gradle/actions/wrapper-validation@v3
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x ./gradlew
-      - run: ./gradlew assemble publish --stacktrace
+
+      - name: Build with Gradle
+        run: ./gradlew build --rerun-tasks --stacktrace
+
+      - name: Create native artifact
+        run: ./gradlew copyForNative --rerun-tasks --stacktrace
+
+      - name: Store native artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-quilt-installer-jar-${{ github.sha }}
+          path: build/native-quilt-installer.jar
+
+      - name: Publish to releases maven
+        run: ./gradlew publish --rerun-tasks --stacktrace
         env:
           MAVEN_URL: ${{ secrets.MAVEN_URL }}
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-      - run: ./gradlew publish --stacktrace
+      - name: Publish to snapshots maven
+        continue-on-error: true
+        run: ./gradlew publish --rerun-tasks --stacktrace
         env:
           SNAPSHOTS_URL: ${{ secrets.SNAPSHOTS_URL }}
           SNAPSHOTS_USERNAME: ${{ secrets.SNAPSHOTS_USERNAME }}
           SNAPSHOTS_PASSWORD: ${{ secrets.SNAPSHOTS_PASSWORD }}
 
   buildNatives:
+    needs: buildJava
     strategy:
       matrix:
         target: [ x86_64, i686, aarch64 ]
     runs-on: windows-latest
+    env:
+      QUILT_INSTALLER_JAR_PATH: jars/native-quilt-installer.jar
     steps:
       # TODO: Fix macOS in future
       - uses: actions/checkout@v4
       - run: rustup target add ${{ matrix.target }}-pc-windows-msvc
-      - uses: actions/setup-java@v4
+      - name: download native jar
+        uses: actions/download-artifact@v4
+        working-directory: ./native
         with:
-          distribution: 'microsoft'
-          java-version: '17'
-          cache: 'gradle'
-      - uses: gradle/actions/wrapper-validation@v3
-      - run: ./gradlew assemble copyForNative
+          name: native-quilt-installer-jar-${{ github.sha }}
+          path: ./jars
       - name: Run Cargo
         run: cargo build --release --target ${{ matrix.target }}-pc-windows-msvc
         working-directory: ./native
       - uses: actions/upload-artifact@v4
         with:
-          name: Artifacts ${{ matrix.target }}
-          path: target/${{ matrix.target }}-pc-windows-msvc/release/quilt-installer.exe
-      - run: ./gradlew publish --stacktrace
+          name: Native Installer ${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/quilt-installer.exe
+      - name: Publish ${{ matrix.target }} to releases maven
+        run: ./gradlew publish --rerun-tasks --stacktrace
         env:
           MAVEN_URL: ${{ secrets.MAVEN_URL }}
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
           TARGET: ${{ matrix.target }}
-      - run: ./gradlew publish --stacktrace
+      - name: Publish ${{ matrix.target }} to snapshots maven
+        run: ./gradlew publish --rerun-tasks --stacktrace
         env:
           SNAPSHOTS_URL: ${{ secrets.SNAPSHOTS_URL }}
           SNAPSHOTS_USERNAME: ${{ secrets.SNAPSHOTS_USERNAME }}

@@ -25,7 +25,7 @@ use std::path::Path;
 use std::process::{exit, Command};
 
 /// The bundled installer jar, see main entrypoint for why we include the bytes of the installer jar.
-const INSTALLER_JAR: &[u8] = include_bytes!(env!("QUILT_INSTALLER_JAR_PATH"));
+const INSTALLER_JAR: &[u8] = include_bytes!(env!("QUILT_INSTALLER_JAR_INCLUDE_PATH"));
 
 // TODO: Some things to do in the future
 //  Error dialog localization, possibly this for getting the OS's locale? https://github.com/i509VCB/os-locale
