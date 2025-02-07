@@ -20,10 +20,10 @@ use rand::random;
 use std::env::{args_os, temp_dir};
 use std::ffi::OsString;
 use std::fs::File;
-use std::io;
 use std::io::{ErrorKind, Write};
 use std::path::Path;
 use std::process::{exit, Command};
+use std::{env, io};
 use winapi::um::wincon;
 
 /// The bundled installer jar, see main entrypoint for why we include the bytes of the installer jar.
@@ -228,16 +228,13 @@ fn try_launch(installer_jar: &Path, args: &[OsString], jre_path: &Path) -> JreLa
 	}
 
 	// We have successfully run -version, so now we launch the installer.
-	let mut command = Command::new(&jre_path);
+	let mut command = Command::new(jre_path);
 
-	command
-		.current_dir(
-			installer_jar
-				.parent()
-				.expect("Installer jar has no parent directory"),
-		)
-		.arg("-jar")
-		.arg(installer_jar.as_os_str());
+	command.arg("-jar").arg(installer_jar.as_os_str());
+
+	if let Ok(dir) = env::current_dir() {
+		command.current_dir(dir);
+	}
 
 	if !args.is_empty() {
 		command.args(args);
