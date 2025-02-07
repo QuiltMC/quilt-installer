@@ -28,12 +28,13 @@ jobs:
           path: build/native-quilt-installer.jar
 
   buildNatives:
-    env:
-      QUILT_INSTALLER_JAR_PATH: jars/native-quilt-installer.jar
+    needs: buildJava
     strategy:
       matrix:
         target: [ x86_64, i686, aarch64 ]
     runs-on: windows-latest
+    env:
+      QUILT_INSTALLER_JAR_PATH: jars/native-quilt-installer.jar
     steps:
       # TODO: Fix macOS in future
       - uses: actions/checkout@v4
