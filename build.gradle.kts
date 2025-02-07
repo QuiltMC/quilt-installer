@@ -4,7 +4,6 @@ plugins {
 	java
 	`java-library`
 	`maven-publish`
-	// application
 
 	id("net.kyori.blossom") version "1.3.1"
 	id("com.diffplug.spotless") version "6.19.0"
@@ -68,11 +67,6 @@ java {
 		languageVersion.set(JavaLanguageVersion.of(projectJavaVersion))
 	}
 }
-// Cannot use application for the time being because shadow does not like mainClass being set for some reason.
-// There is a PR which has fixed this, so update shadow probably when 6.10.1 or 6.11 is out
-//application {
-//	mainClass.set("org.quiltmc.installer.Main")
-//}
 
 tasks.jar.get().dependsOn(tasks["compileJava8Java"])
 tasks.jar {
