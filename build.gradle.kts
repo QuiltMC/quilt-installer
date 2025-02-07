@@ -11,6 +11,8 @@ plugins {
 	id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
+var projectJavaVersion = 17;
+
 group = "org.quiltmc"
 val env = System.getenv()
 version = if (env["SNAPSHOTS_URL"] != null) {
@@ -53,7 +55,7 @@ blossom {
 }
 
 tasks.compileJava {
-	options.release.set(17)
+	options.release.set(projectJavaVersion)
 }
 
 tasks.getByName("compileJava8Java", JavaCompile::class) {
@@ -61,7 +63,7 @@ tasks.getByName("compileJava8Java", JavaCompile::class) {
 }
 java {
 	toolchain {
-		languageVersion.set(JavaLanguageVersion.of(17))
+		languageVersion.set(JavaLanguageVersion.of(projectJavaVersion))
 	}
 }
 // Cannot use application for the time being because shadow does not like mainClass being set for some reason.
@@ -76,8 +78,10 @@ tasks.jar {
 		attributes["Implementation-Title"] = "Quilt-Installer"
 		attributes["Implementation-Version"] = project.version
 		attributes["Multi-Release"] = true
+		attributes["Built-On-Java"] = "${System.getProperty("java.vm.version")} (${System.getProperty("java.vm.vendor")})"
 
 		attributes["Main-Class"] = "org.quiltmc.installer.Main"
+		attributes["Quilt-Installer-Required-Java-Version"] = projectJavaVersion;
 	}
 }
 
