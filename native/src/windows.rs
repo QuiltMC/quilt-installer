@@ -5,7 +5,6 @@ use std::{env, io};
 use std::path::PathBuf;
 use winreg::RegKey;
 
-pub const PLATFORM_JAVA_EXECUTABLE_NAME: &str = "javaw";
 const UWP_PATH: &str = "Packages/Microsoft.4297127D64EC6_8wekyb3d8bbwe/LocalCache/Local";
 
 #[cfg(target_pointer_width = "32")]
@@ -42,44 +41,46 @@ fn launcher_install_dir() -> io::Result<PathBuf> {
 ///
 /// If the Minecraft Launcher is installed, then we may be able to use the JRE the launcher has downloaded
 /// if the system's bundled JRE is not suitable.
-pub(crate) fn get_jre_locations() -> io::Result<Vec<PathBuf>> {
+pub(crate) fn get_jre_locations(has_args: bool) -> io::Result<Vec<PathBuf>> {
 	let paths = vec![
-		"runtime/java-runtime-gamma/windows-x64/java-runtime-gamma/bin/javaw.exe",
-		"runtime/java-runtime-beta/windows-x64/java-runtime-beta/bin/javaw.exe",
-		"runtime/java-runtime-delta/windows-x64/java-runtime-delta/bin/javaw.exe",
+		"runtime/java-runtime-gamma/windows-x64/java-runtime-gamma/bin",
+		"runtime/java-runtime-beta/windows-x64/java-runtime-beta/bin",
+		"runtime/java-runtime-delta/windows-x64/java-runtime-delta/bin",
 
 		// x86 versions
-		"runtime/java-runtime-gamma/windows-x86/java-runtime-gamma/bin/javaw.exe",
-		"runtime/java-runtime-beta/windows-x86/java-runtime-beta/bin/javaw.exe", // Used 1.18.2 and above
-		"runtime/java-runtime-delta/windows-x86/java-runtime-delta/bin/javaw.exe", // Used by 1.20.5 and above
+		"runtime/java-runtime-gamma/windows-x86/java-runtime-gamma/bin",
+		"runtime/java-runtime-beta/windows-x86/java-runtime-beta/bin", // Used 1.18.2 and above
+		"runtime/java-runtime-delta/windows-x86/java-runtime-delta/bin", // Used by 1.20.5 and above
 	];
 
 	let mut candidates = Vec::new();
 
-	let uwp_dir = get_uwp_installer();
-
-	if let Ok(uwp_dir) = uwp_dir {
-		for x in &paths {
-			candidates.push(uwp_dir.join(x));
-		}
+	if let Ok(uwp_dir) = get_uwp_installer() {
+		candidates.extend(collect_paths(&paths, has_args, &uwp_dir));
 	}
 
-	let installer_dir = launcher_install_dir();
-
-	if let Ok(installer_dir) = installer_dir {
-		for x in &paths {
-			candidates.push(installer_dir.join(x));
-		}
+	if let Ok(install_dir) = launcher_install_dir() {
+		candidates.extend(collect_paths(&paths, has_args, &install_dir));
 	}
 
 	if let Some(program_files_path) = env::var_os(PROGRAM_FILES_VAR_NAME).map(PathBuf::from) {
 		let launcher_dir = program_files_path.join("Minecraft Launcher");
 		if launcher_dir.try_exists().unwrap_or(false) {
-			for x in &paths {
-				candidates.push(launcher_dir.join(x))
-			}
+			candidates.extend(collect_paths(&paths, has_args, &launcher_dir));
 		}
 	}
 
 	Ok(candidates)
+}
+
+fn collect_paths(paths: &[&str], has_args: bool, location: &PathBuf) -> Vec<PathBuf> {
+	paths.iter().map(|x| {
+		let mut path = location.join(x);
+		match has_args {
+			true => path.push("java.exe"),
+			false => path.push("javaw.exe"),
+		}
+
+		path
+	}).collect()
 }

@@ -11,6 +11,6 @@ pub const INSTALLER_JRE_HELP_URL: &str = "DUMMY_STUB";
 use std::io;
 use std::path::PathBuf;
 
-pub(crate) fn get_jre_locations() -> io::Result<Vec<PathBuf>> {
+pub(crate) fn get_jre_locations(has_args: bool) -> io::Result<Vec<PathBuf>> {
 	unreachable!()
 }

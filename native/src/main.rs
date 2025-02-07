@@ -17,7 +17,8 @@ mod platform;
 use crate::platform::get_jre_locations;
 use native_dialog::{MessageDialog, MessageType};
 use rand::random;
-use std::env::temp_dir;
+use std::env::{args_os, temp_dir};
+use std::ffi::OsString;
 use std::fs::File;
 use std::io;
 use std::io::{ErrorKind, Write};
@@ -31,13 +32,14 @@ const INSTALLER_JAR: &[u8] = include_bytes!(env!("QUILT_INSTALLER_JAR_INCLUDE_PA
 // TODO: Some things to do in the future
 //  Error dialog localization, possibly this for getting the OS's locale? https://github.com/i509VCB/os-locale
 fn main() {
-
 	#[cfg(windows)]
 	unsafe {
 		// We need to manually attach to the parent process's console if one exists,
 		// otherwise we will never have a console to print to
 		wincon::AttachConsole(wincon::ATTACH_PARENT_PROCESS);
 	}
+
+	let args: Vec<OsString> = args_os().skip(1).collect();
 
 	// Let's begin
 	//
@@ -61,7 +63,7 @@ fn main() {
 
 	// Scope here will drop the file writer
 	{
-		let mut installer_jar = match File::create(installer_jar.clone()) {
+		let mut installer_jar = match File::create(&installer_jar) {
 			Ok(f) => f,
 			Err(e) => {
 				eprintln!("Failed to extract installer");
@@ -106,10 +108,10 @@ fn main() {
 		}
 	}
 
-	if let Ok(possible_jres) = get_jre_locations() {
+	if let Ok(possible_jres) = get_jre_locations(!args.is_empty()) {
 		for jre in possible_jres {
 			// Let's try some of the JREs we got
-		 	try_launch(&installer_jar, jre);
+			try_launch(&installer_jar, &args, &jre);
 		}
 	}
 
@@ -180,13 +182,17 @@ fn main() {
 /// Try to launch the installer
 ///
 /// This will terminate the process if the java installer was successfully launched.
-fn try_launch<P: AsRef<Path>>(installer_jar: &Path, jre_path: P) -> JreLaunchError {
+fn try_launch(installer_jar: &Path, args: &[OsString], jre_path: &Path) -> JreLaunchError {
 	// Let's see if the jre is valid
 	// -version will always return an exit code of 0 if successful.
 
-	println!("Trying JVM located at: {:?}", jre_path.as_ref());
+	println!("Trying JVM located at: {:?}", &jre_path);
 
-	match Command::new(jre_path.as_ref()).arg("-version").status() {
+	match Command::new(&jre_path)
+		.arg("-version")
+		.output()
+		.map(|it| it.status)
+	{
 		Ok(status) => {
 			if !status.success() {
 				// TODO: Introspect into the status code
@@ -221,13 +227,23 @@ fn try_launch<P: AsRef<Path>>(installer_jar: &Path, jre_path: P) -> JreLaunchErr
 		}
 	}
 
-	println!("Running JVM located at {:?}", jre_path.as_ref());
-
 	// We have successfully run -version, so now we launch the installer.
-	let result = Command::new(jre_path.as_ref())
+	let mut command = Command::new(&jre_path);
+
+	command
+		.current_dir(
+			installer_jar
+				.parent()
+				.expect("Installer jar has no parent directory"),
+		)
 		.arg("-jar")
-		.arg(installer_jar.as_os_str())
-		.status();
+		.arg(installer_jar.as_os_str());
+
+	if !args.is_empty() {
+		command.args(args);
+	}
+
+	let result = command.status();
 
 	match result {
 		Ok(status) => {

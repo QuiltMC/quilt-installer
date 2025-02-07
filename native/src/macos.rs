@@ -51,7 +51,7 @@ fn launcher_install_dir() -> io::Result<PathBuf> {
 	}
 }
 
-pub(crate) fn get_jre_locations() -> io::Result<Vec<PathBuf>> {
+pub(crate) fn get_jre_locations(has_args: bool) -> io::Result<Vec<PathBuf>> {
 	let paths = vec![
 		//oh lord I hope these are correct
 		// "runtime/jre-x64/jre.bundle/Contents/Home/bin/java",
