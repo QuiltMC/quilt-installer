@@ -24,10 +24,16 @@ import java.lang.invoke.MethodType;
 
 // We enter in java 8 so we can display a nice error message if things don't work
 public class Main {
+
+    private static final int MIN_JAVA_VERSION = 17;
+
     public static void main(String[] args) {
+
+        // Only use CLI mode if there are any arguments or we have a headless JVM
+        boolean cliMode = GraphicsEnvironment.isHeadless() || args.length != 0;
+
         try {
-            // Only use CLI mode if there are any arguments or we have a headless JVM
-            if (GraphicsEnvironment.isHeadless() || args.length != 0) {
+            if (cliMode) {
                 MethodHandles.lookup()
                         .findStatic(Class.forName("org.quiltmc.installer.CliInstaller"), "run", MethodType.methodType(void.class, String[].class))
                         .invokeExact((Object) args);
@@ -37,10 +43,8 @@ public class Main {
                         .invokeExact();
             }
         } catch (UnsupportedClassVersionError error) {
-            if (GraphicsEnvironment.isHeadless() || args.length != 0) {
-                System.out.println("Quilt Installer requires Java 17 to run.");
-                System.exit(1);
-            } else {
+            System.err.printf("Quilt Installer requires Java %s or greater to run.%n", MIN_JAVA_VERSION);
+            if (!cliMode) {
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 } catch (ClassNotFoundException | UnsupportedLookAndFeelException | IllegalAccessException |
@@ -49,13 +53,34 @@ public class Main {
                     e.printStackTrace();
                 }
 
+                String javaDownloadUrl = "https://adoptium.net/temurin/releases/?package=jdk&version=lts";
 
-                showPopup("Quilt Installer crashed!", "Quilt Installer needs Java 17 to run.<br><br>" +
-                        "Install the latest LTS release of Java from <a href=\"https://adoptium.net/\">Eclipse Adoptium</a> and try again." +
-                        "<br><br>If you need help, ask on the <a href=\"https://forum.quiltmc.org/c/9/\">Quilt Forum</a>" +
-                        " or in the <a href=\"discord.quiltmc.org\">Quilt Discord server</a>.", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
-                System.exit(1);
+                // best-effort attempt to make the download URL more user friendly
+                String osName = System.getProperty("os.name", "unknown");
+                if(osName.contains("Windows")) {
+                    javaDownloadUrl += "&os=windows";
+                }
+                else if (osName.contains("Linux")) {
+                    javaDownloadUrl += "&os=linux";
+                }
+                else if (osName.contains("OS X")) {
+                    javaDownloadUrl += "&os=mac";
+                }
+
+                String osArch = System.getProperty("os.arch", "unknown");
+                if (osArch.equals("x86_64") || osArch.equals("amd64") || osArch.equals("x64")) {
+                    javaDownloadUrl += "&arch=x64";
+                }
+                else if (osArch.equals("aarch64") || osArch.equals("arm64")) {
+                    javaDownloadUrl += "&arch=aarch64";
+                }
+
+                showPopup("Quilt Installer crashed!", String.format("Quilt Installer needs Java %s to run." +
+                        "<br><br>Install the latest LTS release of Java from <a href=\"%s\">Adoptium</a> and try again." +
+                        "<br><br>If you need help, ask in the <a href=\"discord.quiltmc.org\">Quilt Discord server</a>.", MIN_JAVA_VERSION, javaDownloadUrl), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
             }
+
+            System.exit(1);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
