@@ -1,18 +1,22 @@
 //! Windows dependent logic
 // Some code in this file referenced from fabric-installer-native-bootstrap
 use std::ffi::OsString;
-use std::io;
+use std::{env, io};
 use std::path::PathBuf;
 use winreg::RegKey;
 
 pub const PLATFORM_JAVA_EXECUTABLE_NAME: &str = "javaw";
-pub const UWP_PATH: &str = "Packages/Microsoft.4297127D64EC6_8wekyb3d8bbwe/LocalCache/Local/";
-pub const PROGRAM_FILES_PATH: &str = "C:/Program Files (x86)/Minecraft Launcher/";
+const UWP_PATH: &str = "Packages/Microsoft.4297127D64EC6_8wekyb3d8bbwe/LocalCache/Local";
+
+#[cfg(target_pointer_width = "32")]
+const PROGRAM_FILES_VAR_NAME: &str = "ProgramFiles";
+#[cfg(target_pointer_width = "64")]
+const PROGRAM_FILES_VAR_NAME: &str = "ProgramFiles(x86)";
 
 fn get_uwp_installer() -> io::Result<PathBuf> {
 	println!("Attempting to find a Java version from the UWP Minecraft installer");
 
-	let Some(mut path) = std::env::var_os("LOCALAPPDATA").map(PathBuf::from) else { return Err(io::Error::from(io::ErrorKind::Unsupported)) };
+	let Some(mut path) = env::var_os("LOCALAPPDATA").map(PathBuf::from) else { return Err(io::Error::from(io::ErrorKind::Unsupported)) };
 	path.push(UWP_PATH);
 
 	if path.exists() {
@@ -68,10 +72,12 @@ pub(crate) fn get_jre_locations() -> io::Result<Vec<PathBuf>> {
 		}
 	}
 
-	let program_files_dir = PathBuf::from(PROGRAM_FILES_PATH);
-	if program_files_dir.try_exists().unwrap_or(false) {
-		for x in &paths {
-			candidates.push(program_files_dir.join(x))
+	if let Some(program_files_path) = env::var_os(PROGRAM_FILES_VAR_NAME).map(PathBuf::from) {
+		let launcher_dir = program_files_path.join("Minecraft Launcher");
+		if launcher_dir.try_exists().unwrap_or(false) {
+			for x in &paths {
+				candidates.push(launcher_dir.join(x))
+			}
 		}
 	}
 
