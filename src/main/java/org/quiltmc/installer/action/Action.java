@@ -16,7 +16,11 @@
 
 package org.quiltmc.installer.action;
 
-import java.awt.GraphicsEnvironment;
+import org.jetbrains.annotations.Nullable;
+import org.quiltmc.installer.CliInstaller;
+import org.quiltmc.installer.Localization;
+
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,10 +28,6 @@ import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.function.Consumer;
-
-import org.jetbrains.annotations.Nullable;
-import org.quiltmc.installer.Localization;
-import org.quiltmc.installer.CliInstaller;
 
 /**
  * Represents an installer action to be performed.
@@ -38,11 +38,11 @@ public abstract class Action<M> {
 	/**
 	 * An action which displays the help menu along with example usages.
 	 */
-	public static final Action<Void> DISPLAY_HELP = new Action<Void>() {
+	public static final Action<Void> DISPLAY_HELP = new Action<>() {
 		@Override
 		public void run(Consumer<Void> statusTracker) {
 			this.printHelp();
-			System.exit(1);
+			System.exit(0);
 		}
 
 		private void printHelp() {
