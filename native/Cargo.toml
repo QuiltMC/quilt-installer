@@ -1,6 +1,5 @@
 [package]
 name = "quilt-installer"
-version = "0.1.0"
 authors = [
     "QuiltMC"
 ]
