@@ -188,7 +188,7 @@ fn try_launch(installer_jar: &Path, args: &[OsString], jre_path: &Path) -> JreLa
 
 	println!("Trying JVM located at: {:?}", &jre_path);
 
-	match Command::new(&jre_path)
+	match Command::new(jre_path)
 		.arg("-version")
 		.output()
 		.map(|it| it.status)

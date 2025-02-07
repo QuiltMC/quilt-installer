@@ -1,9 +1,9 @@
 //! macOS dependent logic
 
+use dirs::home_dir;
 use std::io;
 use std::io::{Error, ErrorKind};
 use std::path::PathBuf;
-use dirs::home_dir;
 
 // Warning: Untested
 
@@ -37,17 +37,25 @@ fn launcher_install_dir() -> io::Result<PathBuf> {
 	let home = home_dir();
 
 	if let Some(home) = home {
-		let extended: PathBuf = ["Library", "Application Support", "minecraft"].iter().collect();
+		let extended: PathBuf = ["Library", "Application Support", "minecraft"]
+			.iter()
+			.collect();
 
 		let path = home.join(extended);
 
 		if path.exists() {
 			Ok(path)
 		} else {
-			Err(Error::new(ErrorKind::Other, "Can't find Minecraft location! That is VERY BAD! How did I do that?"))
+			Err(Error::new(
+				ErrorKind::Other,
+				"Can't find Minecraft location! That is VERY BAD! How did I do that?",
+			))
 		}
 	} else {
-		Err(Error::new(ErrorKind::Other, "Can't find Minecraft location! This must be running without a home dir!"))
+		Err(Error::new(
+			ErrorKind::Other,
+			"Can't find Minecraft location! This must be running without a home dir!",
+		))
 	}
 }
 

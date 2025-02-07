@@ -1,8 +1,8 @@
 //! Windows dependent logic
 // Some code in this file referenced from fabric-installer-native-bootstrap
 use std::ffi::OsString;
+use std::path::{Path, PathBuf};
 use std::{env, io};
-use std::path::PathBuf;
 use winreg::RegKey;
 
 const UWP_PATH: &str = "Packages/Microsoft.4297127D64EC6_8wekyb3d8bbwe/LocalCache/Local";
@@ -15,7 +15,9 @@ const PROGRAM_FILES_VAR_NAME: &str = "ProgramFiles(x86)";
 fn get_uwp_installer() -> io::Result<PathBuf> {
 	println!("Attempting to find a Java version from the UWP Minecraft installer");
 
-	let Some(mut path) = env::var_os("LOCALAPPDATA").map(PathBuf::from) else { return Err(io::Error::from(io::ErrorKind::Unsupported)) };
+	let Some(mut path) = env::var_os("LOCALAPPDATA").map(PathBuf::from) else {
+		return Err(io::Error::from(io::ErrorKind::Unsupported));
+	};
 	path.push(UWP_PATH);
 
 	if path.exists() {
@@ -46,7 +48,6 @@ pub(crate) fn get_jre_locations(has_args: bool) -> io::Result<Vec<PathBuf>> {
 		"runtime/java-runtime-gamma/windows-x64/java-runtime-gamma/bin",
 		"runtime/java-runtime-beta/windows-x64/java-runtime-beta/bin",
 		"runtime/java-runtime-delta/windows-x64/java-runtime-delta/bin",
-
 		// x86 versions
 		"runtime/java-runtime-gamma/windows-x86/java-runtime-gamma/bin",
 		"runtime/java-runtime-beta/windows-x86/java-runtime-beta/bin", // Used 1.18.2 and above
@@ -73,14 +74,17 @@ pub(crate) fn get_jre_locations(has_args: bool) -> io::Result<Vec<PathBuf>> {
 	Ok(candidates)
 }
 
-fn collect_paths(paths: &[&str], has_args: bool, location: &PathBuf) -> Vec<PathBuf> {
-	paths.iter().map(|x| {
-		let mut path = location.join(x);
-		match has_args {
-			true => path.push("java.exe"),
-			false => path.push("javaw.exe"),
-		}
+fn collect_paths(paths: &[&str], has_args: bool, location: &Path) -> Vec<PathBuf> {
+	paths
+		.iter()
+		.map(|x| {
+			let mut path = location.join(x);
+			match has_args {
+				true => path.push("java.exe"),
+				false => path.push("javaw.exe"),
+			}
 
-		path
-	}).collect()
+			path
+		})
+		.collect()
 }
