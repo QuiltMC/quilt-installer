@@ -63,14 +63,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: native-quilt-installer-jar-${{ github.sha }}
-          path: ./native/jars
+          path: native/jars
       - name: Run Cargo
         run: cargo build --release --target ${{ matrix.target }}-pc-windows-msvc
         working-directory: ./native
       - uses: actions/upload-artifact@v4
         with:
-          name: Native Installer ${{ matrix.target }}
-          path: target/${{ matrix.target }}/release/quilt-installer.exe
+          name: Native Installer (${{ matrix.target }})
+          path: native/target/${{ matrix.target }}/release/quilt-installer.exe
       - name: Publish ${{ matrix.target }} to releases maven
         run: ./gradlew publish --rerun-tasks --stacktrace
         env:

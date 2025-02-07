@@ -52,8 +52,8 @@ jobs:
         working-directory: ./native
       - uses: actions/upload-artifact@v4
         with:
-          name: Native Installer ${{ matrix.target }}
-          path: target/${{ matrix.target }}/release/quilt-installer.exe
+          name: Native Installer (${{ matrix.target }})
+          path: native/target/${{ matrix.target }}/release/quilt-installer.exe
       - name: Run Cargo Check
         run: cargo check --target ${{ matrix.target }}-pc-windows-msvc
         working-directory: ./native
