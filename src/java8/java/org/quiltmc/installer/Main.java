@@ -34,9 +34,10 @@ public class Main {
 
         try {
             if (cliMode) {
+                //noinspection ConfusingArgumentToVarargsMethod
                 MethodHandles.lookup()
                         .findStatic(Class.forName("org.quiltmc.installer.CliInstaller"), "run", MethodType.methodType(void.class, String[].class))
-                        .invokeExact((Object) args);
+                        .invokeExact(args);
             } else {
                 MethodHandles.lookup()
                         .findStatic(Class.forName("org.quiltmc.installer.gui.swing.SwingInstaller"), "run", MethodType.methodType(void.class))
