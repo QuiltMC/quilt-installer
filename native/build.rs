@@ -37,7 +37,7 @@ fn main() {
 
 	// Include our program resources for visual styling and DPI awareness on windows
 	if cfg!(windows) {
-		embed_resource::compile("resources/windows/program.rc");
+		embed_resource::compile("resources/windows/program.rc", embed_resource::NONE).manifest_required().expect("Failed to compile windows resources");
 
 		winres::WindowsResource::new()
 			.set_icon("resources/windows/icon.ico")

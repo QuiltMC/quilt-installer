@@ -13,23 +13,23 @@ edition = "2021"
 #open = { version = "1.6.0" }
 
 # We use this to generate a random name for the temporary file we make as needed.
-rand = { version = "0.8.3" }
+rand = { version = "0.9.0" }
 
 # Error dialogs
-native-dialog = { version = "0.6.4" }
+native-dialog = { version = "0.7.0" }
 
 
 [target.'cfg(macos)'.dependencies]
 # Get the home directory on Mac (might be a better way?)
-dirs = { version = "5.0.1" }
+dirs = { version = "6.0.0" }
 
 [target.'cfg(windows)'.dependencies]
 # Lookup in registry for installation location for additional JREs
-winreg = { version = "0.50.0" }
+winreg = { version = "0.55.0" }
 
 [build-dependencies]
-embed-resource = "1.6.0"
-winres = "0.1.11"
+embed-resource = "3.0.1"
+winres = "0.1.12"
 execute = "0.2.13"
 
 [profile.release]
