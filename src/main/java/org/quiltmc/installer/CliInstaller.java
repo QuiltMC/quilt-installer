@@ -16,20 +16,17 @@
 
 package org.quiltmc.installer;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
-
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.action.Action;
+
+import java.util.*;
 
 /**
  * The main entrypoint when installing from the command line.
  */
 public final class CliInstaller {
-	// The value in this variable will be set by blossom at compile time.
-	public static final String INSTALLER_VERSION = "__INSTALLER_VERSION";
+
+	public static final String INSTALLER_VERSION = Objects.requireNonNullElse(CliInstaller.class.getPackage().getImplementationVersion(), "DEVELOPMENT");
 
 	public static void run(String[] args) {
 		// Assemble the array of args back into a single string

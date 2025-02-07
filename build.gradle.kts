@@ -5,7 +5,7 @@ plugins {
 	`java-library`
 	`maven-publish`
 
-	id("net.kyori.blossom") version "1.3.1"
+	id("net.kyori.blossom") version "2.1.0"
 	id("com.diffplug.spotless") version "6.19.0"
 	id("com.github.johnrengelman.shadow") version "8.1.1"
 }
@@ -19,7 +19,7 @@ version = if (env["SNAPSHOTS_URL"] != null) {
 } else if (env["VERSION"] != null) {
 	env["VERSION"]!!
 } else {
-	"development"
+	"DEVELOPMENT"
 }
 
 base {
@@ -48,11 +48,6 @@ spotless {
 		// Use comma separator for openjdk like license headers
 		licenseHeaderFile(project.file("codeformat/HEADER")).yearSeparator(", ")
 	}
-}
-
-// Apply constant string constant replacements for the project version in CLI class
-blossom {
-	replaceToken("__INSTALLER_VERSION", project.version)
 }
 
 tasks.compileJava {
