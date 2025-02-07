@@ -61,10 +61,9 @@ jobs:
       - run: rustup target add ${{ matrix.target }}-pc-windows-msvc
       - name: download native jar
         uses: actions/download-artifact@v4
-        working-directory: ./native
         with:
           name: native-quilt-installer-jar-${{ github.sha }}
-          path: ./jars
+          path: ./native/jars
       - name: Run Cargo
         run: cargo build --release --target ${{ matrix.target }}-pc-windows-msvc
         working-directory: ./native
