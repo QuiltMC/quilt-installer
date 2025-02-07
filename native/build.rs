@@ -6,8 +6,6 @@ use std::process::Stdio;
 use std::{env, fs};
 
 fn main() {
-	println!("cargo::rerun-if-changed=build.rs");
-
 	println!("cargo:rerun-if-env-changed=QUILT_INSTALLER_JAR_PATH");
 	let installer_path = match env::var_os("QUILT_INSTALLER_JAR_PATH") {
 		Some(path) => PathBuf::from(path),
@@ -61,7 +59,7 @@ fn main() {
 
 	// Include our program resources for visual styling and DPI awareness on windows
 	if cfg!(windows) {
-		embed_resource::compile("resources/windows/program.rc", embed_resource::NONE)
+		embed_resource::compile("resources/windows/quilt-installer.exe.rc", embed_resource::NONE)
 			.manifest_required()
 			.expect("Failed to compile windows resources");
 
