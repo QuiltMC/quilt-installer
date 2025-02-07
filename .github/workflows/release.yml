@@ -88,7 +88,7 @@ jobs:
         working-directory: ./native
       - uses: actions/upload-artifact@v4
         with:
-          name: Native Installer (${{ matrix.name }})
+          name: Quilt Native Installer ${{ env.VERSION }} (${{ matrix.name }})
           path: native/target/${{ matrix.target }}/release/quilt-installer${{ matrix.file_extension }}
       - name: Publish native installer ${{ matrix.publish_target }} to releases maven
         run: ./gradlew publish --rerun-tasks --stacktrace
