@@ -55,6 +55,7 @@ dependencies {
 
 spotless {
 	java {
+		target("src/*/java*/**/*.java*")
 		// Use comma separator for openjdk like license headers
 		licenseHeaderFile(project.file("codeformat/HEADER")).yearSeparator(", ")
 	}
