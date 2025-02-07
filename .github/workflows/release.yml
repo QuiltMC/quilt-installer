@@ -51,34 +51,52 @@ jobs:
     needs: buildJava
     strategy:
       matrix:
-        target: [ x86_64, i686, aarch64 ]
-    runs-on: windows-latest
+        include:
+          - name: Windows x64
+            publish_target: windows-x86_64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            file_extension: .exe
+          - name: Windows x86
+            publish_target: windows-i686
+            os: windows-latest
+            target: i686-pc-windows-msvc
+            file_extension: .exe
+          - name: Windows arm64
+            publish_target: windows-aarch64
+            os: windows-latest
+            target: aarch64-pc-windows-msvc
+            file_extension: .exe
     env:
       QUILT_INSTALLER_JAR_PATH: jars/native-quilt-installer.jar
+      # for publishing
+      NATIVE_TARGET: ${{ matrix.target }}
+      NATIVE_TARGET_ARTIFACT_ID: ${{ matrix.publish_target }}
+      NATIVE_TARGET_EXT: ${{ matrix.file_extension }}
+    runs-on: ${{ matrix.os }}
     steps:
       # TODO: Fix macOS in future
       - uses: actions/checkout@v4
-      - run: rustup target add ${{ matrix.target }}-pc-windows-msvc
+      - run: rustup target add ${{ matrix.target }}
       - name: download native jar
         uses: actions/download-artifact@v4
         with:
           name: native-quilt-installer-jar-${{ github.sha }}
           path: native/jars
       - name: Run Cargo
-        run: cargo build --release --target ${{ matrix.target }}-pc-windows-msvc
+        run: cargo build --release --target ${{ matrix.target }}
         working-directory: ./native
       - uses: actions/upload-artifact@v4
         with:
-          name: Native Installer (${{ matrix.target }})
-          path: native/target/${{ matrix.target }}/release/quilt-installer.exe
-      - name: Publish ${{ matrix.target }} to releases maven
+          name: Native Installer (${{ matrix.name }})
+          path: native/target/${{ matrix.target }}/release/quilt-installer${{ matrix.file_extension }}
+      - name: Publish native installer ${{ matrix.publish_target }} to releases maven
         run: ./gradlew publish --rerun-tasks --stacktrace
         env:
           MAVEN_URL: ${{ secrets.MAVEN_URL }}
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-          TARGET: ${{ matrix.target }}
-      - name: Publish ${{ matrix.target }} to snapshots maven
+      - name: Publish native installer ${{ matrix.publish_target }} to snapshots maven
         run: ./gradlew publish --rerun-tasks --stacktrace
         env:
           SNAPSHOTS_URL: ${{ secrets.SNAPSHOTS_URL }}

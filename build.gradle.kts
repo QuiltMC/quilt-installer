@@ -119,20 +119,17 @@ val copyForNative = tasks.register<Copy>("copyForNative") {
 
 publishing {
 	publications {
-		if (env["TARGET"] == null) {
+		if (env["NATIVE_TARGET"] == null) {
 			create<MavenPublication>("mavenJava") {
 				from(components["java"])
 			}
 		} else {
-			// TODO: When we build macOS make this work
-			val architecture = env["TARGET"]
-
 			create<MavenPublication>("mavenNatives") {
 				groupId = "org.quiltmc.quilt-installer-native-bootstrap"
-				artifactId = "windows-$architecture"
+				artifactId = env["NATIVE_TARGET_ARTIFACT_ID"]!!
 
 				artifact {
-					file("$projectDir/native/target/$architecture-pc-windows-msvc/release/quilt-installer.exe")
+					file("$projectDir/native/target/${env["NATIVE_TARGET"]!!}/release/quilt-installer${env["NATIVE_TARGET_EXT"]!!}")
 				}
 			}
 		}

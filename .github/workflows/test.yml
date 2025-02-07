@@ -34,10 +34,25 @@ jobs:
     needs: buildJava
     strategy:
       matrix:
-        target: [ x86_64, i686, aarch64 ]
-    runs-on: windows-latest
+        include:
+          - name: Windows x64
+            publish_target: windows-x86_64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            file_extension: .exe
+          - name: Windows x86
+            publish_target: windows-i686
+            os: windows-latest
+            target: i686-pc-windows-msvc
+            file_extension: .exe
+          - name: Windows arm64
+            publish_target: windows-aarch64
+            os: windows-latest
+            target: aarch64-pc-windows-msvc
+            file_extension: .exe
     env:
       QUILT_INSTALLER_JAR_PATH: jars/native-quilt-installer.jar
+    runs-on: ${{ matrix.os }}
     steps:
       # TODO: Fix macOS in future
       - uses: actions/checkout@v4
@@ -46,14 +61,14 @@ jobs:
         with:
           name: native-quilt-installer-jar-${{ github.sha }}
           path: ./native/jars
-      - run: rustup target add ${{ matrix.target }}-pc-windows-msvc
+      - run: rustup target add ${{ matrix.target }}
       - name: Run Cargo Build
-        run: cargo build --target ${{ matrix.target }}-pc-windows-msvc
+        run: cargo build --target ${{ matrix.target }}
         working-directory: ./native
       - uses: actions/upload-artifact@v4
         with:
-          name: Native Installer (${{ matrix.target }})
-          path: native/target/${{ matrix.target }}/release/quilt-installer.exe
+          name: Native Installer (${{ matrix.name }})
+          path: native/target/${{ matrix.target }}/release/quilt-installer${{ matrix.file_extension }}
       - name: Run Cargo Check
-        run: cargo check --target ${{ matrix.target }}-pc-windows-msvc
+        run: cargo check --target ${{ matrix.target }}
         working-directory: ./native
