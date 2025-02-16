@@ -220,9 +220,10 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 			}
 
 			return Optional.<String>empty();
-		}).thenAcceptAsync(version ->
-				this.downloadServerJarButton.setSelected(version.map(it -> !it.equals(this.minecraftVersionSelector.getSelectedItem())).orElse(true)),
-				SwingUtilities::invokeLater);
+		}).thenApply(version -> version.map(it -> !it.equals(this.minecraftVersionSelector.getSelectedItem())).orElse(true)).thenAcceptAsync(selected -> {
+			this.downloadServerJarButton.setSelected(selected);
+			this.downloadServerAutoSelected = selected;
+		}, SwingUtilities::invokeLater);
 
 		// TODO detect install script
 	}
