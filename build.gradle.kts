@@ -2,16 +2,15 @@ import java.net.URI
 
 plugins {
 	java
-	`java-library`
 	`maven-publish`
+	idea
 
-	id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.10"
-	id("net.kyori.blossom") version "2.1.0"
-	id("com.diffplug.spotless") version "6.19.0"
-	id("com.github.johnrengelman.shadow") version "8.1.1"
+	alias(libs.plugins.blossom)
+	alias(libs.plugins.spotless)
+	alias(libs.plugins.shadow)
 }
 
-val projectJavaVersion = 17;
+val projectJavaVersion = 17
 
 group = "org.quiltmc"
 val env = System.getenv()
@@ -49,8 +48,9 @@ sourceSets {
 }
 
 dependencies {
-	implementation("org.quiltmc.parsers:json:0.2.1")
-	compileOnly("org.jetbrains:annotations:20.1.0")
+	compileOnly(libs.jetbrains.annotations)
+
+	implementation(libs.quilt.json)
 }
 
 spotless {

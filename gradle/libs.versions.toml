@@ -1,0 +1,16 @@
+[versions]
+blossom = "2.1.0"
+shadow = "8.3.6"
+spotless = "6.19.0"
+
+jetbrains_annotations = "26.0.2"
+quilt_json = "0.2.1"
+
+[libraries]
+quilt_json = { module = "org.quiltmc.parsers:json", version.ref = "quilt_json" }
+jetbrains_annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains_annotations" }
+
+[plugins]
+blossom = { id = "net.kyori.blossom", version.ref = "blossom" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
