@@ -246,12 +246,11 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
     }
 
     private static String splitArtifact(String artifactNotation) {
-        String[] parts = artifactNotation.split(":", 3);
-        String path = parts[0].replace(".", "/") + // Group
-                      "/" + parts[1] +                                    // Artifact name
-                      "/" + parts[2] +                                    // Version
-                      "/" + parts[1] + "-" + parts[2] + ".jar";                            // Artifact
-        return path;
+        String[] parts = artifactNotation.split(":", 4); // Group:Artifact:Version, ignore trailing classifier
+        String group = parts[0].replace(".", "/");
+        String artifact = parts[1];
+        String version = parts[2];
+        return "%1$s/%2$s/%3$s/%2$s-%3$s.jar".formatted(group, artifact, version);
     }
 
     public String minecraftVersion() {
