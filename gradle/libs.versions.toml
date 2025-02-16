@@ -1,7 +1,7 @@
 [versions]
 blossom = "2.1.0"
 shadow = "8.3.6"
-spotless = "6.19.0"
+spotless = "7.0.2"
 
 jetbrains_annotations = "26.0.2"
 quilt_json = "0.2.1"
