@@ -4,7 +4,7 @@ shadow = "8.3.6"
 spotless = "7.0.2"
 
 jetbrains_annotations = "26.0.2"
-quilt_json = "0.2.1"
+quilt_json = "0.3.1"
 
 [libraries]
 quilt_json = { module = "org.quiltmc.parsers:json", version.ref = "quilt_json" }
