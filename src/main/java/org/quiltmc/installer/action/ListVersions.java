@@ -16,6 +16,12 @@
 
 package org.quiltmc.installer.action;
 
+import org.quiltmc.installer.Localization;
+import org.quiltmc.installer.ParseException;
+import org.quiltmc.installer.QuiltMeta;
+import org.quiltmc.installer.util.Util;
+import org.quiltmc.installer.util.mojang.MinecraftMeta;
+
 import java.io.UncheckedIOException;
 import java.net.UnknownHostException;
 import java.util.Collections;
@@ -23,11 +29,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
-
-import org.quiltmc.installer.Localization;
-import org.quiltmc.installer.ParseException;
-import org.quiltmc.installer.QuiltMeta;
-import org.quiltmc.installer.VersionManifest;
 
 /**
  * An action which lists all installable versions of Minecraft.
@@ -46,11 +47,11 @@ public final class ListVersions extends Action<Void> {
 
 	@Override
 	public void run(Consumer<Void> statusTracker) {
-		CompletableFuture<Void> versionManifest = VersionManifest.create()
+		CompletableFuture<Void> versionManifest = CompletableFuture.supplyAsync(() -> MinecraftMeta.get(Util.GSON))
 				.thenAccept(this::displayMinecraftVerions)
 				.exceptionally(this::handleMinecraftVersionExceptions);
 
-		CompletableFuture<Void> quiltMeta = QuiltMeta.create(QuiltMeta.DEFAULT_META_URL, QuiltMeta.DEFAULT_FABRIC_META_URL, Collections.singleton(QuiltMeta.LOADER_VERSIONS_ENDPOINT))
+		CompletableFuture<Void> quiltMeta = QuiltMeta.create(Collections.singleton(QuiltMeta.LOADER_VERSIONS_ENDPOINT))
 				.thenAccept(this::displayLoaderVersions)
 				.exceptionally(e -> {
 					e.printStackTrace();
@@ -63,7 +64,7 @@ public final class ListVersions extends Action<Void> {
 		CompletableFuture.allOf(versionManifest, quiltMeta).join();
 	}
 
-	private void displayMinecraftVerions(VersionManifest manifest) {
+	private void displayMinecraftVerions(MinecraftMeta manifest) {
 		println(Localization.createFrom("cli.latest.minecraft.release", manifest.latestRelease().id()));
 
 		if (this.minecraftSnapshots) {

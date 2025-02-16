@@ -16,21 +16,17 @@
 
 package org.quiltmc.installer;
 
+import com.google.gson.JsonObject;
+import org.quiltmc.installer.util.Util;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import org.quiltmc.parsers.json.JsonReader;
-import org.quiltmc.parsers.json.JsonWriter;
+import java.util.Optional;
 
 public final class LauncherProfiles {
 	private static final DateFormat ISO_8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
@@ -51,87 +47,52 @@ public final class LauncherProfiles {
 			throw new IllegalStateException("No launcher_profiles.json to read from");
 		}
 
-		Object launcherProfiles;
+		JsonObject launcherProfiles;
 
-		try (JsonReader reader = JsonReader.json(new InputStreamReader(Files.newInputStream(launcherProfilesPath)))) {
-			launcherProfiles = Gsons.read(reader);
+		try (var reader = Files.newBufferedReader(launcherProfilesPath)) {
+			launcherProfiles = Optional.ofNullable(Util.GSON.fromJson(reader, JsonObject.class)).orElseThrow(() -> new IllegalArgumentException("launcher_profiles.json must have a root object!"));
 		}
 
-		if (!(launcherProfiles instanceof Map)) {
-			throw new IllegalArgumentException("launcher_profiles.json must have a root object!");
-		}
+		JsonObject profiles = launcherProfiles.getAsJsonObject("profiles");
 
-		Object rawProfiles = ((Map<?, ?>) launcherProfiles).get("profiles");
-
-		if (!(rawProfiles instanceof Map)) {
-			throw new IllegalArgumentException("\"profiles\" field must be an object!");
-		}
-
-		@SuppressWarnings("unchecked")
-		Map<String, Object> profiles = (Map<String, Object>) rawProfiles;
 		String newProfileName = LOADER_NAME + " " + gameVersion;
 
 		// Modify the profile
-		if (profiles.containsKey(newProfileName)) {
-			Object rawProfile = profiles.get(newProfileName);
+		if (profiles.has(newProfileName)) {
+			JsonObject profile = profiles.getAsJsonObject(newProfileName);
 
-			if (!(rawProfile instanceof Map)) {
-				throw new IllegalStateException(String.format("Cannot update profile of name %s because it is not an object!", newProfileName));
-			}
+			profile.addProperty("lastVersionId", name);
+		} else if (profiles.has("quilt-loader-" + gameVersion)) { // old style
+			JsonObject profile = profiles.getAsJsonObject("quilt-loader-" + gameVersion);
 
-			@SuppressWarnings("unchecked")
-			Map<String, Object> profile = (Map<String, Object>) rawProfile;
-
-			profile.put("lastVersionId", name);
-		} else if (profiles.containsKey("quilt-loader-" + gameVersion)) { // old style
-			Object rawProfile = profiles.get("quilt-loader-" + gameVersion);
-
-			if (!(rawProfile instanceof Map)) {
-				throw new IllegalStateException(String.format("Cannot update profile of name %s because it is not an object!", newProfileName));
-			}
-
-			@SuppressWarnings("unchecked")
-			Map<String, Object> profile = (Map<String, Object>) rawProfile;
-
-			profile.put("lastVersionId", name);
-			profile.put("name", newProfileName); // update name too
+			profile.addProperty("lastVersionId", name);
+			profile.addProperty("name", newProfileName); // update name too
 		} else {
 			// Create a new profile
-			Map<String, Object> profile = new LinkedHashMap<>();
+			JsonObject profile = new JsonObject();
 
-			profile.put("name", newProfileName);
-			profile.put("type", "custom");
-			profile.put("created", ISO_8601.format(new Date()));
-			profile.put("lastUsed", ISO_8601.format(new Date()));
-			profile.put("icon", createProfileIcon());
-			profile.put("lastVersionId", name);
+			var now = new Date();
 
-			profiles.put(newProfileName, profile);
+			profile.addProperty("name", newProfileName);
+			profile.addProperty("type", "custom");
+			profile.addProperty("created", ISO_8601.format(now));
+			profile.addProperty("lastUsed", ISO_8601.format(now));
+			profile.addProperty("icon", createProfileIcon());
+			profile.addProperty("lastVersionId", name);
+
+			profiles.add(newProfileName, profile);
 		}
 
 		// Write out the new profiles
-		try (JsonWriter writer = JsonWriter.json(Files.newBufferedWriter(launcherProfilesPath))) {
-			writer.setIndent("  "); // Prettify it
-			Gsons.write(writer, launcherProfiles);
+		try (var writer = Files.newBufferedWriter(launcherProfilesPath)) {
+			Util.GSON.toJson(launcherProfiles, writer);
 		}
 	}
 
 	private static String createProfileIcon() {
-		try (InputStream stream = LauncherProfiles.class.getClassLoader().getResourceAsStream("icon.png")) {
+		try (var stream = LauncherProfiles.class.getClassLoader().getResourceAsStream("icon.png")) {
 			if (stream != null) {
-				byte[] ret = new byte[4096];
-				int offset = 0;
-				int len;
-
-				while ((len = stream.read(ret, offset, ret.length - offset)) != -1) {
-					offset += len;
-
-					if (offset == ret.length) {
-						ret = Arrays.copyOf(ret, ret.length * 2);
-					}
-				}
-
-				return "data:image/png;base64," + Base64.getEncoder().encodeToString(Arrays.copyOf(ret, offset));
+				return "data:image/png;base64," + Base64.getEncoder().encodeToString(stream.readAllBytes());
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -16,16 +16,14 @@
 
 package org.quiltmc.installer.action;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.QuiltMeta;
-import org.quiltmc.installer.VersionManifest;
+import org.quiltmc.installer.util.Util;
+import org.quiltmc.installer.util.mojang.MinecraftMeta;
+
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public final class MinecraftInstallation {
 	/**
@@ -37,19 +35,19 @@ public final class MinecraftInstallation {
 	 * @return a future containing the loader version to use
 	 */
 	public static CompletableFuture<InstallationInfo> getInfo(String gameVersion, @Nullable String loaderVersion) {
-		CompletableFuture<VersionManifest> versionManifest = VersionManifest.create().thenApply(manifest -> {
-			if (manifest.getVersion(gameVersion) != null) {
-				return manifest;
+		CompletableFuture<MinecraftMeta> versionManifest = CompletableFuture.supplyAsync(() -> MinecraftMeta.get(Util.GSON)).thenApply(manifest -> {
+			if (manifest.getVersion(gameVersion) == null) {
+				throw new IllegalArgumentException(String.format("Minecraft version %s does not exist", gameVersion));
 			}
 
-			throw new IllegalArgumentException(String.format("Minecraft version %s does not exist", gameVersion));
+			return manifest;
 		});
 
 		Set<QuiltMeta.Endpoint<?>> endpoints = new HashSet<>();
 		endpoints.add(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
 		endpoints.add(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
 
-		CompletableFuture<QuiltMeta> metaFuture = QuiltMeta.create(QuiltMeta.DEFAULT_META_URL, QuiltMeta.DEFAULT_FABRIC_META_URL, endpoints);
+		CompletableFuture<QuiltMeta> metaFuture = QuiltMeta.create(endpoints);
 
 		// Verify we actually have intermediary for the specified version
 		CompletableFuture<Void> intermediary = versionManifest.thenCompose(mcVersion -> metaFuture.thenAccept(meta -> {
@@ -93,9 +91,9 @@ public final class MinecraftInstallation {
 
 	public static final class InstallationInfo {
 		private final String loaderVersion;
-		private final VersionManifest manifest;
+		private final MinecraftMeta manifest;
 
-		InstallationInfo(String loaderVersion, VersionManifest manifest) {
+		InstallationInfo(String loaderVersion, MinecraftMeta manifest) {
 			this.loaderVersion = loaderVersion;
 			this.manifest = manifest;
 		}
@@ -104,7 +102,7 @@ public final class MinecraftInstallation {
 			return this.loaderVersion;
 		}
 
-		public VersionManifest manifest() {
+		public MinecraftMeta manifest() {
 			return this.manifest;
 		}
 	}

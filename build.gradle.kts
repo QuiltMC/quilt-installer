@@ -50,6 +50,7 @@ sourceSets {
 dependencies {
 	compileOnly(libs.jetbrains.annotations)
 
+	implementation(libs.gson)
 	implementation(libs.quilt.json)
 }
 

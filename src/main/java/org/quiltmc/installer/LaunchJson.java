@@ -16,49 +16,43 @@
 
 package org.quiltmc.installer;
 
-import org.quiltmc.parsers.json.JsonReader;
-import org.quiltmc.parsers.json.JsonWriter;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import org.quiltmc.installer.util.Util;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public final class LaunchJson {
 	public static final String LOADER_ARTIFACT_NAME = "quilt-loader";
 
-	public static CompletableFuture<String> get(String gameVersion, String loaderVersion, String endpoint) {
+	public static CompletableFuture<JsonObject> get(String gameVersion, String loaderVersion, String endpoint) {
 		var rawUrl = URI.create(QuiltMeta.DEFAULT_META_URL + String.format(endpoint, gameVersion, loaderVersion));
 
 		return CompletableFuture.supplyAsync(() -> {
 			try (var reader = new BufferedReader(new InputStreamReader(rawUrl.toURL().openStream(), StandardCharsets.UTF_8))) {
-				//noinspection unchecked
-				return (Map<String, Object>) Gsons.read(JsonReader.json(reader));
-			} catch (IOException e) {
-				throw new UncheckedIOException(e); // Handled via .exceptionally(...)
-			}
-		}).thenApplyAsync(map -> {
-			// Prevents a log warning about being unable to reach the active user beacon on stable versions.
-			switch (loaderVersion) {
-				case "0.19.2", "0.19.3", "0.19.4" -> {
-					@SuppressWarnings("unchecked")
-					Map<String, List<Object>> arguments = (Map<String,List<Object>>)map.get("arguments");
-					arguments
-							.computeIfAbsent("jvm", (key) -> new ArrayList<>())
-							.add("-Dloader.disable_beacon=true");
-				}
-			}
+				var json = Util.GSON.fromJson(reader, JsonObject.class);
 
-			StringWriter writer = new StringWriter();
-			try {
-				Gsons.write(JsonWriter.json(writer), map);
+				// Prevents a log warning about being unable to reach the active user beacon on stable versions.
+				switch (loaderVersion) {
+					case "0.19.2", "0.19.3", "0.19.4" -> {
+						var arguments = json.getAsJsonObject("arguments");
+						arguments.asMap()
+								.computeIfAbsent("jvm", (key) -> new JsonArray())
+								.getAsJsonArray()
+								.add("-Dloader.disable_beacon=true");
+					}
+				}
+
+				return json;
 			} catch (IOException e) {
 				throw new UncheckedIOException(e); // Handled via .exceptionally(...)
 			}
-			return writer.toString();
 		});
 	}
 

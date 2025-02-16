@@ -16,29 +16,21 @@
 
 package org.quiltmc.installer.gui.swing;
 
+import org.jetbrains.annotations.Nullable;
+import org.quiltmc.installer.Localization;
+import org.quiltmc.installer.util.mojang.MinecraftMeta;
+
+import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
 
-import javax.swing.BoxLayout;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JEditorPane;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.event.HyperlinkEvent;
-
-import org.jetbrains.annotations.Nullable;
-import org.quiltmc.installer.Localization;
-import org.quiltmc.installer.VersionManifest;
-
 abstract class AbstractPanel extends JPanel {
 	final SwingInstaller gui;
 	@Nullable
-	private VersionManifest manifest;
+	private MinecraftMeta manifest;
 	@Nullable
 	private List<String> loaderVersions;
 	@Nullable
@@ -56,14 +48,14 @@ abstract class AbstractPanel extends JPanel {
 		return rowPanel;
 	}
 
-	void receiveVersions(VersionManifest manifest, List<String> loaderVersions, Collection<String> intermediaryVersions) {
+	void receiveVersions(MinecraftMeta manifest, List<String> loaderVersions, Collection<String> intermediaryVersions) {
 		this.manifest = manifest;
 		this.loaderVersions = loaderVersions;
 		this.intermediaryVersions = intermediaryVersions;
 	}
 
 	@Nullable
-	VersionManifest manifest() {
+	MinecraftMeta manifest() {
 		return this.manifest;
 	}
 
@@ -77,12 +69,12 @@ abstract class AbstractPanel extends JPanel {
 		return this.intermediaryVersions;
 	}
 
-	static void populateMinecraftVersions(JComboBox<String> comboBox, VersionManifest manifest, Collection<String> intermediaryVersions, boolean snapshots) {
+	static void populateMinecraftVersions(JComboBox<String> comboBox, MinecraftMeta manifest, Collection<String> intermediaryVersions, boolean snapshots) {
 		// Setup the combo box for Minecraft version selection
 		comboBox.removeAllItems();
 
-		for (VersionManifest.Version version : manifest) {
-			if (version.type().equals("release") || (version.type().equals("snapshot") && snapshots)) {
+		for (var version : manifest) {
+			if (version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_RELEASE) || (snapshots && version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_SNAPSHOT))) {
 				if (intermediaryVersions.contains(version.id())) {
 					comboBox.addItem(version.id());
 				}

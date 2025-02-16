@@ -16,25 +16,19 @@
 
 package org.quiltmc.installer;
 
+import org.quiltmc.parsers.json.JsonReader;
+import org.quiltmc.parsers.json.JsonToken;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-import org.quiltmc.parsers.json.JsonReader;
-import org.quiltmc.parsers.json.JsonToken;
-
+// TODO migrate to GSON
 public final class QuiltMeta {
 	public static final Endpoint<List<String>> LOADER_VERSIONS_ENDPOINT = createVersion("/v3/versions/loader");
 	/**
@@ -102,22 +96,11 @@ public final class QuiltMeta {
 	public static final String DEFAULT_FABRIC_META_URL = "https://meta.fabricmc.net";
 	private final Map<Endpoint<?>, Object> endpoints;
 
-	public static CompletableFuture<QuiltMeta> create(String baseQuiltMetaUrl, String baseFabricMetaUrl, Set<Endpoint<?>> endpoints) {
+	public static CompletableFuture<QuiltMeta> create(Set<Endpoint<?>> endpoints) {
 		Map<Endpoint<?>, CompletableFuture<?>> futures = new HashMap<>();
 		for (Endpoint<?> endpoint : endpoints) {
 			futures.put(endpoint, CompletableFuture.supplyAsync(() -> {
-				try {
-					URL url;
-					if (endpoint.metaType == MetaType.FABRIC) {
-						url = new URL(baseFabricMetaUrl + endpoint.endpointPath);
-					} else {
-						url = new URL(baseQuiltMetaUrl + endpoint.endpointPath);
-					}
-
-					URLConnection connection = Connections.openConnection(url);
-
-					InputStreamReader stream = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
-
+				try (InputStreamReader stream = new InputStreamReader(Connections.openConnection(endpoint.getUrl()), StandardCharsets.UTF_8)) {
 					try (JsonReader reader = JsonReader.json(new BufferedReader(stream))) {
 						return endpoint.deserializer.apply(reader);
 					}
@@ -136,7 +119,7 @@ public final class QuiltMeta {
 				resolvedEndpoints.put(entry.getKey(), entry.getValue().join());
 			}
 
-			return new QuiltMeta(baseQuiltMetaUrl, resolvedEndpoints);
+			return new QuiltMeta(resolvedEndpoints);
 		});
 	}
 
@@ -186,7 +169,7 @@ public final class QuiltMeta {
 		}, MetaType.QUILT);
 	}
 
-	private QuiltMeta(String baseMetaUrl, Map<Endpoint<?>, Object> endpoints) {
+	private QuiltMeta(Map<Endpoint<?>, Object> endpoints) {
 		this.endpoints = endpoints;
 	}
 
@@ -218,10 +201,24 @@ public final class QuiltMeta {
 		public String toString() {
 			return "Endpoint{endpointPath=\"" + this.endpointPath + "\",metaType=\"" + metaType + "\"}";
 		}
+
+		public URI getUrl() {
+			return URI.create(metaType.getMetaUrl() + endpointPath);
+		}
 	}
 
 	public enum MetaType {
-		FABRIC,
-		QUILT
+		FABRIC(DEFAULT_FABRIC_META_URL),
+		QUILT(DEFAULT_META_URL);
+
+		private final String metaUrl;
+
+        MetaType(String metaUrl) {
+            this.metaUrl = metaUrl;
+        }
+
+		public String getMetaUrl() {
+			return metaUrl;
+		}
 	}
 }

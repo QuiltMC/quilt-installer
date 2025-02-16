@@ -16,27 +16,20 @@
 
 package org.quiltmc.installer.gui.swing;
 
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Consumer;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.Localization;
 import org.quiltmc.installer.OsPaths;
-import org.quiltmc.installer.VersionManifest;
 import org.quiltmc.installer.action.Action;
 import org.quiltmc.installer.action.InstallClient;
+import org.quiltmc.installer.util.mojang.MinecraftMeta;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Consumer;
 
 final class ClientPanel extends AbstractPanel implements Consumer<InstallClient.MessageType> {
 	private final JComboBox<String> minecraftVersionSelector;
@@ -155,7 +148,7 @@ final class ClientPanel extends AbstractPanel implements Consumer<InstallClient.
 	}
 
 	@Override
-	void receiveVersions(VersionManifest manifest, List<String> loaderVersions, Collection<String> intermediaryVersions) {
+	void receiveVersions(MinecraftMeta manifest, List<String> loaderVersions, Collection<String> intermediaryVersions) {
 		super.receiveVersions(manifest, loaderVersions, intermediaryVersions);
 
 		populateMinecraftVersions(this.minecraftVersionSelector, manifest, intermediaryVersions, this.showSnapshots);

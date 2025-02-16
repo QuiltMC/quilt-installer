@@ -17,7 +17,8 @@
 package org.quiltmc.installer;
 
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
+import java.net.URI;
 import java.net.URLConnection;
 
 public class Connections {
@@ -32,10 +33,10 @@ public class Connections {
         return "dev";
     }
 
-    public static URLConnection openConnection(URL url) throws IOException {
-        URLConnection connection = url.openConnection();
-        connection.setRequestProperty("User-Agent", "Quilt-Installer/"+INSTALLER_VERSION);
+    public static InputStream openConnection(URI url) throws IOException {
+        URLConnection connection = url.toURL().openConnection();
+        connection.setRequestProperty("User-Agent", "Quilt-Installer/" + INSTALLER_VERSION);
 
-        return connection;
+        return connection.getInputStream();
     }
 }

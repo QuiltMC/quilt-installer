@@ -18,19 +18,16 @@ package org.quiltmc.installer.gui.swing;
 
 import org.quiltmc.installer.Localization;
 import org.quiltmc.installer.QuiltMeta;
-import org.quiltmc.installer.VersionManifest;
+import org.quiltmc.installer.util.Util;
+import org.quiltmc.installer.util.mojang.MinecraftMeta;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
@@ -66,12 +63,8 @@ public final class SwingInstaller extends JFrame {
 			endpoints.add(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
 			endpoints.add(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
 
-			QuiltMeta.create(QuiltMeta.DEFAULT_META_URL, QuiltMeta.DEFAULT_FABRIC_META_URL, endpoints).thenAcceptBothAsync(VersionManifest.create(), ((quiltMeta, manifest) -> {
-				List<String> loaderVersions = quiltMeta.getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT).stream().filter(v -> {
-					// TODO HACK HACK HACK
-					// This is a hack to filter out old versions of Loader which we know will not support finding the main class.
-					return !(v.startsWith("0.16.0-beta.") && v.length() == 13 && v.charAt(12) != '9');
-				}).collect(Collectors.toList());
+			QuiltMeta.create(endpoints).thenAcceptBothAsync(CompletableFuture.supplyAsync(() -> MinecraftMeta.get(Util.GSON)), ((quiltMeta, manifest) -> {
+				List<String> loaderVersions = quiltMeta.getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT).stream().filter(Util::isValidLoaderVersion).collect(Collectors.toList());
 				Collection<String> intermediaryVersions = quiltMeta.getEndpoint(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT).keySet();
 
 				this.clientPanel.receiveVersions(manifest, loaderVersions, intermediaryVersions);

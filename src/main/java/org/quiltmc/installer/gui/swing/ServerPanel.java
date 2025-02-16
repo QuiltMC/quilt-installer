@@ -16,25 +16,25 @@
 
 package org.quiltmc.installer.gui.swing;
 
-import java.awt.Dimension;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import org.jetbrains.annotations.Nullable;
+import org.quiltmc.installer.Localization;
+import org.quiltmc.installer.action.Action;
+import org.quiltmc.installer.action.InstallServer;
+import org.quiltmc.installer.util.Util;
+import org.quiltmc.installer.util.mojang.MinecraftMeta;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.nio.file.*;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-
-import javax.swing.*;
-
-import org.jetbrains.annotations.Nullable;
-import org.quiltmc.installer.Gsons;
-import org.quiltmc.installer.Localization;
-import org.quiltmc.installer.VersionManifest;
-import org.quiltmc.installer.action.Action;
-import org.quiltmc.installer.action.InstallServer;
-import org.quiltmc.parsers.json.JsonReader;
 
 final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.MessageType> {
 	private final JComboBox<String> minecraftVersionSelector;
@@ -151,7 +151,7 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 	}
 
 	@Override
-	void receiveVersions(VersionManifest manifest, List<String> loaderVersions, Collection<String> intermediaryVersions) {
+	void receiveVersions(MinecraftMeta manifest, List<String> loaderVersions, Collection<String> intermediaryVersions) {
 		super.receiveVersions(manifest, loaderVersions, intermediaryVersions);
 
 		populateMinecraftVersions(this.minecraftVersionSelector, manifest, intermediaryVersions, this.showSnapshots);
@@ -208,18 +208,20 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 			if (Files.exists(serverJar)) {
 				try (FileSystem fs = FileSystems.newFileSystem(serverJar, (ClassLoader) null)) {
 					Path versionJson = fs.getPath("version.json");
-					// because of type erasure this should work even if other things are added in the format
-					//noinspection unchecked
-					Map<String, String> map = (Map<String, String>) Gsons.read(JsonReader.json(Files.newBufferedReader(versionJson)));
-					return map.get("id");
+
+					try (var reader = Files.newBufferedReader(versionJson)) {
+						// because of type erasure this should work even if other things are added in the format
+                        JsonObject json = Optional.ofNullable(Util.GSON.fromJson(reader, JsonObject.class)).orElseThrow();
+						return Optional.ofNullable(json.getAsJsonPrimitive("id")).map(JsonPrimitive::getAsString);
+					}
 				} catch (Throwable ex) {
 					// It's corrupt, not available, whatever, let's just overwrite it
 				}
 			}
 
-			return "";
+			return Optional.<String>empty();
 		}).thenAcceptAsync(version ->
-				this.downloadServerJarButton.setSelected(!version.equals(this.minecraftVersionSelector.getSelectedItem())),
+				this.downloadServerJarButton.setSelected(version.map(it -> !it.equals(this.minecraftVersionSelector.getSelectedItem())).orElse(true)),
 				SwingUtilities::invokeLater);
 
 		// TODO detect install script

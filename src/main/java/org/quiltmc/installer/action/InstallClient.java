@@ -16,25 +16,20 @@
 
 package org.quiltmc.installer.action;
 
+import org.jetbrains.annotations.Nullable;
+import org.quiltmc.installer.LaunchJson;
+import org.quiltmc.installer.LauncherProfiles;
+import org.quiltmc.installer.OsPaths;
+import org.quiltmc.installer.util.Util;
+
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
-
-import org.jetbrains.annotations.Nullable;
-import org.quiltmc.installer.OsPaths;
-import org.quiltmc.installer.LaunchJson;
-import org.quiltmc.installer.LauncherProfiles;
-import org.quiltmc.installer.VersionManifest;
 
 /**
  * An action which installs a new client instance.
@@ -98,17 +93,17 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 				);
 
 				// Directories
-				Path versionsDir = this.installDirPath.resolve("versions");
-				Path profileDir = versionsDir.resolve(profileName);
-				Path profileJson = profileDir.resolve(profileName + ".json");
+				Path allVersionsDir = this.installDirPath.resolve("versions");
+				Path versionDir = allVersionsDir.resolve(profileName);
+				Path versionJsonPath = versionDir.resolve(profileName + ".json");
 				// Nuke everything that already exists
 				try {
-					Files.walk(profileDir).map(Path::toFile).sorted((o1, o2) -> -o1.compareTo(o2)).forEach(File::delete);
+					Files.walk(versionDir).map(Path::toFile).sorted((o1, o2) -> -o1.compareTo(o2)).forEach(File::delete);
 				 } catch (IOException ignored) {
 					//
 				}
 				try {
-					Files.createDirectories(profileDir);
+					Files.createDirectories(versionDir);
 				} catch (IOException e) {
 					throw new UncheckedIOException(e); // Handle via exceptionally
 				}
@@ -123,7 +118,7 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 
 				// Make our pretender jar
 				try {
-					Files.createFile(profileDir.resolve(profileName + ".jar"));
+					Files.createFile(versionDir.resolve(profileName + ".jar"));
 				} catch (FileAlreadyExistsException ignore) {
 					// Pretender jar already exists
 				} catch (IOException e) {
@@ -131,8 +126,8 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 				}
 
 				// Write the launch json
-				try (Writer writer = new OutputStreamWriter(Files.newOutputStream(profileJson, StandardOpenOption.CREATE_NEW))) {
-					writer.append(launchJson);
+				try (Writer writer = Files.newBufferedWriter(versionJsonPath, StandardOpenOption.CREATE_NEW)) {
+					Util.GSON.toJson(launchJson, writer);
 				} catch (IOException e) {
 					throw new UncheckedIOException(e); // Handle via exceptionally
 				}
