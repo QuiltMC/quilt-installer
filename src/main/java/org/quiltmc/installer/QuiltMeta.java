@@ -37,7 +37,7 @@ public final class QuiltMeta {
 	 * <p>The returned map has the version as the key and the maven artifact as the value
 	 */
 	// TODO: use
-	public static final Endpoint<Map<String, String>> INTERMEDIARY_VERSIONS_ENDPOINT = new Endpoint<>("/v2/versions/intermediary", reader -> {
+	public static final Endpoint<Map<String, String>> INTERMEDIARY_VERSIONS_ENDPOINT = new Endpoint<>("/v3/versions/intermediary", reader -> {
 		Map<String, String> ret = new LinkedHashMap<>();
 
 		if (reader.peek() != JsonToken.BEGIN_ARRAY) {
@@ -90,10 +90,9 @@ public final class QuiltMeta {
 		reader.endArray();
 
 		return ret;
-	}, MetaType.FABRIC);
+	});
 
 	public static final String DEFAULT_META_URL = "https://meta.quiltmc.org";
-	public static final String DEFAULT_FABRIC_META_URL = "https://meta.fabricmc.net";
 	private final Map<Endpoint<?>, Object> endpoints;
 
 	public static CompletableFuture<QuiltMeta> create(Set<Endpoint<?>> endpoints) {
@@ -166,7 +165,7 @@ public final class QuiltMeta {
 			reader.endArray();
 
 			return versions;
-		}, MetaType.QUILT);
+		});
 	}
 
 	private QuiltMeta(Map<Endpoint<?>, Object> endpoints) {
@@ -187,38 +186,21 @@ public final class QuiltMeta {
 	}
 
 	public static final class Endpoint<T> {
-		private final String endpointPath;
+		private final URI url;
 		private final ThrowingFunction<JsonReader, T, ParseException> deserializer;
-		private final MetaType metaType;
 
-		Endpoint(String endpointPath, ThrowingFunction<JsonReader, T, ParseException> deserializer, MetaType metaType) {
-			this.endpointPath = endpointPath;
+		Endpoint(String endpointPath, ThrowingFunction<JsonReader, T, ParseException> deserializer) {
+			this.url = URI.create(DEFAULT_META_URL + endpointPath);
 			this.deserializer = deserializer;
-			this.metaType = metaType;
 		}
 
 		@Override
 		public String toString() {
-			return "Endpoint{endpointPath=\"" + this.endpointPath + "\",metaType=\"" + metaType + "\"}";
+			return "Endpoint{url=\"" + this.url + "\"}";
 		}
 
 		public URI getUrl() {
-			return URI.create(metaType.getMetaUrl() + endpointPath);
-		}
-	}
-
-	public enum MetaType {
-		FABRIC(DEFAULT_FABRIC_META_URL),
-		QUILT(DEFAULT_META_URL);
-
-		private final String metaUrl;
-
-        MetaType(String metaUrl) {
-            this.metaUrl = metaUrl;
-        }
-
-		public String getMetaUrl() {
-			return metaUrl;
+			return url;
 		}
 	}
 }
