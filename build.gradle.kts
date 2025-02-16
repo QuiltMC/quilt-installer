@@ -92,6 +92,10 @@ tasks.shadowJar {
 	relocate("org.quiltmc.parsers.json", "org.quiltmc.installer.lib.parsers.json")
 //	minimize()
 
+	dependencies {
+		exclude(dependency("org.jetbrains:annotations:.*"))
+	}
+
 	// Compiler does not know which set method we are targeting with null value
 	val classifier: String? = null;
 	archiveClassifier.set(classifier)
