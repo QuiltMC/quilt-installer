@@ -59,7 +59,6 @@ public final class LaunchJson {
 			} catch (IOException e) {
 				throw new UncheckedIOException(e); // Handled via .exceptionally(...)
 			}
-			// TODO: HACK HACK HACK: inject intermediary instead of hashed
 		}).thenApplyAsync(raw -> {
 			Map<String, Object> map;
 			try {
@@ -83,14 +82,6 @@ public final class LaunchJson {
 				}
 			}
 
-
-			@SuppressWarnings("unchecked") List<Map<String, String>> libraries = (List<Map<String, String>>) map.get("libraries");
-			for (Map<String, String> library : libraries) {
-				if (library.get("name").startsWith("org.quiltmc:hashed")) {
-					library.replace("name", library.get("name").replace("org.quiltmc:hashed", "net.fabricmc:intermediary"));
-					library.replace("url", "https://maven.fabricmc.net/");
-				}
-			}
 			StringWriter writer = new StringWriter();
 			try {
 				Gsons.write(JsonWriter.json(writer), map);
