@@ -24,7 +24,6 @@ import org.quiltmc.installer.util.mojang.MinecraftMeta;
 
 import java.io.UncheckedIOException;
 import java.net.UnknownHostException;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -51,7 +50,7 @@ public final class ListVersions extends Action<Void> {
 				.thenAccept(this::displayMinecraftVerions)
 				.exceptionally(this::handleMinecraftVersionExceptions);
 
-		CompletableFuture<Void> quiltMeta = QuiltMeta.create(Collections.singleton(QuiltMeta.LOADER_VERSIONS_ENDPOINT))
+		CompletableFuture<Void> quiltMeta = QuiltMeta.create(QuiltMeta.LOADER_VERSIONS_ENDPOINT)
 				.thenAccept(this::displayLoaderVersions)
 				.exceptionally(e -> {
 					e.printStackTrace();

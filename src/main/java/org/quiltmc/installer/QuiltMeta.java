@@ -30,13 +30,57 @@ import java.util.concurrent.CompletableFuture;
 
 // TODO migrate to GSON
 public final class QuiltMeta {
-	public static final Endpoint<List<String>> LOADER_VERSIONS_ENDPOINT = createVersion("/v3/versions/loader");
+	public static final String DEFAULT_META_URL = "https://meta.quiltmc.org";
+	private final Map<Endpoint<?>, Object> endpoints;
+
+	public static final Endpoint<List<String>> LOADER_VERSIONS_ENDPOINT = new Endpoint<>("/v3/versions/loader", reader -> {
+		if (reader.peek() != JsonToken.BEGIN_ARRAY) {
+			throw new ParseException("Result of endpoint must be an object", reader);
+		}
+
+		List<String> versions = new ArrayList<>();
+		reader.beginArray();
+
+		while (reader.hasNext()) {
+			if (reader.peek() != JsonToken.BEGIN_OBJECT) {
+				throw new ParseException("Version entry must be an object", reader);
+			}
+
+			String version = null;
+			reader.beginObject();
+
+			while (reader.hasNext()) {
+				String key = reader.nextName();
+
+				if ("version".equals(key)) {
+					if (reader.peek() != JsonToken.STRING) {
+						throw new ParseException("\"version\" in entry must be a string", reader);
+					}
+
+					version = reader.nextString();
+				} else {
+					reader.skipValue();
+				}
+			}
+
+			if (version == null) {
+				throw new ParseException("\"version\" field is required in a version entry", reader);
+			}
+
+			versions.add(version);
+
+			reader.endObject();
+		}
+
+		reader.endArray();
+
+		return versions;
+	});
 	/**
 	 * An endpoint for intermediary versions.
 	 *
 	 * <p>The returned map has the version as the key and the maven artifact as the value
 	 */
-	// TODO: use
 	public static final Endpoint<Map<String, String>> INTERMEDIARY_VERSIONS_ENDPOINT = new Endpoint<>("/v3/versions/intermediary", reader -> {
 		Map<String, String> ret = new LinkedHashMap<>();
 
@@ -70,7 +114,6 @@ public final class QuiltMeta {
                         }
                         maven = reader.nextString();
                     }
-                    case "stable" -> reader.nextBoolean(); // TODO
                 }
 			}
 
@@ -92,10 +135,15 @@ public final class QuiltMeta {
 		return ret;
 	});
 
-	public static final String DEFAULT_META_URL = "https://meta.quiltmc.org";
-	private final Map<Endpoint<?>, Object> endpoints;
+	public static CompletableFuture<QuiltMeta> create(Endpoint<?>... endpoints) {
+		return create(Set.of(endpoints));
+	}
 
 	public static CompletableFuture<QuiltMeta> create(Set<Endpoint<?>> endpoints) {
+		if(endpoints.isEmpty()) {
+			throw new IllegalArgumentException("No endpoints provided");
+		}
+
 		Map<Endpoint<?>, CompletableFuture<?>> futures = new HashMap<>();
 		for (Endpoint<?> endpoint : endpoints) {
 			futures.put(endpoint, CompletableFuture.supplyAsync(() -> {
@@ -109,7 +157,7 @@ public final class QuiltMeta {
 			}));
 		}
 
-		CompletableFuture<Void> future = CompletableFuture.allOf(futures.values().toArray(new CompletableFuture[0]));
+		CompletableFuture<Void> future = CompletableFuture.allOf(futures.values().toArray(CompletableFuture[]::new));
 
 		return future.thenApply(_v -> {
 			Map<Endpoint<?>, Object> resolvedEndpoints = new HashMap<>();
@@ -119,52 +167,6 @@ public final class QuiltMeta {
 			}
 
 			return new QuiltMeta(resolvedEndpoints);
-		});
-	}
-
-	private static Endpoint<List<String>> createVersion(String endpointPath) {
-		return new Endpoint<>(endpointPath, reader -> {
-			if (reader.peek() != JsonToken.BEGIN_ARRAY) {
-				throw new ParseException("Result of endpoint must be an object", reader);
-			}
-
-			List<String> versions = new ArrayList<>();
-			reader.beginArray();
-
-			while (reader.hasNext()) {
-				if (reader.peek() != JsonToken.BEGIN_OBJECT) {
-					throw new ParseException("Version entry must be an object", reader);
-				}
-
-				String version = null;
-				reader.beginObject();
-
-				while (reader.hasNext()) {
-					String key = reader.nextName();
-
-					if ("version".equals(key)) {
-						if (reader.peek() != JsonToken.STRING) {
-							throw new ParseException("\"version\" in entry must be a string", reader);
-						}
-
-						version = reader.nextString();
-					} else {
-						reader.skipValue();
-					}
-				}
-
-				if (version == null) {
-					throw new ParseException("\"version\" field is required in a version entry", reader);
-				}
-
-				versions.add(version);
-
-				reader.endObject();
-			}
-
-			reader.endArray();
-
-			return versions;
 		});
 	}
 

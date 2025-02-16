@@ -43,11 +43,7 @@ public final class MinecraftInstallation {
 			return manifest;
 		});
 
-		Set<QuiltMeta.Endpoint<?>> endpoints = new HashSet<>();
-		endpoints.add(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
-		endpoints.add(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
-
-		CompletableFuture<QuiltMeta> metaFuture = QuiltMeta.create(endpoints);
+		CompletableFuture<QuiltMeta> metaFuture = QuiltMeta.create(QuiltMeta.LOADER_VERSIONS_ENDPOINT, QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
 
 		// Verify we actually have intermediary for the specified version
 		CompletableFuture<Void> intermediary = versionManifest.thenCompose(mcVersion -> metaFuture.thenAccept(meta -> {
