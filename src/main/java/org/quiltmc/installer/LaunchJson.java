@@ -19,13 +19,8 @@ package org.quiltmc.installer;
 import org.quiltmc.parsers.json.JsonReader;
 import org.quiltmc.parsers.json.JsonWriter;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
-import java.io.UncheckedIOException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.io.*;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,38 +31,16 @@ public final class LaunchJson {
 	public static final String LOADER_ARTIFACT_NAME = "quilt-loader";
 
 	public static CompletableFuture<String> get(String gameVersion, String loaderVersion, String endpoint) {
-		String rawUrl = QuiltMeta.DEFAULT_META_URL + String.format(endpoint, gameVersion, loaderVersion);
+		var rawUrl = URI.create(QuiltMeta.DEFAULT_META_URL + String.format(endpoint, gameVersion, loaderVersion));
 
 		return CompletableFuture.supplyAsync(() -> {
-			try {
-				URL url = new URL(rawUrl);
-				URLConnection connection = Connections.openConnection(url);
-
-				InputStreamReader stream = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
-
-				try (BufferedReader reader = new BufferedReader(stream)) {
-					StringBuilder builder = new StringBuilder();
-					String line;
-
-					while ((line = reader.readLine()) != null) {
-						builder.append(line);
-						builder.append('\n');
-					}
-
-					return builder.toString();
-				}
-			} catch (IOException e) {
-				throw new UncheckedIOException(e); // Handled via .exceptionally(...)
-			}
-		}).thenApplyAsync(raw -> {
-			Map<String, Object> map;
-			try {
+			try (var reader = new BufferedReader(new InputStreamReader(rawUrl.toURL().openStream(), StandardCharsets.UTF_8))) {
 				//noinspection unchecked
-				map = (Map<String, Object>) Gsons.read(JsonReader.json(raw));
+				return (Map<String, Object>) Gsons.read(JsonReader.json(reader));
 			} catch (IOException e) {
 				throw new UncheckedIOException(e); // Handled via .exceptionally(...)
 			}
-
+		}).thenApplyAsync(map -> {
 			// Prevents a log warning about being unable to reach the active user beacon on stable versions.
 			switch (loaderVersion) {
 				case "0.19.2", "0.19.3", "0.19.4" -> {
@@ -76,9 +49,6 @@ public final class LaunchJson {
 					arguments
 							.computeIfAbsent("jvm", (key) -> new ArrayList<>())
 							.add("-Dloader.disable_beacon=true");
-				}
-				default -> {
-					// do nothing
 				}
 			}
 
