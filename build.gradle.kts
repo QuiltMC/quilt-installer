@@ -95,6 +95,7 @@ tasks.shadowJar {
 
 	dependencies {
 		exclude(dependency("org.jetbrains:annotations:.*"))
+		exclude(dependency("com.google.errorprone:.*"))
 	}
 	exclude("META-INF/**")
 
