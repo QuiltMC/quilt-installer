@@ -16,10 +16,10 @@
 
 package org.quiltmc.installer.action;
 
+import com.google.gson.JsonParseException;
 import org.quiltmc.installer.Localization;
-import org.quiltmc.installer.ParseException;
-import org.quiltmc.installer.QuiltMeta;
 import org.quiltmc.installer.util.Util;
+import org.quiltmc.installer.util.meta.QuiltMeta;
 import org.quiltmc.installer.util.mojang.MinecraftMeta;
 
 import java.io.UncheckedIOException;
@@ -33,78 +33,75 @@ import java.util.function.Consumer;
  * An action which lists all installable versions of Minecraft.
  */
 public final class ListVersions extends Action<Void> {
-	/**
-	 * Whether to display snapshot Minecraft versions.
-	 */
-	private final boolean minecraftSnapshots;
-	private final boolean loaderBetas;
+    /**
+     * Whether to display snapshot Minecraft versions.
+     */
+    private final boolean minecraftSnapshots;
+    private final boolean loaderBetas;
 
-	ListVersions(boolean minecraftSnapshots, boolean loaderBetas) {
-		this.minecraftSnapshots = minecraftSnapshots;
-		this.loaderBetas = loaderBetas;
-	}
+    ListVersions(boolean minecraftSnapshots, boolean loaderBetas) {
+        this.minecraftSnapshots = minecraftSnapshots;
+        this.loaderBetas = loaderBetas;
+    }
 
-	@Override
-	public void run(Consumer<Void> statusTracker) {
-		CompletableFuture<Void> versionManifest = CompletableFuture.supplyAsync(() -> MinecraftMeta.get(Util.GSON))
-				.thenAccept(this::displayMinecraftVerions)
-				.exceptionally(this::handleMinecraftVersionExceptions);
+    @Override
+    public void run(Consumer<Void> statusTracker) {
+        CompletableFuture<Void> versionManifest = CompletableFuture.supplyAsync(() -> MinecraftMeta.get(Util.GSON)).thenAccept(this::displayMinecraftVerions).exceptionally(this::handleMinecraftVersionExceptions);
 
-		CompletableFuture<Void> quiltMeta = QuiltMeta.create(QuiltMeta.LOADER_VERSIONS_ENDPOINT)
-				.thenAccept(this::displayLoaderVersions)
-				.exceptionally(e -> {
-					e.printStackTrace();
-					return null;
-				});
+        CompletableFuture<Void> quiltMeta = QuiltMeta.create(QuiltMeta.LOADER_VERSIONS_ENDPOINT).thenAccept(this::displayLoaderVersions).exceptionally(e -> {
+            e.printStackTrace();
+            return null;
+        });
 
-		println(Localization.get("cli.lookup.versions"));
+        println(Localization.get("cli.lookup.versions"));
 
-		// Wait for the lookups to complete
-		CompletableFuture.allOf(versionManifest, quiltMeta).join();
-	}
+        // Wait for the lookups to complete
+        CompletableFuture.allOf(versionManifest, quiltMeta).join();
+    }
 
-	private void displayMinecraftVerions(MinecraftMeta manifest) {
-		println(Localization.createFrom("cli.latest.minecraft.release", manifest.latestRelease().id()));
+    private void displayMinecraftVerions(MinecraftMeta manifest) {
+        println(Localization.createFrom("cli.latest.minecraft.release", manifest.latestRelease().id()));
 
-		if (this.minecraftSnapshots) {
-			println(Localization.createFrom("cli.latest.minecraft.snapshot", manifest.latestSnapshot().id()));
-		}
-	}
+        if (this.minecraftSnapshots) {
+            println(Localization.createFrom("cli.latest.minecraft.snapshot", manifest.latestSnapshot().id()));
+        }
+    }
 
-	private void displayLoaderVersions(QuiltMeta meta) {
-		List<String> endpoint = meta.getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
-		println(Localization.createFrom("cli.latest.loader.release", endpoint.stream().filter(version -> !version.contains("-")).findFirst().get()));
+    private void displayLoaderVersions(QuiltMeta meta) {
+        List<String> endpoint = meta.getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
+        println(Localization.createFrom("cli.latest.loader.release", endpoint.stream().filter(version -> !version.contains("-")).findFirst().orElse(null)));
 
-		if (this.loaderBetas) {
-			println(Localization.createFrom("cli.latest.loader.beta", endpoint.stream().filter(version -> version.contains("-")).findFirst().get()));
-		}
-	}
+        if (this.loaderBetas) {
+            println(Localization.createFrom("cli.latest.loader.beta", endpoint.stream().filter(version -> version.contains("-")).findFirst().orElse(null)));
+        }
+    }
 
-	private Void handleMinecraftVersionExceptions(Throwable exc) {
-		eprintln(Localization.get("cli.lookup.failed.minecraft"));
+    private Void handleMinecraftVersionExceptions(Throwable exc) {
+        eprintln(Localization.get("cli.lookup.failed.minecraft"));
 
-		// Unwrap the completion exception.
-		if (exc instanceof CompletionException) {
-			exc = exc.getCause();
-		}
+        // Unwrap the completion exception(s).
+        if (exc instanceof CompletionException) {
+            exc = exc.getCause();
+        }
+        if (exc instanceof UncheckedIOException) {
+            exc = exc.getCause();
+        }
+        if (exc instanceof RuntimeException && exc.getMessage() == null && exc.getCause() != null) {
+            exc = exc.getCause();
+        }
 
-		if (exc instanceof UncheckedIOException) {
-			if (exc.getCause() instanceof UnknownHostException) {
-				eprintln(Localization.get("cli.lookup.failed.connection"));
-			} else {
-				// IO issue?
-				exc.printStackTrace();
-			}
-		} else if (exc instanceof ParseException) {
-			eprintln(Localization.get("cli.lookup.failed.minecraft.malformed.1"));
-			eprintln(Localization.createFrom("cli.lookup.failed.minecraft.malformed.2", "https://github.com/QuiltMC/quilt-installer"));
-			exc.printStackTrace();
-		} else {
-			// Don't know, just spit it out
-			exc.printStackTrace();
-		}
+        if (exc.getCause() instanceof UnknownHostException) {
+            eprintln(Localization.get("cli.lookup.failed.connection"));
+        } else if (exc instanceof JsonParseException) {
+            eprintln(Localization.get("cli.lookup.failed.minecraft.malformed.1"));
+            eprintln(Localization.createFrom("cli.lookup.failed.minecraft.malformed.2", "https://github.com/QuiltMC/quilt-installer"));
+            exc.printStackTrace();
+        } else {
+            // Don't know, just spit it out
+            exc.printStackTrace();
+        }
 
-		System.exit(2);
-		return null;
-	}
+        System.exit(2);
+        return null;
+    }
 }

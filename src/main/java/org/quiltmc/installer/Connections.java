@@ -16,10 +16,12 @@
 
 package org.quiltmc.installer;
 
-import java.io.IOException;
-import java.io.InputStream;
+import org.quiltmc.installer.util.meta.QuiltMeta;
+
+import java.io.*;
 import java.net.URI;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 
 public class Connections {
     public static final String INSTALLER_VERSION = getInstallerVersion();
@@ -38,5 +40,9 @@ public class Connections {
         connection.setRequestProperty("User-Agent", "Quilt-Installer/" + INSTALLER_VERSION);
 
         return connection.getInputStream();
+    }
+
+    public static Reader openReader(URI url) throws IOException {
+        return new BufferedReader(new InputStreamReader(openConnection(url), StandardCharsets.UTF_8));
     }
 }

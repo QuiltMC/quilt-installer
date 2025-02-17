@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 QuiltMC
+ * Copyright 2025 QuiltMC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package org.quiltmc.installer;
+package org.quiltmc.installer.util.meta.model.v3;
 
-import java.io.IOException;
-
-public interface ThrowingFunction<T, R, X extends Throwable> {
-	R apply(T input) throws X, IOException;
+// TODO once meta supports these other properties, validate hashes after downloading + display progress bar!
+public record QuiltLoaderVersionV3(String maven, String version, int build, String separator/*, @SerializedName("file_size") long fileSize, Map<String, String> hashes*/) {
 }

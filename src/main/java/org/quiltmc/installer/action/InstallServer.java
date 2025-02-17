@@ -149,7 +149,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
         return CompletableFuture.runAsync(() -> {
             // Get the info from the manifest
             var version = Objects.requireNonNull(info.manifest().getVersion(minecraftVersion), "No manifest version for " + minecraftVersion);
-            try (var reader = new BufferedReader(new InputStreamReader(Connections.openConnection(version.url()), StandardCharsets.UTF_8))) {
+            try (var reader = Connections.openReader(version.url())) {
 
                 JsonObject read = Optional.ofNullable(Util.GSON.fromJson(reader, JsonObject.class)).orElseThrow(() -> new IllegalStateException(String.format("launchermeta for %s is not an object!", minecraftVersion)));
                 JsonObject downloads = read.getAsJsonObject("downloads");
@@ -171,13 +171,14 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
     private static CompletableFuture<Path> downloadLibrary(Path librariesDir, String name, String url) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Path path = librariesDir.resolve(splitArtifact(name));
                 // Convert to maven url
                 URI rawUrl = URI.create(mavenToUrl(url, name));
                 println("Downloading library at: " + rawUrl);
 
+                Path path = librariesDir.resolve(splitArtifact(name));
+                Files.createDirectories(path.getParent());
+
                 try (InputStream stream = Connections.openConnection(rawUrl)) {
-                    Files.createDirectories(path.getParent());
                     Files.copy(stream, path, StandardCopyOption.REPLACE_EXISTING);
                 }
 

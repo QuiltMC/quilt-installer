@@ -19,6 +19,7 @@ package org.quiltmc.installer;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.quiltmc.installer.util.Util;
+import org.quiltmc.installer.util.meta.QuiltMeta;
 
 import java.io.BufferedReader;
 import java.io.IOException;

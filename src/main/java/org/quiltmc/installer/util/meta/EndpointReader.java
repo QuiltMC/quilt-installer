@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.quiltmc.installer;
+package org.quiltmc.installer.util.meta;
 
-import org.quiltmc.parsers.json.JsonReader;
+import com.google.gson.JsonParseException;
 
-// RuntimeException is intentional as we will catch this via `.exceptionally(...)` normally.
-public final class ParseException extends RuntimeException {
-	public ParseException(String reason, JsonReader reader) {
-		super(reason + ": " + reader.toString());
-	}
+import java.io.IOException;
+import java.io.Reader;
+
+public interface EndpointReader<T> {
+	T apply(Reader input) throws JsonParseException, IOException;
 }

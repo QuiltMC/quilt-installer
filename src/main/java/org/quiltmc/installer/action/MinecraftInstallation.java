@@ -17,7 +17,7 @@
 package org.quiltmc.installer.action;
 
 import org.jetbrains.annotations.Nullable;
-import org.quiltmc.installer.QuiltMeta;
+import org.quiltmc.installer.util.meta.QuiltMeta;
 import org.quiltmc.installer.util.Util;
 import org.quiltmc.installer.util.mojang.MinecraftMeta;
 
@@ -65,12 +65,12 @@ public final class MinecraftInstallation {
 				return versions.get(versions.indexOf(loaderVersion));
 			}
 
-			if (versions.size() == 0) {
+			if (versions.isEmpty()) {
 				throw new IllegalStateException("No loader versions were found");
 			}
 
 			// Choose latest stable version
-			return versions.stream().filter(version -> !version.contains("-")).findFirst().get();
+			return versions.stream().filter(version -> !version.contains("-")).findFirst().orElseThrow();
 		});
 
 		return CompletableFuture.allOf(versionManifest, intermediary, loaderVersionFuture).thenApply(_v -> {
