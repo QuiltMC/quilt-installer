@@ -72,11 +72,18 @@ public abstract class Action<M> {
 				e.printStackTrace();
 			}
 
+			boolean headless;
+			try {
+				headless = GraphicsEnvironment.isHeadless();
+			} catch (NoClassDefFoundError e) {
+				headless = true;
+			}
+
 			// Depending on the environment, we show the appropriate no-args usage.
 			// Headless JVMs can't use swing, so if we have a headless JVM we just show the message describing the help text
-			String noArgsUsage = (GraphicsEnvironment.isHeadless() ?
+			String noArgsUsage = headless ?
 					Localization.get("cli.usage.description.headless") :
-					Localization.get("cli.usage.description"));
+					Localization.get("cli.usage.description");
 
 			println(Localization.get("title") + " v" + CliInstaller.INSTALLER_VERSION);
 			println("");
