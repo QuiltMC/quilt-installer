@@ -1,5 +1,6 @@
 [versions]
 blossom = "2.1.0"
+bouncycastle = "1.80"
 shadow = "8.3.6"
 spotless = "7.0.2"
 
@@ -7,6 +8,7 @@ gson = "2.12.1"
 jetbrains_annotations = "26.0.2"
 
 [libraries]
+bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson"}
 jetbrains_annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains_annotations" }
 

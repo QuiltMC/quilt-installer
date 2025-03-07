@@ -16,6 +16,7 @@
 
 package org.quiltmc.installer.gui.swing;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.quiltmc.installer.Localization;
 import org.quiltmc.installer.util.Util;
 import org.quiltmc.installer.util.meta.Endpoint;
@@ -24,6 +25,7 @@ import org.quiltmc.installer.util.mojang.MinecraftMeta;
 
 import javax.swing.*;
 import java.awt.*;
+import java.security.Security;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -35,6 +37,11 @@ import java.util.stream.Collectors;
  * The logic side of the swing gui for the installer.
  */
 public final class SwingInstaller extends JFrame {
+
+    static {
+        Security.addProvider(new BouncyCastleProvider());
+    }
+
     public static final Executor SWING_EXECUTOR = SwingUtilities::invokeLater;
     private final ClientPanel clientPanel;
     private final ServerPanel serverPanel;

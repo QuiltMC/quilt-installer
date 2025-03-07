@@ -16,15 +16,21 @@
 
 package org.quiltmc.installer;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.action.Action;
 
+import java.security.Security;
 import java.util.*;
 
 /**
  * The main entrypoint when installing from the command line.
  */
 public final class CliInstaller {
+
+	static {
+		Security.addProvider(new BouncyCastleProvider());
+	}
 
 	public static final String INSTALLER_VERSION = Objects.requireNonNullElse(CliInstaller.class.getPackage().getImplementationVersion(), "UNKNOWN");
 
