@@ -99,6 +99,10 @@ tasks.shadowJar {
 		exclude(dependency("com.google.errorprone:.*"))
 	}
 	exclude("META-INF/**")
+	excludes.remove(
+		"module-info.class"
+	)
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
 	// Compiler does not know which set method we are targeting with null value
 	val classifier: String? = null;
