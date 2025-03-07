@@ -26,11 +26,14 @@ public class Main {
     public static void main(String[] args) {
 
         // Only use CLI mode if there are any arguments or we have a headless JVM
-        boolean cliMode = GraphicsEnvironment.isHeadless() || args.length != 0;
+        boolean cliMode = args.length != 0;
         if(!cliMode) {
             try {
+                // this might throw, too!
+                cliMode = GraphicsEnvironment.isHeadless();
+
                 Class.forName("javax.swing.UnsupportedLookAndFeelException");
-            } catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException | NoClassDefFoundError e) {
                 System.err.println("Swing is not available, falling back to CLI mode.");
                 cliMode = true;
             }
