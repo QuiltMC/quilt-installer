@@ -29,6 +29,14 @@ public class Main {
 
         // Only use CLI mode if there are any arguments or we have a headless JVM
         boolean cliMode = GraphicsEnvironment.isHeadless() || args.length != 0;
+        if(!cliMode) {
+            try {
+                Class.forName("javax.swing.UnsupportedLookAndFeelException");
+            } catch (ClassNotFoundException e) {
+                System.err.println("Swing is not available, falling back to CLI mode.");
+                cliMode = true;
+            }
+        }
 
         try {
             if (cliMode) {
@@ -44,45 +52,48 @@ public class Main {
         } catch (UnsupportedClassVersionError error) {
             System.err.printf("Quilt Installer requires Java %s or greater to run.%n", BuildConstants8.MIN_JAVA_VERSION);
             if (!cliMode) {
-                try {
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                } catch (ClassNotFoundException | UnsupportedLookAndFeelException | IllegalAccessException |
-                         InstantiationException e) {
-                    // oh well
-                    e.printStackTrace();
-                }
-
-                String javaDownloadUrl = "https://adoptium.net/temurin/releases/?package=jdk&version=lts";
-
-                // best-effort attempt to make the download URL more user friendly
-                String osName = System.getProperty("os.name", "unknown");
-                if(osName.contains("Windows")) {
-                    javaDownloadUrl += "&os=windows";
-                }
-                else if (osName.contains("Linux")) {
-                    javaDownloadUrl += "&os=linux";
-                }
-                else if (osName.contains("OS X")) {
-                    javaDownloadUrl += "&os=mac";
-                }
-
-                String osArch = System.getProperty("os.arch", "unknown");
-                if (osArch.equals("x86_64") || osArch.equals("amd64") || osArch.equals("x64")) {
-                    javaDownloadUrl += "&arch=x64";
-                }
-                else if (osArch.equals("aarch64") || osArch.equals("arm64")) {
-                    javaDownloadUrl += "&arch=aarch64";
-                }
-
-                showPopup("Quilt Installer crashed!", String.format("Quilt Installer needs Java %s to run." +
-                        "<br><br>Install the latest LTS release of Java from <a href=\"%s\">Adoptium</a> and try again." +
-                        "<br><br>If you need help, ask in the <a href=\"discord.quiltmc.org\">Quilt Discord server</a>.", BuildConstants8.MIN_JAVA_VERSION, javaDownloadUrl), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                tryShowGuiError();
             }
 
             System.exit(1);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
+    }
+
+    private static void tryShowGuiError() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | UnsupportedLookAndFeelException | IllegalAccessException | InstantiationException e) {
+            // oh well
+            e.printStackTrace();
+        }
+
+        String javaDownloadUrl = "https://adoptium.net/temurin/releases/?package=jdk&version=lts";
+
+        // best-effort attempt to make the download URL more user friendly
+        String osName = System.getProperty("os.name", "unknown");
+        if(osName.contains("Windows")) {
+            javaDownloadUrl += "&os=windows";
+        }
+        else if (osName.contains("Linux")) {
+            javaDownloadUrl += "&os=linux";
+        }
+        else if (osName.contains("OS X")) {
+            javaDownloadUrl += "&os=mac";
+        }
+
+        String osArch = System.getProperty("os.arch", "unknown");
+        if (osArch.equals("x86_64") || osArch.equals("amd64") || osArch.equals("x64")) {
+            javaDownloadUrl += "&arch=x64";
+        }
+        else if (osArch.equals("aarch64") || osArch.equals("arm64")) {
+            javaDownloadUrl += "&arch=aarch64";
+        }
+
+        showPopup("Quilt Installer crashed!", String.format("Quilt Installer needs Java %s to run." +
+                "<br><br>Install the latest LTS release of Java from <a href=\"%s\">Adoptium</a> and try again." +
+                "<br><br>If you need help, ask in the <a href=\"discord.quiltmc.org\">Quilt Discord server</a>.", BuildConstants8.MIN_JAVA_VERSION, javaDownloadUrl), JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
     }
 
     // Copied from AbstractPanel
