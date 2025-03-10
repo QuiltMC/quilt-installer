@@ -50,22 +50,18 @@ public class Main {
                         .findStatic(Class.forName("org.quiltmc.installer.gui.swing.SwingInstaller"), "run", MethodType.methodType(void.class))
                         .invokeExact();
             }
-
-            System.exit(0);
         } catch (UnsupportedClassVersionError error) {
             System.err.printf("Quilt Installer requires Java %s or greater to run.%n", BuildConstants8.MIN_JAVA_VERSION);
             if (!cliMode) {
                 GuiMain.tryShowGuiError();
             }
+            System.exit(1);
         } catch (NoClassDefFoundError e) {
             System.err.println("You appear to be using a 'minimal' Java installation. This is not supported by Quilt Installer. Please try again with a FULL installation of Java.");
             System.err.println("If you believe this is a bug, please report it here: https://github.com/quiltmc/quilt-installer/issues");
+            System.exit(1);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
-
-        // If we get here, something went wrong
-        System.exit(1);
     }
-
 }
