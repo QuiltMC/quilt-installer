@@ -1,11 +1,11 @@
 [versions]
-blossom = "2.1.0"
-bouncycastle = "1.80"
-shadow = "8.3.6"
-spotless = "7.0.2"
+blossom = "2.2.0"
+bouncycastle = "1.84"
+shadow = "9.4.1"
+spotless = "8.4.0"
 
-gson = "2.12.1"
-jetbrains_annotations = "26.0.2"
+gson = "2.14.0"
+jetbrains_annotations = "26.1.0"
 
 [libraries]
 bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
@@ -15,4 +15,4 @@ jetbrains_annotations = { module = "org.jetbrains:annotations", version.ref = "j
 [plugins]
 blossom = { id = "net.kyori.blossom", version.ref = "blossom" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
-spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+spotless = { id = "com.diffplug.plugin.spotless", version.ref = "spotless" }

@@ -43,9 +43,8 @@ public final class LauncherProfiles {
 	public static void updateProfiles(Path gameDir, String name, String gameVersion) throws IOException {
 		final Path launcherProfilesPath = gameDir.resolve("launcher_profiles.json");
 
-		if (Files.notExists(launcherProfilesPath)) {
+		if (Files.notExists(launcherProfilesPath))
 			throw new IllegalStateException("No launcher_profiles.json to read from");
-		}
 
 		JsonObject launcherProfiles;
 
@@ -91,9 +90,8 @@ public final class LauncherProfiles {
 
 	private static String createProfileIcon() {
 		try (var stream = LauncherProfiles.class.getClassLoader().getResourceAsStream("icon.png")) {
-			if (stream != null) {
+			if (stream != null)
 				return "data:image/png;base64," + Base64.getEncoder().encodeToString(stream.readAllBytes());
-			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -102,6 +100,5 @@ public final class LauncherProfiles {
 		return "TNT";
 	}
 
-	private LauncherProfiles() {
-	}
+	private LauncherProfiles() {}
 }

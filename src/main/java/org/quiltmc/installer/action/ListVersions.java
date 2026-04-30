@@ -1,4 +1,4 @@
-/*
+/*o
  * Copyright 2021 QuiltMC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -62,33 +62,26 @@ public final class ListVersions extends Action<Void> {
     private void displayMinecraftVerions(MinecraftMeta manifest) {
         println(Localization.createFrom("cli.latest.minecraft.release", manifest.latestRelease().id()));
 
-        if (this.minecraftSnapshots) {
+        if (this.minecraftSnapshots)
             println(Localization.createFrom("cli.latest.minecraft.snapshot", manifest.latestSnapshot().id()));
-        }
     }
 
     private void displayLoaderVersions(QuiltMeta meta) {
         List<String> endpoint = meta.getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
         println(Localization.createFrom("cli.latest.loader.release", endpoint.stream().filter(version -> !version.contains("-")).findFirst().orElse(null)));
 
-        if (this.loaderBetas) {
+        if (this.loaderBetas)
             println(Localization.createFrom("cli.latest.loader.beta", endpoint.stream().filter(version -> version.contains("-")).findFirst().orElse(null)));
-        }
     }
 
     private Void handleMinecraftVersionExceptions(Throwable exc) {
         eprintln(Localization.get("cli.lookup.failed.minecraft"));
 
         // Unwrap the completion exception(s).
-        if (exc instanceof CompletionException) {
+        if (exc instanceof CompletionException) exc = exc.getCause();
+        if (exc instanceof UncheckedIOException) exc = exc.getCause();
+        if (exc instanceof RuntimeException && exc.getMessage() == null && exc.getCause() != null)
             exc = exc.getCause();
-        }
-        if (exc instanceof UncheckedIOException) {
-            exc = exc.getCause();
-        }
-        if (exc instanceof RuntimeException && exc.getMessage() == null && exc.getCause() != null) {
-            exc = exc.getCause();
-        }
 
         if (exc.getCause() instanceof UnknownHostException) {
             eprintln(Localization.get("cli.lookup.failed.connection"));

@@ -57,6 +57,5 @@ public final class LaunchJson {
 		});
 	}
 
-	private LaunchJson() {
-	}
+	private LaunchJson() {}
 }

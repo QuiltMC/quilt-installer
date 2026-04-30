@@ -36,10 +36,8 @@ public final class MinecraftInstallation {
 	 */
 	public static CompletableFuture<InstallationInfo> getInfo(String gameVersion, @Nullable String loaderVersion) {
 		CompletableFuture<MinecraftMeta> versionManifest = CompletableFuture.supplyAsync(() -> MinecraftMeta.get(Util.GSON)).thenApply(manifest -> {
-			if (manifest.getVersion(gameVersion) == null) {
+			if (manifest.getVersion(gameVersion) == null)
 				throw new IllegalArgumentException(String.format("Minecraft version %s does not exist", gameVersion));
-			}
-
 			return manifest;
 		});
 
@@ -49,25 +47,22 @@ public final class MinecraftInstallation {
 		CompletableFuture<Void> intermediary = versionManifest.thenCompose(mcVersion -> metaFuture.thenAccept(meta -> {
 			Map<String, String> intermediaryVersions = meta.getEndpoint(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
 
-			if (intermediaryVersions.get(gameVersion) == null) {
+			if (intermediaryVersions.get(gameVersion) == null)
 				throw new IllegalArgumentException(String.format("Minecraft version %s exists but has no intermediary", gameVersion));
-			}
 		}));
 
 		CompletableFuture<String> loaderVersionFuture = metaFuture.thenApply(meta -> {
 			List<String> versions = meta.getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
 
 			if (loaderVersion != null) {
-				if (!versions.contains(loaderVersion)) {
+				if (!versions.contains(loaderVersion))
 					throw new IllegalStateException(String.format("Specified loader version %s was not found", loaderVersion));
-				}
 
 				return versions.get(versions.indexOf(loaderVersion));
 			}
 
-			if (versions.isEmpty()) {
+			if (versions.isEmpty())
 				throw new IllegalStateException("No loader versions were found");
-			}
 
 			// Choose latest stable version
 			return versions.stream().filter(version -> !version.contains("-")).findFirst().orElseThrow();
@@ -82,8 +77,7 @@ public final class MinecraftInstallation {
 		});
 	}
 
-	private MinecraftInstallation() {
-	}
+	private MinecraftInstallation() {}
 
 	public static final class InstallationInfo {
 		private final String loaderVersion;

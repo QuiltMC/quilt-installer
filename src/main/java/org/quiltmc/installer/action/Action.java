@@ -54,9 +54,8 @@ public abstract class Action<M> {
 			if (usageStream == null) {
 				usageStream = Action.class.getClassLoader().getResourceAsStream("lang/en-US.usage");
 
-				if (usageStream == null) {
+				if (usageStream == null)
 					throw new RuntimeException("Could not find usage translation for English locale");
-				}
 			}
 
 			StringBuilder usage = new StringBuilder();
@@ -64,9 +63,8 @@ public abstract class Action<M> {
 			try (BufferedReader reader = new BufferedReader(new InputStreamReader(usageStream))) {
 				String s;
 
-				while ((s = reader.readLine()) != null) {
-					usage.append(s);
-					usage.append('\n');
+				while ((s = reader.readLine()) != null)
+					usage.append(s + "\n");
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -85,8 +83,7 @@ public abstract class Action<M> {
 					Localization.get("cli.usage.description.headless") :
 					Localization.get("cli.usage.description");
 
-			println(Localization.get("title") + " v" + CliInstaller.INSTALLER_VERSION);
-			println("");
+			println(Localization.get("title") + " v" + CliInstaller.INSTALLER_VERSION + "\n");
 			println(new MessageFormat(usage.toString()).format(new String[] { platformExecutableName, noArgsUsage }));
 		}
 	};

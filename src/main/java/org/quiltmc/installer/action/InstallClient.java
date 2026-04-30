@@ -53,21 +53,19 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 	public void run(Consumer<MessageType> statusTracker) {
 		Path installDir;
 
-		if (this.installDir == null) {
-			installDir = OsPaths.getDefaultInstallationDir();
-		} else {
-			installDir = Paths.get(this.installDir);
-		}
+		installDir = (this.installDir == null)
+			? OsPaths.getDefaultInstallationDir()
+			: Paths.get(this.installDir);
 
 		this.installDirPath = installDir;
 
 		println(String.format("Installing Minecraft client at: %s", installDir));
 
-		if (this.loaderVersion != null) {
-			println(String.format("Installing Minecraft client of version %s with loader version %s", this.minecraftVersion, this.loaderVersion));
-		} else {
-			println(String.format("Installing Minecraft client of version %s", this.minecraftVersion));
-		}
+		String message;
+		message = (this.loaderVersion == null)
+			? String.format("Installing Minecraft client of version %s", this.minecraftVersion)
+			: String.format("Installing Minecraft client of version %s with loader version %s", this.minecraftVersion, this.loaderVersion);
+		println(message);
 
 		/*
 		 * Installing the client involves a few steps:
@@ -156,6 +154,5 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 		}).join();
 	}
 
-	public enum MessageType {
-	}
+	public enum MessageType {}
 }

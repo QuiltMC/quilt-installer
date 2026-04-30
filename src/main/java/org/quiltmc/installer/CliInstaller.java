@@ -39,9 +39,7 @@ public final class CliInstaller {
 		StringBuilder builder = new StringBuilder();
 
 		for (int i = 0; i < args.length; i++) {
-			if (i != 0) {
-				builder.append(' ');
-			}
+			if (i != 0) builder.append(' ');
 
 			builder.append(args[i]);
 		}
@@ -73,9 +71,8 @@ public final class CliInstaller {
 		case "help":
 			return Action.DISPLAY_HELP;
 		case "listVersions":
-			if (split.size() == 0) {
+			if (split.size() == 0)
 				return Action.listVersions(false, false);
-			}
 
 			boolean minecraftSnapshots = false;
 			boolean loaderBetas = false;
@@ -84,17 +81,21 @@ public final class CliInstaller {
 			while (split.peek() != null) {
 				String option = split.remove();
 
-				if (option.equals("--snapshots")) {
-					minecraftSnapshots = true;
-				} else if (option.equals("--loader-betas")) {
-					loaderBetas = true;
-				} else if (option.startsWith("--")) {
-					System.err.printf("Invalid option \"%s\"%n", arg);
+				switch (option) {
+				case "--snapshots":
+                                        minecraftSnapshots = true
+					break;
+				case "--loader-betas":
+                                        loaderBetas = true;
+					break;
+				default:
 					hasError = true;
-				} else {
-					System.err.printf("Unexpected additional argument \"%s\"%n", arg);
-					hasError = true;
-				}
+	                                if (option.startsWith("--"))
+                                        	System.err.printf("Invalid option \"%s\"%n", arg);
+                                	else
+                                        	System.err.printf("Unexpected additional argument \"%s\"%n", arg);
+					break;
+                                }
 			}
 
 			return !hasError ? Action.listVersions(minecraftSnapshots, loaderBetas) : Action.DISPLAY_HELP;
@@ -116,9 +117,8 @@ public final class CliInstaller {
 				String minecraftVersion = split.remove();
 
 				// At this point all the require arguments have been parsed
-				if (split.size() == 0) {
+				if (split.size() == 0)
 					return Action.installClient(minecraftVersion, null, null, false);
-				}
 
 				// Try to parse loader version first
 				@Nullable
@@ -126,14 +126,12 @@ public final class CliInstaller {
 				arg = split.peek();
 
 				// Loader option is set
-				if (!arg.startsWith("-")) {
+				if (!arg.startsWith("-"))
 					loaderVersion = split.remove();
-				}
 
 				// No more arguments, just loader version
-				if (split.size() == 0) {
+				if (split.size() == 0)
 					return Action.installClient(minecraftVersion, loaderVersion, null, false);
-				}
 
 				// There are some additional options
 				Map<String, String> options = new LinkedHashMap<>();
@@ -195,9 +193,8 @@ public final class CliInstaller {
 				String minecraftVersion = split.remove();
 
 				// At this point all the require arguments have been parsed
-				if (split.size() == 0) {
+				if (split.size() == 0)
 					return Action.installServer(minecraftVersion, null, null, false, false);
-				}
 
 				// Try to parse loader version first
 				@Nullable
@@ -205,14 +202,12 @@ public final class CliInstaller {
 				arg = split.peek();
 
 				// Loader option is set
-				if (!arg.startsWith("-")) {
+				if (!arg.startsWith("-"))
 					loaderVersion = split.remove();
-				}
 
 				// No more arguments, just loader version
-				if (split.size() == 0) {
+				if (split.size() == 0)
 					return Action.installServer(minecraftVersion, loaderVersion, null, false, false);
-				}
 
 				// There are some additional options
 				Map<String, String> options = new LinkedHashMap<>();
@@ -221,9 +216,8 @@ public final class CliInstaller {
 					String option = split.remove();
 
 					// Just two -- is not enough
-					if (!option.startsWith("--")) {
+					if (!option.startsWith("--"))
 						System.err.printf("Invalid option %s%n", option);
-					}
 
 					if (option.equals("--create-scripts")) {
 						if (options.containsKey("--create-scripts")) {
@@ -232,9 +226,8 @@ public final class CliInstaller {
 
 						options.put("--create-scripts", null);
 					} else if (option.equals("--download-server")) {
-						if (options.containsKey("--download-server")) {
+						if (options.containsKey("--download-server"))
 							System.err.println("Encountered duplicate option \"--download-server\", This shouldn't affect anything");
-						}
 
 						options.put("--download-server", null);
 					// Common option
@@ -295,9 +288,9 @@ public final class CliInstaller {
 		for (int i = 0; i < input.length(); i++) {
 			char c = input.charAt(i);
 
-			if (c == '"') {
+			if (c == '"')
 				inQuote = !inQuote;
-			} else if (c == ' ') {
+			else if (c == ' ') {
 				if (!inQuote) {
 					// Terminate word and add to list
 					String word = input.substring(lastEnd, i);
@@ -311,9 +304,8 @@ public final class CliInstaller {
 		String word = input.substring(lastEnd);
 		ret.add(word);
 
-		if (inQuote) {
+		if (inQuote)
 			throw new IllegalArgumentException("Unterminated \" found");
-		}
 
 		return ret;
 	}
@@ -327,17 +319,14 @@ public final class CliInstaller {
 	 */
 	private static String unqoute(String input) {
 		// Nothing to unquote
-		if (input.indexOf('"') == -1) {
+		if (input.indexOf('"') == -1)
 			return input;
-		}
 
-		if (input.indexOf('"') != 0) {
+		if (input.indexOf('"') != 0)
 			return null; // Improper quoting, beginning of value must be quoted
-		}
 
-		if (input.charAt(input.length() - 1) != '"') {
+		if (input.charAt(input.length() - 1) != '"')
 			return null; // Improper quoting, end of value must be quoted
-		}
 
 		return input.substring(1, input.length() - 1);
 	}

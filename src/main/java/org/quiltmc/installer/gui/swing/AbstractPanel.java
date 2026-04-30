@@ -74,13 +74,11 @@ abstract class AbstractPanel extends JPanel {
 		comboBox.removeAllItems();
 
 		for (var version : manifest) {
-			if (version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_RELEASE) || (snapshots && version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_SNAPSHOT))) {
-				if (intermediaryVersions.contains(version.id())) {
-					comboBox.addItem(version.id());
-				}
-			}
+			boolean isRelease = version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_RELEASE);
+			boolean isSnapshot = snapshots && version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_SNAPSHOT);
+			boolean inIntermediary = intermediaryVersions.contains(version.id());
+			if ((isRelease || isSnapshot) && inIntermediary) comboBox.addItem(version.id());
 		}
-
 		comboBox.setEnabled(true);
 	}
 
@@ -88,9 +86,8 @@ abstract class AbstractPanel extends JPanel {
 		comboBox.removeAllItems();
 
 		for (String loaderVersion : loaderVersions) {
-			if (betas || !loaderVersion.contains("-")) {
+			if (betas || !loaderVersion.contains("-"))
 				comboBox.addItem(loaderVersion);
-			}
 		}
 
 		comboBox.setEnabled(true);
@@ -104,9 +101,8 @@ abstract class AbstractPanel extends JPanel {
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		chooser.setAcceptAllFileFilterUsed(false);
 
-		if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+		if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
 			return chooser.getSelectedFile().getAbsolutePath();
-		}
 
 		return null;
 	}

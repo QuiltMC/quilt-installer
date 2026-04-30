@@ -105,9 +105,7 @@ final class ClientPanel extends AbstractPanel implements Consumer<InstallClient.
 				@Nullable
 				String newLocation = displayFileChooser(this.installLocation.getText());
 
-				if (newLocation != null) {
-					this.installLocation.setText(newLocation);
-				}
+				if (newLocation != null) this.installLocation.setText(newLocation);
 			});
 		}
 
@@ -161,6 +159,5 @@ final class ClientPanel extends AbstractPanel implements Consumer<InstallClient.
 	}
 
 	@Override
-	public void accept(InstallClient.MessageType messageType) {
-	}
+	public void accept(InstallClient.MessageType messageType) {}
 }

@@ -45,9 +45,8 @@ public final class QuiltMeta {
 	}
 
 	public static CompletableFuture<QuiltMeta> create(Set<Endpoint<?>> endpoints) {
-		if(endpoints.isEmpty()) {
+		if(endpoints.isEmpty())
 			throw new IllegalArgumentException("No endpoints provided");
-		}
 
 		Map<Endpoint<?>, CompletableFuture<?>> futures = new HashMap<>();
 		for (Endpoint<?> endpoint : endpoints) {
@@ -85,9 +84,8 @@ public final class QuiltMeta {
 		@SuppressWarnings("unchecked")
 		T result = (T) this.endpoints.get(endpoint);
 
-		if (result == null) {
+		if (result == null)
 			throw new IllegalArgumentException("Endpoint had no value!");
-		}
 
 		return result;
 	}

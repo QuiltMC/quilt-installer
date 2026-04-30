@@ -28,10 +28,7 @@ public class Connections {
 
     private static String getInstallerVersion() {
         String version = QuiltMeta.class.getPackage().getImplementationVersion();
-        if (version != null) {
-            return version;
-        }
-
+        if (version != null) return version;
         return "dev";
     }
 

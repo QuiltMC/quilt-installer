@@ -66,22 +66,19 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
     public void run(Consumer<MessageType> statusTracker) {
         Path installDir;
 
-        if (this.installDir == null) {
-            // Make a new installation in `server` subfolder
-            installDir = Paths.get(System.getProperty("user.dir")).resolve("server");
-        } else {
-            installDir = Paths.get(this.installDir);
-        }
-
+	installDir = (this.installDir == null)
+		// Make a new installation in `server` subfolder
+		? Paths.get(System.getProperty("user.dir")).resolve("server"
+		: Paths.get(this.installDir);
         this.installedDir = installDir;
 
         println(String.format("Installing server launcher at: %s", installDir));
 
-        if (this.loaderVersion == null) {
-            println(String.format("Installing server launcher for %s", this.minecraftVersion));
-        } else {
-            println(String.format("Installing server launcher for %s with loader %s", this.minecraftVersion, this.loaderVersion));
-        }
+	String message;
+	message = (this.loaderVersion == null)
+		? String.format("Installing server launcher for %s", this.minecraftVersion)
+		: String.format("Installing server launcher for %s with loader %s", this.minecraftVersion, this.loaderVersion);
+	println(message);
 
         CompletableFuture<MinecraftInstallation.InstallationInfo> installationInfoFuture = MinecraftInstallation.getInfo(this.minecraftVersion, this.loaderVersion);
         installationInfoFuture.thenCompose(installationInfo -> {
@@ -109,9 +106,8 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 
             return CompletableFuture.allOf(libraryFiles.toArray(CompletableFuture[]::new)).thenAccept(_v -> {
                 try {
-                    if (Files.notExists(installDir)) {
+                    if (Files.notExists(installDir))
                         Files.createDirectories(installDir);
-                    }
 
                     createLaunchJar(installDir.resolve("quilt-server-launch.jar"), mainClass, libraryFiles);
                 } catch (IOException e) {
@@ -178,9 +174,8 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
                 Path path = librariesDir.resolve(splitArtifact(name));
                 Files.createDirectories(path.getParent());
 
-                try (InputStream stream = Connections.openConnection(rawUrl)) {
+                try (InputStream stream = Connections.openConnection(rawUrl))
                     Files.copy(stream, path, StandardCopyOption.REPLACE_EXISTING);
-                }
 
                 return path;
             } catch (IOException e) {
@@ -191,9 +186,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 
     // Combine all the jars into one file for the quilt-server-launch.jar
     private static void createLaunchJar(Path path, String mainClass, Set<CompletableFuture<Path>> libraries) throws IOException, ExecutionException, InterruptedException {
-        if (Files.exists(path)) {
-            Files.delete(path);
-        }
+        if (Files.exists(path)) Files.delete(path);
 
         try (ZipOutputStream zipStream = new ZipOutputStream(Files.newOutputStream(path, StandardOpenOption.CREATE_NEW))) {
             zipStream.putNextEntry(new ZipEntry("META-INF/MANIFEST.MF"));
@@ -234,11 +227,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
     private static void writeServiceDefinition(Collection<String> entries, OutputStream stream) throws IOException {
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stream, StandardCharsets.UTF_8));
 
-        for (String def : entries) {
-            writer.write(def);
-            writer.write('\n');
-        }
-
+        for (String def : entries) writer.write(def + "\n");
         writer.flush();
     }
 
@@ -266,6 +255,5 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
         return this.installedDir;
     }
 
-    public enum MessageType {
-    }
+    public enum MessageType {}
 }
