@@ -75,7 +75,8 @@ abstract class AbstractPanel extends JPanel {
 
 		for (var version : manifest) {
 			boolean isRelease = version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_RELEASE);
-			boolean isSnapshot = snapshots && version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_SNAPSHOT);
+			boolean isSnapshot = false;
+			if (isRelease) isSnapshot = snapshots && version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_SNAPSHOT);
 			boolean inIntermediary = intermediaryVersions.contains(version.id());
 			if ((isRelease || isSnapshot) && inIntermediary) comboBox.addItem(version.id());
 		}

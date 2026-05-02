@@ -167,19 +167,28 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 
 	private void install(ActionEvent event) {
 		boolean cancel = false;
-		String jarType = "overwrite-jar";
-		String rb = "dialog.install.server.";
+		String jarType = "none";
+		final String rb = "dialog.install.server.";
 
-		if (!downloadServer && downloadServerAutoSelected) {
+		if (downloadServer && !downloadServer) {
+			jarType = "overwrite-jar";
+		} else if (!downloadServer && downloadServerAutoSelected) {
 			jarType = "no-jar";
 		}
-		cancel = !AbstractPanel.showPopup(Localization.get(rb + jarType), Localization.get(rb + ".description"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+		if (!jarType.equals("none")) {
+			cancel = !AbstractPanel.showPopup(Localization.get(rb + jarType), Localization.get(rb + ".description"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		}
 
 		// TODO: Re-enable once scripts are implemented
-		/*String scriptType = "overwrite-script";
+		/*String scriptType = "none";
 
-		if (!generateLaunchScripts && generateLaunchScriptsAutoSelected)
+		if (generateLaunchScripts && !generateLaunchScriptsAutoSelected) {
+			scriptType = "overwrite-script";
+		} else if (!generateLaunchScripts && generateLaunchScriptsAutoSelected) {
 			scriptType = "no-script";
+		}
+
 		cancel = cancel | !AbstractPanel.showPopup(Localization.get(rb + scriptType), Localization.get(rb + scriptType + ".desctiption"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 		*/
 

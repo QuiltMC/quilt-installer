@@ -51,9 +51,7 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 
 	@Override
 	public void run(Consumer<MessageType> statusTracker) {
-		Path installDir;
-
-		installDir = (this.installDir == null) ?
+		Path installDir = (this.installDir == null) ?
 			OsPaths.getDefaultInstallationDir() :
 			Paths.get(this.installDir);
 
@@ -61,8 +59,7 @@ public final class InstallClient extends Action<InstallClient.MessageType> {
 
 		println(String.format("Installing Minecraft client at: %s", installDir));
 
-		String message;
-		message = (this.loaderVersion == null) ?
+		String message = (this.loaderVersion == null) ?
 			String.format("Installing Minecraft client of version %s", this.minecraftVersion) :
 			String.format("Installing Minecraft client of version %s with loader version %s", this.minecraftVersion, this.loaderVersion);
 		println(message);

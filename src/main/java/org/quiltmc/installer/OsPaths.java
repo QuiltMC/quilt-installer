@@ -30,7 +30,7 @@ public final class OsPaths {
 	private static final String DOT_MINECRAFT = ".minecraft";
 
 	/**
-	 * Get the data directory that the Minecraft launcher is typically installed at.
+	 * Gets the data directory that the Minecraft launcher is typically installed at.
 	 * This may return a platform specific value.
 	 *
 	 * @return the path to the default launcher install directory

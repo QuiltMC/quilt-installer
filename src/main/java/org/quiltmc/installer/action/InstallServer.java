@@ -64,9 +64,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 
     @Override
     public void run(Consumer<MessageType> statusTracker) {
-        Path installDir;
-
-	installDir = (this.installDir == null) ?
+        Path installDir = (this.installDir == null) ?
 		// Make a new installation in `server` subfolder
 		Paths.get(System.getProperty("user.dir")).resolve("server") :
 		Paths.get(this.installDir);
@@ -74,8 +72,7 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 
         println(String.format("Installing server launcher at: %s", installDir));
 
-	String message;
-	message = (this.loaderVersion == null) ?
+	String message = (this.loaderVersion == null) ?
 		String.format("Installing server launcher for %s", this.minecraftVersion) :
 		String.format("Installing server launcher for %s with loader %s", this.minecraftVersion, this.loaderVersion);
 	println(message);
