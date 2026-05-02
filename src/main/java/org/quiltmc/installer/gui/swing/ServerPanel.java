@@ -189,7 +189,9 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 			scriptType = "no-script";
 		}
 
-		cancel = cancel | !AbstractPanel.showPopup(Localization.get(rb + scriptType), Localization.get(rb + scriptType + ".desctiption"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		if (!scriptType.equals("none")) {
+			cancel = cancel | !AbstractPanel.showPopup(Localization.get(rb + scriptType), Localization.get(rb + scriptType + ".desctiption"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		}
 		*/
 
 		if (cancel) return;
