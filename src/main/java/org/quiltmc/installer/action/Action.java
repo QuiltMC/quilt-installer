@@ -54,8 +54,9 @@ public abstract class Action<M> {
 			if (usageStream == null) {
 				usageStream = Action.class.getClassLoader().getResourceAsStream("lang/en-US.usage");
 
-				if (usageStream == null)
+				if (usageStream == null) {
 					throw new RuntimeException("Could not find usage translation for English locale");
+				}
 			}
 
 			StringBuilder usage = new StringBuilder();
@@ -63,7 +64,7 @@ public abstract class Action<M> {
 			try (BufferedReader reader = new BufferedReader(new InputStreamReader(usageStream))) {
 				String s;
 
-				while ((s = reader.readLine()) != null)
+				while ((s = reader.readLine()) != null) {
 					usage.append(s + "\n");
 				}
 			} catch (IOException e) {

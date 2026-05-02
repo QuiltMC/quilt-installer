@@ -66,18 +66,18 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
     public void run(Consumer<MessageType> statusTracker) {
         Path installDir;
 
-	installDir = (this.installDir == null)
+	installDir = (this.installDir == null) ?
 		// Make a new installation in `server` subfolder
-		? Paths.get(System.getProperty("user.dir")).resolve("server"
-		: Paths.get(this.installDir);
+		Paths.get(System.getProperty("user.dir")).resolve("server") :
+		Paths.get(this.installDir);
         this.installedDir = installDir;
 
         println(String.format("Installing server launcher at: %s", installDir));
 
 	String message;
-	message = (this.loaderVersion == null)
-		? String.format("Installing server launcher for %s", this.minecraftVersion)
-		: String.format("Installing server launcher for %s with loader %s", this.minecraftVersion, this.loaderVersion);
+	message = (this.loaderVersion == null) ?
+		String.format("Installing server launcher for %s", this.minecraftVersion) :
+		String.format("Installing server launcher for %s with loader %s", this.minecraftVersion, this.loaderVersion);
 	println(message);
 
         CompletableFuture<MinecraftInstallation.InstallationInfo> installationInfoFuture = MinecraftInstallation.getInfo(this.minecraftVersion, this.loaderVersion);
@@ -106,9 +106,9 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
 
             return CompletableFuture.allOf(libraryFiles.toArray(CompletableFuture[]::new)).thenAccept(_v -> {
                 try {
-                    if (Files.notExists(installDir))
-                        Files.createDirectories(installDir);
-
+				if (Files.notExists(installDir)) {
+					Files.createDirectories(installDir);
+				}
                     createLaunchJar(installDir.resolve("quilt-server-launch.jar"), mainClass, libraryFiles);
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
@@ -174,9 +174,9 @@ public final class InstallServer extends Action<InstallServer.MessageType> {
                 Path path = librariesDir.resolve(splitArtifact(name));
                 Files.createDirectories(path.getParent());
 
-                try (InputStream stream = Connections.openConnection(rawUrl))
+                try (InputStream stream = Connections.openConnection(rawUrl)) {
                     Files.copy(stream, path, StandardCopyOption.REPLACE_EXISTING);
-
+		}
                 return path;
             } catch (IOException e) {
                 throw new UncheckedIOException(e);

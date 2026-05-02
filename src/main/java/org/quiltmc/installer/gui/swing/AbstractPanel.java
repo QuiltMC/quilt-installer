@@ -86,8 +86,9 @@ abstract class AbstractPanel extends JPanel {
 		comboBox.removeAllItems();
 
 		for (String loaderVersion : loaderVersions) {
-			if (betas || !loaderVersion.contains("-"))
+			if (betas || !loaderVersion.contains("-")) {
 				comboBox.addItem(loaderVersion);
+			}
 		}
 
 		comboBox.setEnabled(true);
@@ -101,8 +102,9 @@ abstract class AbstractPanel extends JPanel {
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		chooser.setAcceptAllFileFilterUsed(false);
 
-		if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
+		if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 			return chooser.getSelectedFile().getAbsolutePath();
+		}
 
 		return null;
 	}

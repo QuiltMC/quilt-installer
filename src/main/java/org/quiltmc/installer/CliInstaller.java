@@ -83,7 +83,7 @@ public final class CliInstaller {
 
 				switch (option) {
 				case "--snapshots":
-                                        minecraftSnapshots = true
+                                        minecraftSnapshots = true;
 					break;
 				case "--loader-betas":
                                         loaderBetas = true;

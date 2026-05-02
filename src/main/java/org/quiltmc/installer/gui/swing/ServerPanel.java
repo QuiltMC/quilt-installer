@@ -170,8 +170,9 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 		String jarType = "overwrite-jar";
 		String rb = "dialog.install.server.";
 
-		if (!downloadServer && downloadServerAutoSelected)
+		if (!downloadServer && downloadServerAutoSelected) {
 			jarType = "no-jar";
+		}
 		cancel = !AbstractPanel.showPopup(Localization.get(rb + jarType), Localization.get(rb + ".description"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
 		// TODO: Re-enable once scripts are implemented
