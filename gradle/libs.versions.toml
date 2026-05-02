@@ -15,4 +15,4 @@ jetbrains_annotations = { module = "org.jetbrains:annotations", version.ref = "j
 [plugins]
 blossom = { id = "net.kyori.blossom", version.ref = "blossom" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
-spotless = { id = "com.diffplug.plugin.spotless", version.ref = "spotless" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }

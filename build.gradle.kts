@@ -91,7 +91,7 @@ tasks.jar {
 tasks.shadowJar {
 //	minimize()
 
-	isEnableRelocation = true
+	enableAutoRelocation = true
 	relocationPrefix = "org.quiltmc.installer._lib"
 
 	dependencies {
