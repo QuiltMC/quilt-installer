@@ -34,7 +34,7 @@ abstract class AbstractPanel extends JPanel {
 	@Nullable
 	private List<String> loaderVersions;
 	@Nullable
-	private Collection<String> intermediaryVersions;
+	private static Collection<String> intermediaryVersions;
 
 	AbstractPanel(SwingInstaller gui) {
 		this.gui = gui;
@@ -74,11 +74,7 @@ abstract class AbstractPanel extends JPanel {
 		comboBox.removeAllItems();
 
 		for (var version : manifest) {
-			boolean isRelease = version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_RELEASE);
-			boolean isSnapshot = false;
-			if (isRelease) isSnapshot = snapshots && version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_SNAPSHOT);
-			boolean inIntermediary = intermediaryVersions.contains(version.id());
-			if ((isRelease || isSnapshot) && inIntermediary) comboBox.addItem(version.id());
+			if (shouldAddVersion(version, snapshots)) comboBox.addItem(version.id());
 		}
 		comboBox.setEnabled(true);
 	}
@@ -153,5 +149,13 @@ abstract class AbstractPanel extends JPanel {
 	 static void displayError(Component parent, Throwable throwable) {
 		JOptionPane.showMessageDialog(parent, throwable.toString(), "Error!", JOptionPane.ERROR_MESSAGE);
 		throwable.printStackTrace();
+	}
+
+	static boolean shouldAddVersion(MinecraftMeta.MinecraftVersion version, boolean snapshots) {
+		boolean isRelease = version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_RELEASE);
+		boolean isSnapshot = false;
+		if (isRelease) isSnapshot = snapshots && version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_SNAPSHOT);
+		boolean inIntermediary = intermediaryVersions.contains(version.id());
+		return (isRelease || isSnapshot) && inIntermediary;
 	}
 }

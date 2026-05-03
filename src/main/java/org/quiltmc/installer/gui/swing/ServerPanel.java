@@ -167,7 +167,7 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 
 	private void install(ActionEvent event) {
 		boolean cancel = false;
-		String jarType = "none";
+		String jarType = null;
 		final String rb = "dialog.install.server.";
 
 		if (downloadServer && !downloadServer) {
@@ -176,12 +176,12 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 			jarType = "no-jar";
 		}
 
-		if (!jarType.equals("none")) {
+		if (jarType != null) {
 			cancel = !AbstractPanel.showPopup(Localization.get(rb + jarType), Localization.get(rb + ".description"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 		}
 
 		// TODO: Re-enable once scripts are implemented
-		/*String scriptType = "none";
+		/*String scriptType = null;
 
 		if (generateLaunchScripts && !generateLaunchScriptsAutoSelected) {
 			scriptType = "overwrite-script";
@@ -189,7 +189,7 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 			scriptType = "no-script";
 		}
 
-		if (!scriptType.equals("none")) {
+		if (scriptType != null) {
 			cancel = cancel | !AbstractPanel.showPopup(Localization.get(rb + scriptType), Localization.get(rb + scriptType + ".desctiption"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 		}
 		*/
