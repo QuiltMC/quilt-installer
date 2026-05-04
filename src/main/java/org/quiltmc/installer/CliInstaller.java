@@ -94,8 +94,9 @@ public final class CliInstaller {
 	                                if (option.startsWith("--")) {
                                         	System.err.printf("Invalid option \"%s\"%n", arg);
 					}
-                                	else
+                                	else {
                                         	System.err.printf("Unexpected additional argument \"%s\"%n", arg);
+					}
 					break;
                                 }
 			}
@@ -298,8 +299,9 @@ public final class CliInstaller {
 		for (int i = 0; i < input.length(); i++) {
 			char c = input.charAt(i);
 
-			if (c == '"') inQuote = !inQuote;
-			else if (c == ' ') {
+			if (c == '"') {
+				inQuote = !inQuote;
+			} else if (c == ' ') {
 				if (!inQuote) {
 					// Terminate word and add to list
 					String word = input.substring(lastEnd, i);
