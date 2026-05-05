@@ -151,11 +151,12 @@ abstract class AbstractPanel extends JPanel {
 		throwable.printStackTrace();
 	}
 
-	private static boolean shouldAddVersion(MinecraftMeta.MinecraftVersion version, boolean snapshots, Collection<String> intermediaryVersions) {
+	private static boolean shouldAddVersion(MinecraftMeta.MinecraftVersion version, Collection<String> intermediaryVersions, boolean allowSnapshots) {
+		if(!intermediaryVersions.contains(version.id())) return false;
+
 		boolean isRelease = version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_RELEASE);
-		boolean isSnapshot = false;
-		if (!isRelease) isSnapshot = snapshots && version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_SNAPSHOT);
-		boolean inIntermediary = intermediaryVersions.contains(version.id());
-		return (isRelease || isSnapshot) && inIntermediary;
+		boolean isSnapshot = version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_SNAPSHOT);
+
+		return isRelease || (allowSnapshots && isSnapshot);
 	}
 }
