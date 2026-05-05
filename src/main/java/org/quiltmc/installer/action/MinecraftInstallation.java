@@ -39,7 +39,6 @@ public final class MinecraftInstallation {
 			if (manifest.getVersion(gameVersion) == null) {
 				throw new IllegalArgumentException(String.format("Minecraft version %s does not exist", gameVersion));
 			}
-
 			return manifest;
 		});
 
@@ -82,8 +81,7 @@ public final class MinecraftInstallation {
 		});
 	}
 
-	private MinecraftInstallation() {
-	}
+	private MinecraftInstallation() {}
 
 	public static final class InstallationInfo {
 		private final String loaderVersion;

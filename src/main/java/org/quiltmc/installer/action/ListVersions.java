@@ -64,7 +64,7 @@ public final class ListVersions extends Action<Void> {
 
         if (this.minecraftSnapshots) {
             println(Localization.createFrom("cli.latest.minecraft.snapshot", manifest.latestSnapshot().id()));
-        }
+	}
     }
 
     private void displayLoaderVersions(QuiltMeta meta) {
@@ -73,23 +73,18 @@ public final class ListVersions extends Action<Void> {
 
         if (this.loaderBetas) {
             println(Localization.createFrom("cli.latest.loader.beta", endpoint.stream().filter(version -> version.contains("-")).findFirst().orElse(null)));
-        }
+	}
     }
 
     private Void handleMinecraftVersionExceptions(Throwable exc) {
         eprintln(Localization.get("cli.lookup.failed.minecraft"));
 
         // Unwrap the completion exception(s).
-        if (exc instanceof CompletionException) {
-            exc = exc.getCause();
-        }
-        if (exc instanceof UncheckedIOException) {
-            exc = exc.getCause();
-        }
+        if (exc instanceof CompletionException) exc = exc.getCause();
+        if (exc instanceof UncheckedIOException) exc = exc.getCause();
         if (exc instanceof RuntimeException && exc.getMessage() == null && exc.getCause() != null) {
             exc = exc.getCause();
-        }
-
+	}
         if (exc.getCause() instanceof UnknownHostException) {
             eprintln(Localization.get("cli.lookup.failed.connection"));
         } else if (exc instanceof JsonParseException) {

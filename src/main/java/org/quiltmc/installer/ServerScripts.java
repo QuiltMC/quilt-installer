@@ -17,6 +17,5 @@
 package org.quiltmc.installer;
 
 public final class ServerScripts {
-	private ServerScripts() {
-	}
+	private ServerScripts() {}
 }

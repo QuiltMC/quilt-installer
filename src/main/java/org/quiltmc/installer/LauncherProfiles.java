@@ -46,7 +46,6 @@ public final class LauncherProfiles {
 		if (Files.notExists(launcherProfilesPath)) {
 			throw new IllegalStateException("No launcher_profiles.json to read from");
 		}
-
 		JsonObject launcherProfiles;
 
 		try (var reader = Files.newBufferedReader(launcherProfilesPath)) {
@@ -102,6 +101,5 @@ public final class LauncherProfiles {
 		return "TNT";
 	}
 
-	private LauncherProfiles() {
-	}
+	private LauncherProfiles() {}
 }

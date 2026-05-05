@@ -167,25 +167,34 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 
 	private void install(ActionEvent event) {
 		boolean cancel = false;
+		String jarType = null;
+		final String rb = "dialog.install.server.";
 
-		if (!downloadServer && downloadServerAutoSelected) {
-			cancel = !AbstractPanel.showPopup(Localization.get("dialog.install.server.no-jar"), Localization.get("dialog.install.server.no-jar.description"),
-					JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-		} else if (downloadServer && !downloadServerAutoSelected) {
-		 	cancel = !AbstractPanel.showPopup(Localization.get("dialog.install.server.overwrite-jar"), Localization.get("dialog.install.server.overwrite-jar.description"),
-					JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		if (downloadServer && !downloadServer) {
+			jarType = "overwrite-jar";
+		} else if (!downloadServer && downloadServerAutoSelected) {
+			jarType = "no-jar";
+		}
+
+		if (jarType != null) {
+			cancel = !AbstractPanel.showPopup(Localization.get(rb + jarType), Localization.get(rb + ".description"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 		}
 
 		// TODO: Re-enable once scripts are implemented
-		/*if (!generateLaunchScripts && generateLaunchScriptsAutoSelected) {
-			cancel = cancel | !AbstractPanel.showPopup(Localization.get("dialog.install.server.no-script"), Localization.get("dialog.install.server.no-script.description"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-		} else if (generateLaunchScripts && !generateLaunchScriptsAutoSelected) {
-			cancel = cancel | !AbstractPanel.showPopup(Localization.get("dialog.install.server.overwrite-script"), Localization.get("dialog.install.server.overwrite-script.description"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-		}*/
+		/*String scriptType = null;
 
-		if (cancel) {
-			return;
+		if (generateLaunchScripts && !generateLaunchScriptsAutoSelected) {
+			scriptType = "overwrite-script";
+		} else if (!generateLaunchScripts && generateLaunchScriptsAutoSelected) {
+			scriptType = "no-script";
 		}
+
+		if (scriptType != null) {
+			cancel = cancel | !AbstractPanel.showPopup(Localization.get(rb + scriptType), Localization.get(rb + scriptType + ".desctiption"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		}
+		*/
+
+		if (cancel) return;
 
 		InstallServer action = Action.installServer(
 				(String) this.minecraftVersionSelector.getSelectedItem(),

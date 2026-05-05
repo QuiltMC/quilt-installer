@@ -74,13 +74,8 @@ abstract class AbstractPanel extends JPanel {
 		comboBox.removeAllItems();
 
 		for (var version : manifest) {
-			if (version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_RELEASE) || (snapshots && version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_SNAPSHOT))) {
-				if (intermediaryVersions.contains(version.id())) {
-					comboBox.addItem(version.id());
-				}
-			}
+			if (shouldAddVersion(version, snapshots, intermediaryVersions)) comboBox.addItem(version.id());
 		}
-
 		comboBox.setEnabled(true);
 	}
 
@@ -154,5 +149,13 @@ abstract class AbstractPanel extends JPanel {
 	 static void displayError(Component parent, Throwable throwable) {
 		JOptionPane.showMessageDialog(parent, throwable.toString(), "Error!", JOptionPane.ERROR_MESSAGE);
 		throwable.printStackTrace();
+	}
+
+	private static boolean shouldAddVersion(MinecraftMeta.MinecraftVersion version, boolean snapshots, Collection<String> intermediaryVersions) {
+		boolean isRelease = version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_RELEASE);
+		boolean isSnapshot = false;
+		if (!isRelease) isSnapshot = snapshots && version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_SNAPSHOT);
+		boolean inIntermediary = intermediaryVersions.contains(version.id());
+		return (isRelease || isSnapshot) && inIntermediary;
 	}
 }

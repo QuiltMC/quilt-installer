@@ -39,9 +39,7 @@ public final class CliInstaller {
 		StringBuilder builder = new StringBuilder();
 
 		for (int i = 0; i < args.length; i++) {
-			if (i != 0) {
-				builder.append(' ');
-			}
+			if (i != 0) builder.append(' ');
 
 			builder.append(args[i]);
 		}
@@ -84,17 +82,23 @@ public final class CliInstaller {
 			while (split.peek() != null) {
 				String option = split.remove();
 
-				if (option.equals("--snapshots")) {
-					minecraftSnapshots = true;
-				} else if (option.equals("--loader-betas")) {
-					loaderBetas = true;
-				} else if (option.startsWith("--")) {
-					System.err.printf("Invalid option \"%s\"%n", arg);
+				switch (option) {
+				case "--snapshots":
+                                        minecraftSnapshots = true;
+					break;
+				case "--loader-betas":
+                                        loaderBetas = true;
+					break;
+				default:
 					hasError = true;
-				} else {
-					System.err.printf("Unexpected additional argument \"%s\"%n", arg);
-					hasError = true;
-				}
+	                                if (option.startsWith("--")) {
+                                        	System.err.printf("Invalid option \"%s\"%n", arg);
+					}
+                                	else {
+                                        	System.err.printf("Unexpected additional argument \"%s\"%n", arg);
+					}
+					break;
+                                }
 			}
 
 			return !hasError ? Action.listVersions(minecraftSnapshots, loaderBetas) : Action.DISPLAY_HELP;
@@ -338,7 +342,6 @@ public final class CliInstaller {
 		if (input.charAt(input.length() - 1) != '"') {
 			return null; // Improper quoting, end of value must be quoted
 		}
-
 		return input.substring(1, input.length() - 1);
 	}
 }
