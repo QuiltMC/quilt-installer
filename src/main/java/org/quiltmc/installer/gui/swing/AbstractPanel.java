@@ -69,12 +69,12 @@ abstract class AbstractPanel extends JPanel {
 		return this.intermediaryVersions;
 	}
 
-	static void populateMinecraftVersions(JComboBox<String> comboBox, MinecraftMeta manifest, Collection<String> intermediaryVersions, boolean snapshots) {
-		// Setup the combo box for Minecraft version selection
+	static void populateMinecraftVersions(JComboBox<String> comboBox, MinecraftMeta manifest, Collection<String> intermediaryVersions, boolean allowSnapshots) {
+		// Set up the combo box for Minecraft version selection
 		comboBox.removeAllItems();
 
 		for (var version : manifest) {
-			if (shouldAddVersion(version, snapshots, intermediaryVersions)) comboBox.addItem(version.id());
+			if (shouldAddVersion(version, intermediaryVersions, allowSnapshots)) comboBox.addItem(version.id());
 		}
 		comboBox.setEnabled(true);
 	}
