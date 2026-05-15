@@ -37,3 +37,6 @@
 # 0.13.0
 - Update dependencies
 - Add support for unobfuscated Minecraft versions
+
+# 0.13.1
+- Fix unobfuscated versions not showing in installer GUI

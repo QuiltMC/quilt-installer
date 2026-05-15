@@ -152,7 +152,7 @@ abstract class AbstractPanel extends JPanel {
 	}
 
 	private static boolean shouldAddVersion(MinecraftMeta.MinecraftVersion version, Collection<String> intermediaryVersions, boolean allowSnapshots) {
-		if(!intermediaryVersions.contains(version.id())) return false;
+		if(!intermediaryVersions.contains(version.id()) && version.isObfuscated()) return false;
 
 		boolean isRelease = version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_RELEASE);
 		boolean isSnapshot = version.type().equals(MinecraftMeta.MinecraftVersion.TYPE_SNAPSHOT);
