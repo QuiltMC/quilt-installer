@@ -33,3 +33,7 @@
 
 # 0.12.1
 - Fix GUI immediately closing
+
+# 0.13.0
+- Update dependencies
+- Add support for unobfuscated Minecraft versions

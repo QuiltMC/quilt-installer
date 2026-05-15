@@ -45,13 +45,22 @@ public final class MinecraftInstallation {
 		CompletableFuture<QuiltMeta> metaFuture = QuiltMeta.create(QuiltMeta.LOADER_VERSIONS_ENDPOINT, QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
 
 		// Verify we actually have intermediary for the specified version
-		CompletableFuture<Void> intermediary = versionManifest.thenCompose(mcVersion -> metaFuture.thenAccept(meta -> {
-			Map<String, String> intermediaryVersions = meta.getEndpoint(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
+		CompletableFuture<Void> intermediary = versionManifest.thenCompose(manifest -> {
+            MinecraftMeta.MinecraftVersion mcVersion = manifest.getVersion(gameVersion);
+			assert mcVersion != null; // cannot happen
 
-			if (intermediaryVersions.get(gameVersion) == null) {
-				throw new IllegalArgumentException(String.format("Minecraft version %s exists but has no intermediary", gameVersion));
+			if(mcVersion.isObfuscated()) {
+				return metaFuture.thenAccept(meta -> {
+					Map<String, String> intermediaryVersions = meta.getEndpoint(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
+
+					if (intermediaryVersions.get(gameVersion) == null) {
+						throw new IllegalArgumentException(String.format("Minecraft version %s exists but has no intermediary", gameVersion));
+					}
+				});
 			}
-		}));
+
+			return CompletableFuture.completedFuture(null);
+		});
 
 		CompletableFuture<String> loaderVersionFuture = metaFuture.thenApply(meta -> {
 			List<String> versions = meta.getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT);

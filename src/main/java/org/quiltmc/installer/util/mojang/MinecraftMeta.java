@@ -69,12 +69,18 @@ public record MinecraftMeta(List<MinecraftVersion> versions, Latest latest) impl
         public static final String TYPE_OLD_BETA = "old_beta";
         public static final String TYPE_OLD_ALPHA = "old_alpha";
 
+        private static final Instant FIRST_UNOBFUSCATED_VERSION_TIMESTAMP = Instant.parse("2025-12-16T00:00:00.00Z");
+
         public boolean isSnapshot() {
             return TYPE_SNAPSHOT.equals(type);
         }
 
         public boolean isRelease() {
             return TYPE_RELEASE.equals(type);
+        }
+
+        public boolean isObfuscated() {
+            return this.releaseTime.isBefore(FIRST_UNOBFUSCATED_VERSION_TIMESTAMP);
         }
     }
 
