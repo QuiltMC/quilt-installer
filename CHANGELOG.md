@@ -43,4 +43,4 @@
 
 # 0.14.0
 - Reorder JRE detection order
-- Allow detecting Java 25 runtime from vanilla launcher
+- Allow detecting Java 25 runtime from vanilla launcher (fix [#58])
