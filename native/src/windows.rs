@@ -50,15 +50,15 @@ pub(crate) fn get_jre_locations(has_args: bool) -> io::Result<Vec<PathBuf>> {
     // alpha: Java 16 (1.17+)
     // jre-legacy: Java 8
 	let paths = vec![
-		"runtime/java-runtime-epsilon/windows-x64/java-runtime-epsilon/bin"
+		"runtime/java-runtime-epsilon/windows-x64/java-runtime-epsilon/bin",
 		"runtime/java-runtime-delta/windows-x64/java-runtime-delta/bin",
 		"runtime/java-runtime-gamma/windows-x64/java-runtime-gamma/bin",
 		"runtime/java-runtime-beta/windows-x64/java-runtime-beta/bin",
 		// x86 versions
-		"runtime/java-runtime-epsilon/windows-x86/java-runtime-epsilon/bin"
-		"runtime/java-runtime-delta/windows-x86/java-runtime-delta/bin", // Used by 1.20.5 and above
-		"runtime/java-runtime-gamma/windows-x86/java-runtime-gamma/bin", // Used by
-		"runtime/java-runtime-beta/windows-x86/java-runtime-beta/bin", // Used by 1.18.2 and above
+		"runtime/java-runtime-epsilon/windows-x86/java-runtime-epsilon/bin",
+		"runtime/java-runtime-delta/windows-x86/java-runtime-delta/bin",
+		"runtime/java-runtime-gamma/windows-x86/java-runtime-gamma/bin",
+		"runtime/java-runtime-beta/windows-x86/java-runtime-beta/bin"
 	];
 
 	let mut candidates = Vec::new();
