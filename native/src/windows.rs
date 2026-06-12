@@ -44,14 +44,21 @@ fn launcher_install_dir() -> io::Result<PathBuf> {
 /// If the Minecraft Launcher is installed, then we may be able to use the JRE the launcher has downloaded
 /// if the system's bundled JRE is not suitable.
 pub(crate) fn get_jre_locations(has_args: bool) -> io::Result<Vec<PathBuf>> {
+    // epsilon: Java 25 (26.1+)
+    // delta: Java 21 (1.20.5+)
+    // beta + gamma: Java 17 (1.18+)
+    // alpha: Java 16 (1.17+)
+    // jre-legacy: Java 8
 	let paths = vec![
+		"runtime/java-runtime-epsilon/windows-x64/java-runtime-epsilon/bin"
+		"runtime/java-runtime-delta/windows-x64/java-runtime-delta/bin",
 		"runtime/java-runtime-gamma/windows-x64/java-runtime-gamma/bin",
 		"runtime/java-runtime-beta/windows-x64/java-runtime-beta/bin",
-		"runtime/java-runtime-delta/windows-x64/java-runtime-delta/bin",
 		// x86 versions
-		"runtime/java-runtime-gamma/windows-x86/java-runtime-gamma/bin",
-		"runtime/java-runtime-beta/windows-x86/java-runtime-beta/bin", // Used 1.18.2 and above
+		"runtime/java-runtime-epsilon/windows-x86/java-runtime-epsilon/bin"
 		"runtime/java-runtime-delta/windows-x86/java-runtime-delta/bin", // Used by 1.20.5 and above
+		"runtime/java-runtime-gamma/windows-x86/java-runtime-gamma/bin", // Used by
+		"runtime/java-runtime-beta/windows-x86/java-runtime-beta/bin", // Used by 1.18.2 and above
 	];
 
 	let mut candidates = Vec::new();

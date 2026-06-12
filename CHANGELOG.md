@@ -40,3 +40,7 @@
 
 # 0.13.1
 - Fix unobfuscated versions not showing in installer GUI
+
+# 0.14.0
+- Reorder JRE detection order
+- Allow detecting Java 25 runtime from vanilla launcher
