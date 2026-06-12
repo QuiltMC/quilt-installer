@@ -54,9 +54,7 @@ pub(crate) fn get_jre_locations(has_args: bool) -> io::Result<Vec<PathBuf>> {
 		"runtime/java-runtime-delta/windows-x64/java-runtime-delta/bin",
 		"runtime/java-runtime-gamma/windows-x64/java-runtime-gamma/bin",
 		"runtime/java-runtime-beta/windows-x64/java-runtime-beta/bin",
-		// x86 versions
-		"runtime/java-runtime-epsilon/windows-x86/java-runtime-epsilon/bin",
-		"runtime/java-runtime-delta/windows-x86/java-runtime-delta/bin",
+		// x86 versions (32-bit support dropped after gamma)
 		"runtime/java-runtime-gamma/windows-x86/java-runtime-gamma/bin",
 		"runtime/java-runtime-beta/windows-x86/java-runtime-beta/bin"
 	];
