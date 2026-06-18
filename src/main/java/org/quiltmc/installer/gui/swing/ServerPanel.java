@@ -206,7 +206,7 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 
 		action.run(this);
 
-		showInstalledMessage();
+		showInstalledMessage((String) this.minecraftVersionSelector.getSelectedItem());
 	}
 
 	private void updateFlags() {
@@ -238,6 +238,5 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 	}
 
 	@Override
-	public void accept(InstallServer.MessageType messageType) {
-	}
+	public void accept(InstallServer.MessageType messageType) {}
 }

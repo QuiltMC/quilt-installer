@@ -19,11 +19,13 @@ package org.quiltmc.installer.gui.swing;
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.Localization;
 import org.quiltmc.installer.util.mojang.MinecraftMeta;
+import org.quiltmc.installer.util.maven.MavenArtifact;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -130,8 +132,22 @@ abstract class AbstractPanel extends JPanel {
 		return JOptionPane.showOptionDialog(null, pane, title, optionType, messageType, null, null, null) == 0;
 	}
 
-	protected static void showInstalledMessage() {
-		showPopup(Localization.get("dialog.install.successful"), Localization.createFrom("dialog.install.successful.description", "https://quiltmc.org/qsl"),
+	protected static void showInstalledMessage(String minecraftVersion) {
+		MavenArtifact qslMetadataArtifact;
+		String qslMetadataContent;
+		try {
+			qslMetadataArtifact = new MavenArtifact("https://maven.quiltmc.org/repository/release/org/quiltmc/qsl/maven-metadata.xml");
+			qslMetadataContent = qslMetadataArtifact.getContents();
+		} catch (IOException ex) {
+			return;
+		}
+
+		final String baseMessageKey = "dialog.install.successful";
+		String messageKey = baseMessageKey + ".description.";
+		messageKey += (qslMetadataContent.contains(minecraftVersion)) ? "has-qsl" : "no-qsl";
+		String link = ("has-qsl".equals(messageKey)) ? "https://quiltmc.org/qsl" : "https://modrinth.com/mod/fabric-api/versions";
+
+		showPopup(Localization.get(baseMessageKey), Localization.createFrom(messageKey, link),
 				JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
 	}
 

@@ -142,7 +142,7 @@ final class ClientPanel extends AbstractPanel implements Consumer<InstallClient.
 
 		action.run(this);
 
-		showInstalledMessage();
+		showInstalledMessage((String) this.minecraftVersionSelector.getSelectedItem());
 	}
 
 	@Override
