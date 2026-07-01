@@ -1,7 +1,7 @@
 [versions]
 blossom = "2.2.0"
 bouncycastle = "1.84"
-shadow = "9.4.2"
+shadow = "9.4.3"
 spotless = "8.6.0"
 
 gson = "2.14.0"
