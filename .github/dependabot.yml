@@ -4,10 +4,14 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    cooldown:
+      default-days: 7 # new versions must be at least 7 days old
   - package-ecosystem: gradle
     directory: /
     schedule:
       interval: monthly
+    cooldown:
+      default-days: 7 # new versions must be at least 7 days old
   - package-ecosystem: cargo
     directory: /native
     schedule:
