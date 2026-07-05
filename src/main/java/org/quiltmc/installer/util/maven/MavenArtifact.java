@@ -35,7 +35,7 @@ public class MavenArtifact {
 
 	public MavenArtifact(String urlString) throws IOException {
 		try {
-			url = new URL(urlString);
+			url = URI.create(urlString).toURL();
 			if (url == null) throw new IllegalArgumentException("URL is null");
 			this.url = url;
 			in = url.openStream();
