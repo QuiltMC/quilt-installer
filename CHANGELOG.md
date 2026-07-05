@@ -47,3 +47,6 @@
 
 # 0.14.1
 - Don't search for x86 JREs that cannot exist
+
+# 0.15.0
+- If no QFAPI exists for a given Minecraft version, suggest Fabric API instead
