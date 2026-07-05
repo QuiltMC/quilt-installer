@@ -35,14 +35,10 @@ public class MavenArtifact {
 	}
 
 	public MavenArtifact(String urlString) throws IOException {
-		try {
-			url = URI.create(urlString).toURL();
-			if (url == null) throw new IllegalArgumentException("URL is null");
-			this.url = url;
-			in = url.openStream();
-		} catch (MalformedURLException ex) {
-			throw new IllegalArgumentException("Incorrect URL");
-		}
+		url = URI.create(urlString).toURL();
+		if (url == null) throw new IllegalArgumentException("URL is null");
+		this.url = url;
+		in = url.openStream();
 	}
 
 	public URL getUrl() {
