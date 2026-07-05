@@ -1,6 +1,7 @@
 module org.quiltmc.installer {
     requires java.desktop;
     requires org.jetbrains.annotations;
+    requires org.jspecify;
     requires com.google.gson;
 
     requires org.bouncycastle.provider;

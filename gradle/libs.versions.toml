@@ -6,11 +6,13 @@ spotless = "8.8.0"
 
 gson = "2.14.0"
 jetbrains_annotations = "26.1.0"
+jspecify = "1.0.0"
 
 [libraries]
 bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson"}
 jetbrains_annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains_annotations" }
+jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
 
 [plugins]
 blossom = { id = "net.kyori.blossom", version.ref = "blossom" }

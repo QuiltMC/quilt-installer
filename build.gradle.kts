@@ -49,6 +49,7 @@ sourceSets {
 
 dependencies {
 	compileOnly(libs.jetbrains.annotations)
+	compileOnly(libs.jspecify)
 
 	implementation(libs.gson)
 	implementation(libs.bouncycastle)
