@@ -114,6 +114,7 @@ abstract class AbstractPanel extends JPanel {
 		JEditorPane pane = new JEditorPane("text/html",
 				"<html><body style=\"" + buildEditorPaneStyle() + "\">" + description + "</body></html>");
 		pane.setEditable(false);
+		pane.setFocusable(false);
 		pane.addHyperlinkListener(e -> {
 			try {
 				if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
