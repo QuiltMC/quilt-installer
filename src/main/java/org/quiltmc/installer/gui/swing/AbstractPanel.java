@@ -107,8 +107,8 @@ abstract class AbstractPanel extends JPanel {
 	}
 
 	/**
-	 * Show a popup with hyperlinks and full html formatting.
-	 * @return if the user pressed "ok", "yes", etc. (showOptionDialog returned 0)
+	 * Show a popup with hyperlinks and full HTML formatting.
+	 * @return if the user pressed "ok", "yes", etc. (showOptionDialog returned JOptionPane.OK_OPTION)
 	 */
 	protected static boolean showPopup(String title, String description, int optionType, int messageType) {
 		JEditorPane pane = new JEditorPane("text/html",
@@ -127,7 +127,7 @@ abstract class AbstractPanel extends JPanel {
 				displayError(pane, throwable);
 			}
 		});
-		return JOptionPane.showOptionDialog(null, pane, title, optionType, messageType, null, null, null) == 0;
+		return JOptionPane.showOptionDialog(null, pane, title, optionType, messageType, null, null, null) == JOptionPane.OK_OPTION;
 	}
 
 	protected static void showInstalledMessage() {
