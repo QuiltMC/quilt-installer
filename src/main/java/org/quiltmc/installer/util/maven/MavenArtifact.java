@@ -16,6 +16,7 @@
 
 package org.quiltmc.installer.util.maven;
 
+import java.net.URI;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.InputStream;
