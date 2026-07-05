@@ -18,6 +18,7 @@ package org.quiltmc.installer.gui.swing;
 
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.installer.Localization;
+import org.quiltmc.installer.util.modrinth.v2.ModrinthApiV2;
 import org.quiltmc.installer.util.mojang.MinecraftMeta;
 
 import javax.swing.*;
@@ -26,6 +27,7 @@ import java.awt.*;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 abstract class AbstractPanel extends JPanel {
 	final SwingInstaller gui;
@@ -131,9 +133,42 @@ abstract class AbstractPanel extends JPanel {
 		return JOptionPane.showOptionDialog(null, pane, title, optionType, messageType, null, null, null) == JOptionPane.OK_OPTION;
 	}
 
-	protected static void showInstalledMessage() {
-		showPopup(Localization.get("dialog.install.successful"), Localization.createFrom("dialog.install.successful.description", "https://quiltmc.org/qsl"),
-				JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+	protected static void showInstalledMessage(String minecraftVersion) {
+		var qslModrinthId = "qvIfYCYJ";
+
+		// check whether to recommend QSL or FAPI
+		var split = minecraftVersion.split("\\.", 3);
+		int major;
+		int minor;
+		try {
+			var idx = 0;
+			if(split[0].equals("1")) {
+				idx = 1;
+			}
+
+			major = Integer.parseInt(split[idx]);
+			minor = split.length > idx + 1 ? Integer.parseInt(split[idx + 1]) : 0;
+		} catch (NumberFormatException e) {
+            throw new RuntimeException("Unable to decode current Minecraft version: " + minecraftVersion, e);
+        }
+
+		CompletableFuture<String> qslCheck;
+		if(major < 21 || (major == 21 && minor == 0)) {
+			qslCheck =  ModrinthApiV2.getProjectVersions(qslModrinthId, List.of(minecraftVersion)).thenApply(qslVersions -> {
+				if(qslVersions.isEmpty()) {
+					return Localization.createFrom("dialog.install.successful.description.no-qsl", "https://quiltmc.org/qsl", "https://modrinth.com/mod/fabric-api");
+				}
+				else {
+					return Localization.createFrom("dialog.install.successful.description.qsl", "https://quiltmc.org/qsl");
+				}
+			});
+		}
+		else {
+			qslCheck = CompletableFuture.completedFuture(Localization.createFrom("dialog.install.successful.description.fabric-api", "https://modrinth.com/mod/fabric-api"));
+		}
+
+		qslCheck.thenAccept(downloadMessage -> SwingUtilities.invokeLater(() -> showPopup(Localization.get("dialog.install.successful"), downloadMessage,
+                JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE))).join();
 	}
 
 	private static String buildEditorPaneStyle() {

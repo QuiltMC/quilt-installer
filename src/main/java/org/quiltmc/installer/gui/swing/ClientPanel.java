@@ -133,8 +133,9 @@ final class ClientPanel extends AbstractPanel implements Consumer<InstallClient.
 	}
 
 	private void install(ActionEvent event) {
+		var mcVersion = (String) this.minecraftVersionSelector.getSelectedItem();
 		Action<InstallClient.MessageType> action = Action.installClient(
-				(String) this.minecraftVersionSelector.getSelectedItem(),
+				mcVersion,
 				(String) this.loaderVersionSelector.getSelectedItem(),
 				this.installLocation.getText(),
 				this.generateProfile
@@ -142,7 +143,7 @@ final class ClientPanel extends AbstractPanel implements Consumer<InstallClient.
 
 		action.run(this);
 
-		showInstalledMessage();
+		showInstalledMessage(mcVersion);
 	}
 
 	@Override

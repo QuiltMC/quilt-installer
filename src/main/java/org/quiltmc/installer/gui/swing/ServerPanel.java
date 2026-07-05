@@ -196,8 +196,9 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 
 		if (cancel) return;
 
+		var mcVersion = (String) this.minecraftVersionSelector.getSelectedItem();
 		InstallServer action = Action.installServer(
-				(String) this.minecraftVersionSelector.getSelectedItem(),
+				mcVersion,
 				(String) this.loaderVersionSelector.getSelectedItem(),
 				this.installLocation.getText(),
 				this.generateLaunchScripts,
@@ -206,7 +207,7 @@ final class ServerPanel extends AbstractPanel implements Consumer<InstallServer.
 
 		action.run(this);
 
-		showInstalledMessage();
+		showInstalledMessage(mcVersion);
 	}
 
 	private void updateFlags() {
