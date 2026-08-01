@@ -50,3 +50,6 @@
 
 # 0.15.0
 - If no QFAPI exists for a given Minecraft version, suggest Fabric API instead
+
+# 0.15.1
+- Update bouncycastle crypto provider
