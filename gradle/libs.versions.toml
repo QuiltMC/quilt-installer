@@ -2,7 +2,7 @@
 blossom = "2.2.0"
 bouncycastle = "1.85"
 shadow = "9.6.1"
-spotless = "8.8.0"
+spotless = "8.10.0"
 
 gson = "2.14.0"
 jetbrains_annotations = "26.1.0"
