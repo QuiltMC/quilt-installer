@@ -13,14 +13,11 @@ plugins {
 val projectJavaVersion = 17
 
 group = "org.quiltmc"
-val env = System.getenv()
-version = if (env["SNAPSHOTS_URL"] != null) {
-	"0-SNAPSHOT"
-} else if (env["VERSION"] != null) {
-	env["VERSION"]!!
-} else {
-	"DEVELOPMENT"
-}
+
+version = if (providers.environmentVariable("SNAPSHOTS_URL").isPresent)
+	"0-SNAPSHOTS"
+else
+	providers.environmentVariable("VERSION").getOrElse("DEVELOPMENT")
 
 base {
 	archivesName.set(project.name)
@@ -133,39 +130,30 @@ val copyForNative = tasks.register<Copy>("copyForNative") {
 
 publishing {
 	publications {
-		if (env["NATIVE_TARGET"] == null) {
-			create<MavenPublication>("mavenJava") {
-				from(components["java"])
-			}
-		} else {
+		providers.environmentVariable("NATIVE_TARGET").orNull?.let { nativeTarget ->
 			create<MavenPublication>("mavenNatives") {
 				groupId = "org.quiltmc.quilt-installer-native-bootstrap"
-				artifactId = env["NATIVE_TARGET_ARTIFACT_ID"]!!
+				artifactId = providers.environmentVariable("NATIVE_TARGET_ARTIFACT_ID").get()
 
 				artifact {
-					file("$projectDir/native/target/${env["NATIVE_TARGET"]!!}/release/quilt-installer${env["NATIVE_TARGET_EXT"]!!}")
+					file("$projectDir/native/target/${nativeTarget}/release/quilt-installer${providers.environmentVariable("NATIVE_TARGET_EXT").get()}")
 				}
+			}
+		} ?: run {
+			create<MavenPublication>("mavenJava") {
+				from(components["java"])
 			}
 		}
 	}
 
 	repositories {
-		if (env["MAVEN_URL"] != null) {
-			repositories.maven {
-				url = URI(env["MAVEN_URL"]!!)
-
-				credentials {
-					username = env["MAVEN_USERNAME"]
-					password = env["MAVEN_PASSWORD"]
-				}
-			}
-		} else if (env["SNAPSHOTS_URL"] != null) {
-			repositories.maven {
-				url = URI(env["SNAPSHOTS_URL"]!!)
-
-				credentials {
-					username = env["SNAPSHOTS_USERNAME"]
-					password = env["SNAPSHOTS_PASSWORD"]
+		listOf("MAVEN", "SNAPSHOTS").forEach { prefix ->
+			providers.environmentVariable("${prefix}_URL").orNull?.let { mavenUrl ->
+				maven(mavenUrl) {
+					credentials {
+						username = providers.environmentVariable("${prefix}_USERNAME").get()
+						password = providers.environmentVariable("${prefix}_PASSWORD").get()
+					}
 				}
 			}
 		}
