@@ -113,6 +113,7 @@ tasks.assemble {
 }
 
 val copyForNative = tasks.register<Copy>("copyForNative") {
+	description = "Copies the final jar file to the natives project for bundling"
 	dependsOn(tasks.shadowJar)
 	dependsOn(tasks.jar)
 	from(tasks.shadowJar)
