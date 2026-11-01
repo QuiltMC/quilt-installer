@@ -4,7 +4,7 @@ bouncycastle = "1.86"
 shadow = "9.6.1"
 spotless = "8.10.2"
 
-gson = "2.14.0"
+gson = "2.15.0"
 jetbrains_annotations = "26.1.0"
 jspecify = "1.0.1"
 
